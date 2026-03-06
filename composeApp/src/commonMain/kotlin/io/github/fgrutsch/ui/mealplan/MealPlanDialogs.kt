@@ -39,17 +39,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.fgrutsch.mealplan.mondayOfWeek
 import io.github.fgrutsch.recipe.Recipe
 import io.github.fgrutsch.recipe.RecipeIngredient
+import io.github.fgrutsch.ui.common.formatShortDate
 import io.github.fgrutsch.ui.shopping.formatQuantity
 import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import kotlinx.datetime.todayIn
 import kotlin.time.Clock
-import kotlinx.datetime.LocalDate
 
 @Composable
 fun AddMealPlanItemDialog(
@@ -313,7 +315,7 @@ fun DayPickerDialog(
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 maxLines = 2,
-                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                                overflow = TextOverflow.Ellipsis,
                             )
                         }
                     }
@@ -327,22 +329,7 @@ fun DayPickerDialog(
     )
 }
 
-private fun formatShortDate(date: LocalDate): String {
-    val monthName = when (date.monthNumber) {
-        1 -> "Jan"; 2 -> "Feb"; 3 -> "Mar"; 4 -> "Apr"
-        5 -> "May"; 6 -> "Jun"; 7 -> "Jul"; 8 -> "Aug"
-        9 -> "Sep"; 10 -> "Oct"; 11 -> "Nov"; 12 -> "Dec"
-        else -> ""
-    }
-    return "$monthName ${date.dayOfMonth}"
-}
-
 private fun formatDayNameShort(date: LocalDate): String {
-    val monthName = when (date.monthNumber) {
-        1 -> "Jan"; 2 -> "Feb"; 3 -> "Mar"; 4 -> "Apr"
-        5 -> "May"; 6 -> "Jun"; 7 -> "Jul"; 8 -> "Aug"
-        9 -> "Sep"; 10 -> "Oct"; 11 -> "Nov"; 12 -> "Dec"
-        else -> ""
-    }
-    return "${date.dayOfWeek.name.lowercase().replaceFirstChar { it.uppercase() }}, $monthName ${date.dayOfMonth}"
+    val dayName = date.dayOfWeek.name.lowercase().replaceFirstChar { it.uppercase() }
+    return "$dayName, ${formatShortDate(date)}"
 }

@@ -16,8 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
-import io.github.fgrutsch.di.appModule
-import io.github.fgrutsch.di.sharedModule
+import io.github.fgrutsch.di.appModules
+import io.github.fgrutsch.di.sharedModules
 import io.github.fgrutsch.navigation.Route
 import io.github.fgrutsch.navigation.TopLevelRoute
 import io.github.fgrutsch.navigation.navConfig
@@ -41,7 +41,7 @@ import org.koin.compose.koinInject
 @Composable
 fun App() {
     KoinApplication(application = {
-        modules(sharedModule, appModule)
+        modules(sharedModules + appModules)
     }) {
         val settingsViewModel = koinInject<SettingsViewModel>()
         val isDarkMode by settingsViewModel.isDarkMode.collectAsState()

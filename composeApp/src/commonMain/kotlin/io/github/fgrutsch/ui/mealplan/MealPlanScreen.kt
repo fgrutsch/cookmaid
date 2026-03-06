@@ -53,6 +53,7 @@ import io.github.fgrutsch.mealplan.MealPlanDay
 import io.github.fgrutsch.mealplan.MealPlanItem
 import kotlinx.coroutines.launch
 import io.github.fgrutsch.recipe.RecipeIngredient
+import io.github.fgrutsch.ui.common.formatShortDate
 import io.github.fgrutsch.ui.common.SuccessSnackbarHost
 import io.github.fgrutsch.ui.common.SwipeToDeleteItem
 import kotlinx.datetime.DateTimeUnit
@@ -355,16 +356,6 @@ private fun formatDayName(dayOfWeek: DayOfWeek): String = when (dayOfWeek) {
     DayOfWeek.FRIDAY -> "Friday"
     DayOfWeek.SATURDAY -> "Saturday"
     DayOfWeek.SUNDAY -> "Sunday"
-}
-
-private fun formatShortDate(date: LocalDate): String {
-    val monthName = when (date.monthNumber) {
-        1 -> "Jan"; 2 -> "Feb"; 3 -> "Mar"; 4 -> "Apr"
-        5 -> "May"; 6 -> "Jun"; 7 -> "Jul"; 8 -> "Aug"
-        9 -> "Sep"; 10 -> "Oct"; 11 -> "Nov"; 12 -> "Dec"
-        else -> ""
-    }
-    return "$monthName ${date.dayOfMonth}"
 }
 
 private fun formatDateRange(start: LocalDate, end: LocalDate): String {

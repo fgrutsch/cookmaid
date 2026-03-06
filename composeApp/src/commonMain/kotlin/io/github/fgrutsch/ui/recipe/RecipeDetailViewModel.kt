@@ -2,21 +2,19 @@ package io.github.fgrutsch.ui.recipe
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import io.github.fgrutsch.mealplan.MealPlanItem
 import io.github.fgrutsch.mealplan.MealPlanRepository
-import io.github.fgrutsch.mealplan.mondayOfWeek
 import io.github.fgrutsch.recipe.Recipe
 import io.github.fgrutsch.recipe.RecipeIngredient
 import io.github.fgrutsch.recipe.RecipeRepository
-import io.github.fgrutsch.shopping.ShoppingItem
 import io.github.fgrutsch.shopping.ShoppingListRepository
+import io.github.fgrutsch.ui.common.addIngredientsToDefaultShoppingList
+import io.github.fgrutsch.ui.common.addRecipeToMealPlan
+import io.github.fgrutsch.ui.common.resolveMealPlanDayItems
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
-import kotlin.uuid.ExperimentalUuidApi
-import kotlin.uuid.Uuid
 
 class RecipeDetailViewModel(
     private val recipeId: String,
@@ -40,43 +38,19 @@ class RecipeDetailViewModel(
         }
     }
 
-    @OptIn(ExperimentalUuidApi::class)
     fun addIngredientsToShoppingList(ingredients: List<RecipeIngredient>) {
         viewModelScope.launch {
-            val lists = shoppingListRepository.lists.value
-            val targetListId = lists.find { it.default }?.id ?: lists.firstOrNull()?.id ?: return@launch
-            ingredients.forEach { ingredient ->
-                shoppingListRepository.addItem(
-                    targetListId,
-                    ShoppingItem(id = Uuid.random().toString(), item = ingredient.item, quantity = ingredient.quantity),
-                )
-            }
+            addIngredientsToDefaultShoppingList(shoppingListRepository, ingredients)
         }
     }
 
     fun resolveMealPlanDayItems(date: LocalDate): List<String> {
-        val weekStart = mondayOfWeek(date)
-        val week = mealPlanRepository.weeks.value.find { it.startDate == weekStart }
-        val day = week?.days?.find { it.date == date } ?: return emptyList()
-        val recipes = recipeRepository.recipes.value
-        return day.items.map { item ->
-            when (item) {
-                is MealPlanItem.RecipeItem -> recipes.find { it.id == item.recipeId }?.name ?: "Unknown recipe"
-                is MealPlanItem.NoteItem -> item.name
-            }
-        }
+        return resolveMealPlanDayItems(date, mealPlanRepository, recipeRepository)
     }
 
-    @OptIn(ExperimentalUuidApi::class)
     fun addRecipeToMealPlan(recipeId: String, dayDate: LocalDate) {
         viewModelScope.launch {
-            val weekStart = mondayOfWeek(dayDate)
-            mealPlanRepository.getOrCreateWeek(weekStart)
-            mealPlanRepository.addItem(
-                weekStart,
-                dayDate,
-                MealPlanItem.RecipeItem(id = Uuid.random().toString(), recipeId = recipeId),
-            )
+            addRecipeToMealPlan(recipeId, dayDate, mealPlanRepository)
         }
     }
 }

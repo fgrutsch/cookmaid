@@ -3,15 +3,15 @@ package io.github.fgrutsch.ui.mealplan
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.fgrutsch.mealplan.MealPlanItem
-import io.github.fgrutsch.recipe.RecipeIngredient
 import io.github.fgrutsch.mealplan.MealPlanRepository
 import io.github.fgrutsch.mealplan.MealPlanWeek
 import io.github.fgrutsch.mealplan.createEmptyWeek
 import io.github.fgrutsch.mealplan.mondayOfWeek
 import io.github.fgrutsch.recipe.Recipe
+import io.github.fgrutsch.recipe.RecipeIngredient
 import io.github.fgrutsch.recipe.RecipeRepository
-import io.github.fgrutsch.shopping.ShoppingItem
 import io.github.fgrutsch.shopping.ShoppingListRepository
+import io.github.fgrutsch.ui.common.addIngredientsToDefaultShoppingList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -111,17 +111,9 @@ class MealPlanViewModel(
         }
     }
 
-    @OptIn(ExperimentalUuidApi::class)
     fun addIngredientsToShoppingList(ingredients: List<RecipeIngredient>) {
         viewModelScope.launch {
-            val lists = shoppingListRepository.lists.value
-            val targetListId = lists.find { it.default }?.id ?: lists.firstOrNull()?.id ?: return@launch
-            ingredients.forEach { ingredient ->
-                shoppingListRepository.addItem(
-                    targetListId,
-                    ShoppingItem(id = Uuid.random().toString(), item = ingredient.item, quantity = ingredient.quantity),
-                )
-            }
+            addIngredientsToDefaultShoppingList(shoppingListRepository, ingredients)
         }
     }
 }
