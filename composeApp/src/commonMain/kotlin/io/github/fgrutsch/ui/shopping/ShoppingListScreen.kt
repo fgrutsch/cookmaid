@@ -220,7 +220,6 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
     editingItem?.let { item ->
         EditItemDialog(
             item = item,
-            categoryName = (item.item as? Item.CategorizedItem)?.category?.let { categoryNames[it] } ?: "",
             onDismiss = { editingItem = null },
             onSave = { updated ->
                 viewModel.updateItem(updated)
