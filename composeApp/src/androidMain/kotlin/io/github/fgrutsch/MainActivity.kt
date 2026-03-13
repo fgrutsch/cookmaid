@@ -6,14 +6,32 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import io.github.fgrutsch.ui.auth.OidcConfig
+import io.github.fgrutsch.ui.auth.SharedPreferencesSettingsStore
+import org.publicvalue.multiplatform.oidc.appsupport.AndroidCodeAuthFlowFactory
+import org.publicvalue.multiplatform.oidc.tokenstore.SettingsTokenStore
 
 class MainActivity : ComponentActivity() {
+    private val codeAuthFlowFactory = AndroidCodeAuthFlowFactory(useWebView = false)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        codeAuthFlowFactory.registerActivity(this)
 
         setContent {
-            App()
+            App(
+                apiBaseUrl = ApiBaseUrl(BuildConfig.BASE_URL),
+                oidcConfig = OidcConfig(
+                    discoveryUri = BuildConfig.OIDC_DISCOVERY_URI,
+                    clientId = BuildConfig.OIDC_CLIENT_ID,
+                    scope = BuildConfig.OIDC_SCOPE,
+                    redirectUri = "cookmaid://callback",
+                    postLogoutRedirectUri = "cookmaid://callback",
+                ),
+                codeAuthFlowFactory = codeAuthFlowFactory,
+                tokenStore = SettingsTokenStore(SharedPreferencesSettingsStore(this)),
+            )
         }
     }
 }
@@ -21,5 +39,5 @@ class MainActivity : ComponentActivity() {
 @Preview
 @Composable
 fun AppAndroidPreview() {
-    App()
+    // Preview without auth
 }
