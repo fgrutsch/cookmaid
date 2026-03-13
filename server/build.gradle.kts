@@ -19,6 +19,10 @@ application {
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
 }
 
+tasks.test {
+    useJUnitPlatform()
+}
+
 dependencies {
     implementation(projects.shared)
     runtimeOnly(libs.logback)
@@ -30,7 +34,11 @@ dependencies {
     implementation(libs.bundles.exposed)
     implementation(libs.bundles.flyway)
     runtimeOnly(libs.postgresql)
-    testImplementation(libs.ktor.serverTestHost)
-    testImplementation(libs.kotlin.testJunit)
+    testImplementation(libs.kotlin.testJunit5)
+    testImplementation(libs.junit5)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.bundles.ktor.server.test)
+    testImplementation(libs.bundles.koin.test)
     testImplementation(libs.testcontainers.postgresql)
+    testImplementation(libs.nimbus.jose.jwt)
 }
