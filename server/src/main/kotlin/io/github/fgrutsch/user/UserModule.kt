@@ -10,17 +10,17 @@ import org.koin.dsl.module
 import org.koin.ktor.ext.inject
 
 val userModule = module {
-    single<UserRepository> { InMemoryUserRepository() }
+    single<UserRepository> { PostgresUserRepository() }
+    single { UserService(get()) }
 }
 
 fun Route.userRoutes() {
-    val repository by inject<UserRepository>()
+    val service by inject<UserService>()
 
     route("/users") {
         post("/me") {
             val principal = call.principal<JWTPrincipal>()!!
-            val sub = principal.payload.subject
-            val user = repository.findOrCreate(oidcSubject = sub)
+            val user = service.getOrCreate(oidcSubject = principal.payload.subject)
             call.respond(user)
         }
     }

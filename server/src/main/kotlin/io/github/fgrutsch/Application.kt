@@ -2,6 +2,7 @@ package io.github.fgrutsch
 
 import io.github.fgrutsch.auth.AUTH_JWT
 import io.github.fgrutsch.auth.configureAuth
+import io.github.fgrutsch.db.databaseModule
 import io.github.fgrutsch.user.userModule
 import io.github.fgrutsch.user.userRoutes
 import io.ktor.serialization.kotlinx.json.*
@@ -31,6 +32,7 @@ private fun Application.configureDI() {
         slf4jLogger()
         modules(
             module { single<ApplicationConfig> { environment.config } },
+            databaseModule,
             userModule,
         )
     }
