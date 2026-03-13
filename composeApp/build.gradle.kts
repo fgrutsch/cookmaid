@@ -12,6 +12,7 @@ plugins {
 kotlin {
     compilerOptions {
         optIn.add("androidx.compose.material3.ExperimentalMaterial3Api")
+        optIn.add("org.publicvalue.multiplatform.oidc.ExperimentalOpenIdConnect")
     }
 
     androidTarget {
@@ -53,6 +54,10 @@ kotlin {
             implementation(libs.lifecycle.viewmodel.navigation3)
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
+            implementation(libs.bundles.oidc)
+            implementation(libs.bundles.ktor.client)
+            implementation(libs.coil.compose)
+            implementation(libs.coil.network.ktor3)
             implementation(projects.shared)
         }
         commonTest.dependencies {
@@ -65,12 +70,33 @@ android {
     namespace = "io.github.fgrutsch"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
+    buildFeatures {
+        buildConfig = true
+    }
     defaultConfig {
         applicationId = "io.github.fgrutsch"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
         versionName = "1.0"
+        addManifestPlaceholders(mapOf("oidcRedirectScheme" to "cookmaid"))
+    }
+    flavorDimensions += "environment"
+    productFlavors {
+        create("dev") {
+            dimension = "environment"
+            buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:8081\"")
+            buildConfigField("String", "OIDC_DISCOVERY_URI", "\"http://10.0.2.2:1411/.well-known/openid-configuration\"")
+            buildConfigField("String", "OIDC_CLIENT_ID", "\"\"")
+            buildConfigField("String", "OIDC_SCOPE", "\"openid profile email offline_access\"")
+        }
+        create("prod") {
+            dimension = "environment"
+            buildConfigField("String", "BASE_URL", "\"https://api.cookmaid.io\"")
+            buildConfigField("String", "OIDC_DISCOVERY_URI", "\"\"")
+            buildConfigField("String", "OIDC_CLIENT_ID", "\"\"")
+            buildConfigField("String", "OIDC_SCOPE", "\"openid profile email offline_access\"")
+        }
     }
     packaging {
         resources {

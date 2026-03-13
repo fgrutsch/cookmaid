@@ -141,7 +141,7 @@ sealed interface MealPlanItem {
 - Later: auto dark mode, and store in user settings (api)
 
 ## Auth
-- Later: login screen, with OIDC authentication.
+- login screen, with OIDC authentication.
   - use: https://github.com/kalinjul/kotlin-multiplatform-oidc
   - create some user entity upon first login and store user specific data (e.g. shopping lists, recipes, meal plans) linked to that user
 

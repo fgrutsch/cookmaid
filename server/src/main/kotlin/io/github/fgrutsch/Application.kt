@@ -1,20 +1,51 @@
 package io.github.fgrutsch
 
+import io.github.fgrutsch.auth.AUTH_JWT
+import io.github.fgrutsch.auth.configureAuth
+import io.github.fgrutsch.user.userModule
+import io.github.fgrutsch.user.userRoutes
+import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
-import io.ktor.server.engine.*
+import io.ktor.server.auth.*
+import io.ktor.server.config.*
 import io.ktor.server.netty.*
-import io.ktor.server.response.*
+import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.routing.*
+import org.koin.dsl.module
+import org.koin.ktor.plugin.Koin
+import org.koin.logger.slf4jLogger
 
-fun main() {
-    embeddedServer(Netty, port = SERVER_PORT, host = "0.0.0.0", module = Application::module)
-        .start(wait = true)
+fun main(args: Array<String>) {
+    EngineMain.main(args)
 }
 
 fun Application.module() {
+    configureDI()
+    configureAuth()
+    configureHttp()
+    configureRouting()
+}
+
+private fun Application.configureDI() {
+    install(Koin) {
+        slf4jLogger()
+        modules(
+            module { single<ApplicationConfig> { environment.config } },
+            userModule,
+        )
+    }
+}
+
+private fun Application.configureHttp() {
+    install(ContentNegotiation) { json() }
+}
+
+private fun Application.configureRouting() {
     routing {
-        get("/") {
-            call.respondText("Cookmaid API v1")
+        route("/api") {
+            authenticate(AUTH_JWT) {
+                userRoutes()
+            }
         }
     }
 }
