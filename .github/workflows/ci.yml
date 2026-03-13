@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  server:
+    name: Server
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: jdx/mise-action@v2
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Build
+        run: ./gradlew :server:build
+
+      - name: Test
+        run: ./gradlew :server:test
+
+  shared:
+    name: Shared
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: jdx/mise-action@v2
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Test
+        run: ./gradlew :shared:allTests
+
+  android:
+    name: Android
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: jdx/mise-action@v2
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Build
+        run: ./gradlew :composeApp:assembleDebug
+
+  web:
+    name: Web
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: jdx/mise-action@v2
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Build WasmJS
+        run: ./gradlew :composeApp:compileKotlinWasmJs
