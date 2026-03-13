@@ -7,6 +7,12 @@ plugins {
 
 group = "io.github.fgrutsch"
 version = "1.0.0"
+
+kotlin {
+    compilerOptions {
+        optIn.add("kotlin.uuid.ExperimentalUuidApi")
+    }
+}
 application {
     mainClass.set("io.github.fgrutsch.ApplicationKt")
     val isDevelopment: Boolean = project.ext.has("development")
@@ -21,6 +27,9 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.koin.ktor)
     implementation(libs.koin.logger.slf4j)
+    implementation(libs.bundles.exposed)
+    implementation(libs.bundles.flyway)
+    runtimeOnly(libs.postgresql)
     testImplementation(libs.ktor.serverTestHost)
     testImplementation(libs.kotlin.testJunit)
 }

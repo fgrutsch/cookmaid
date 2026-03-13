@@ -6,6 +6,11 @@ ktor:
     modules:
       - io.github.fgrutsch.ApplicationKt.module
 
+database:
+  url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/cookmaid}
+  user: ${DATABASE_USER:cookmaid}
+  password: ${DATABASE_PASSWORD:cookmaid}
+
 oidc:
   issuer: ${OIDC_ISSUER:http://idp.localhost}
   jwks-url: ${OIDC_JWKS_URL:http://localhost:1411/.well-known/jwks.json}

@@ -24,7 +24,10 @@ logback = "1.5.32"
 material3 = "1.10.0-alpha05"
 materialkolor = "4.1.1"
 navigation3 = "1.0.0-alpha06"
+exposed = "1.1.1"
+flyway = "12.1.0"
 oidc = "0.16.5"
+postgresql = "42.7.10"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -69,11 +72,18 @@ ktor-serializationJsonMultiplatform = { module = "io.ktor:ktor-serialization-kot
 lifecycle-viewmodel-navigation3 = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "lifecycle-viewmodel-nav3" }
 materialkolor = { module = "com.materialkolor:material-kolor", version.ref = "materialkolor" }
 navigation3-ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "navigation3" }
+exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "exposed" }
+exposed-jdbc = { module = "org.jetbrains.exposed:exposed-jdbc", version.ref = "exposed" }
+flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
+flyway-postgresql = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
+postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
 oidc-appsupport = { module = "io.github.kalinjul.kotlin.multiplatform:oidc-appsupport", version.ref = "oidc" }
 oidc-ktor = { module = "io.github.kalinjul.kotlin.multiplatform:oidc-ktor", version.ref = "oidc" }
 oidc-tokenstore = { module = "io.github.kalinjul.kotlin.multiplatform:oidc-tokenstore", version.ref = "oidc" }
 
 [bundles]
+exposed = ["exposed-core", "exposed-jdbc"]
+flyway = ["flyway-core", "flyway-postgresql"]
 oidc = ["oidc-appsupport", "oidc-ktor", "oidc-tokenstore"]
 ktor-server = ["ktor-serverCore", "ktor-serverNetty", "ktor-serverAuthJwt", "ktor-serverConfigYaml", "ktor-serverContentNegotiation", "ktor-serializationJson"]
 ktor-client = ["ktor-clientCore", "ktor-clientContentNegotiation", "ktor-clientAuth", "ktor-serializationJsonMultiplatform"]

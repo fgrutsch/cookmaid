@@ -12,9 +12,6 @@ import kotlin.js.ExperimentalWasmJsInterop
 import kotlin.js.js
 
 @OptIn(ExperimentalWasmJsInterop::class)
-private val currentPath: String = js("window.location.pathname")
-
-@OptIn(ExperimentalWasmJsInterop::class)
 private val oidcDiscoveryUri: String = js("window.__CONFIG__.OIDC_DISCOVERY_URI")
 
 @OptIn(ExperimentalWasmJsInterop::class)
@@ -25,7 +22,7 @@ private val oidcScope: String = js("window.__CONFIG__.OIDC_SCOPE")
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
-    if (currentPath.startsWith("/callback")) {
+    if (window.location.pathname.startsWith("/callback")) {
         PlatformCodeAuthFlow.handleRedirect()
     } else {
         val origin = window.location.origin
