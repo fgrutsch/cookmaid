@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Build server
+        run: ./gradlew :server:build
+
+      - name: Build shared
+        run: ./gradlew :shared:build
+
+      - name: Build compose app
+        run: ./gradlew :composeApp:compileKotlinWasmJs :composeApp:compileKotlinJs
+
+      - name: Run tests
+        run: ./gradlew test
