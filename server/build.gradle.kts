@@ -32,4 +32,5 @@ dependencies {
     runtimeOnly(libs.postgresql)
     testImplementation(libs.ktor.serverTestHost)
     testImplementation(libs.kotlin.testJunit)
+    testImplementation(libs.testcontainers.postgresql)
 }
