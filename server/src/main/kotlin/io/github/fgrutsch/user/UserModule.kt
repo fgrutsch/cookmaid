@@ -11,7 +11,7 @@ import org.koin.ktor.ext.inject
 
 val userModule = module {
     single<UserRepository> { PostgresUserRepository() }
-    single { UserService(get()) }
+    single { UserService(get(), get()) }
 }
 
 fun Route.userRoutes() {

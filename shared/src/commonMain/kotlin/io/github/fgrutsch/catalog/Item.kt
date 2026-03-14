@@ -1,16 +1,17 @@
 package io.github.fgrutsch.catalog
 
 import kotlinx.serialization.Serializable
+import kotlin.uuid.Uuid
 
 @Serializable
 sealed interface Item {
     val name: String
 
     @Serializable
-    data class CategorizedItem(
-        val id: String,
+    data class CatalogItem(
+        val id: Uuid,
         override val name: String,
-        val category: String,
+        val category: ItemCategory,
     ) : Item
 
     @Serializable

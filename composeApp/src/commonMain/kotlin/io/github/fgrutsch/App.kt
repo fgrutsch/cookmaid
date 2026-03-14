@@ -161,7 +161,7 @@ private fun MainContent(settingsViewModel: SettingsViewModel, authViewModel: Aut
                             AddRecipeViewModel(
                                 recipeRepository = koin.get(),
                                 tagRepository = koin.get(),
-                                catalogRepository = koin.get(),
+                                catalogItemRepository = koin.get(),
                                 editRecipeId = key.id,
                             )
                         },

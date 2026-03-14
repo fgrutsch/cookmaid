@@ -29,6 +29,28 @@ An app for managing shopping lists, recipes and meal planning.
 - Load item categories and catalog from a global repository (not user specific, seeded with defaults, no user management yet)
 - deleting checked items from the shopping list (use a dedicated button/option next to the "Checked" header)
 
+### API
+
+- `GET /api/shopping-lists`
+- `GET /api/shopping-lists/{id}/items`
+- `POST /api/shopping-lists` (body: name, default)
+- `PUT /api/shopping-lists/{id}` (body: name, default)
+- `DELETE /api/shopping-lists/{id}`
+- `POST /api/shopping-lists/{id}/items` (body: item id or free text, quantity)
+- `PUT /api/shopping-lists/{listId}/items/{itemId}` (body: quantity, checked)
+- `DELETE /api/shopping-lists/{listId}/items/{itemId}`
+- `DELETE /api/shopping-lists/{listId}/items?checked=true` (delete all checked items)
+
+Request models:
+- use request models separate from the UI models (if needed)
+- share them between the server and client code (e.g. .shopping.api vs shopping.model packages)
+
+Flow:
+- when navigating first time to the shopping list tab then load all lists (select the default one)
+- Load items for the selected list
+- ensure to use a spinner loading state (don't use init {} for loading, make it compose firendly and allow to reload on demand, e.g. via pull to refresh)
+
+
 Take the below model as a reference.
 
 ```kotlin
@@ -43,10 +65,10 @@ sealed interface Item {
     val name: String
 
     // Globally managed and stored in a repository (not user specific)
-    data class CategorizedItem(
+    data class CatalogItem(
         val id: Uuid,
         override val name: String,
-        val category: Uuid
+        val category: ItemCategory
     ) : Item
 
 
@@ -68,7 +90,6 @@ data class ShoppingItem(
 data class ShoppingList(
     val id: Uuid,
     val name: String,
-    val items: List<ShoppingItem>,
     val default: Boolean
 )
 ```
@@ -137,8 +158,8 @@ sealed interface MealPlanItem {
 
 ## Settings
 
-- Later: allow to logout and return to login screen
-- Later: auto dark mode, and store in user settings (api)
+- allow to logout and return to login screen
+- Later: auto dark mode, and store in user settings (api or device storage?)
 
 ## Auth
 - login screen, with OIDC authentication.
@@ -149,7 +170,7 @@ sealed interface MealPlanItem {
 
 - ensure non null fields are validated on UI
 - Later: i18n, fetch strings via api. allow to change via settings
-- Later: loading via API can take time, ensure to show loading states (e.g. skeletons) and handle errors gracefully (e.g. show error message and retry option)
+- loading via API can take time, ensure to show loading states (e.g. skeletons) and handle errors gracefully (e.g. show error message and retry option)
 
 ## Server
 

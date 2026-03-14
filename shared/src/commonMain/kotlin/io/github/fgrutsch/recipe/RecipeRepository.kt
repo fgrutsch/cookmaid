@@ -1,13 +1,12 @@
 package io.github.fgrutsch.recipe
 
-import io.github.fgrutsch.catalog.DefaultCategoryIds
 import io.github.fgrutsch.catalog.Item
+import io.github.fgrutsch.catalog.ItemCategory
 import kotlinx.coroutines.flow.MutableStateFlow
 
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 interface RecipeRepository {
@@ -39,6 +38,9 @@ class InMemoryRecipeRepository : RecipeRepository {
     }
 }
 
+private fun ci(name: String, categoryName: String) = Item.CatalogItem(
+    id = Uuid.random(), name = name, category = ItemCategory(id = Uuid.random(), name = categoryName),
+)
 private fun ri(item: Item, quantity: Float? = null) = RecipeIngredient(item, quantity)
 
 private fun defaultRecipes(): List<Recipe> = listOf(
@@ -46,10 +48,10 @@ private fun defaultRecipes(): List<Recipe> = listOf(
         id = "recipe-pasta",
         name = "Spaghetti Bolognese",
         ingredients = listOf(
-            ri(Item.CategorizedItem(id = "item-ground-beef", name = "Ground Beef", category = DefaultCategoryIds.MEAT), 500f),
-            ri(Item.CategorizedItem(id = "item-tomatoes", name = "Tomatoes", category = DefaultCategoryIds.VEGETABLES), 400f),
-            ri(Item.CategorizedItem(id = "item-onions", name = "Onions", category = DefaultCategoryIds.VEGETABLES), 2f),
-            ri(Item.CategorizedItem(id = "item-olive-oil", name = "Olive Oil", category = DefaultCategoryIds.OTHER)),
+            ri(ci("Ground Beef", "Meat"), 500f),
+            ri(ci("Tomatoes", "Vegetables"), 400f),
+            ri(ci("Onions", "Vegetables"), 2f),
+            ri(ci("Olive Oil", "Oils & Vinegars")),
             ri(Item.FreeTextItem(name = "Spaghetti"), 500f),
             ri(Item.FreeTextItem(name = "Garlic"), 3f),
         ),
@@ -67,10 +69,10 @@ private fun defaultRecipes(): List<Recipe> = listOf(
         name = "Caesar Salad",
         ingredients = listOf(
             ri(Item.FreeTextItem(name = "Romaine lettuce"), 1f),
-            ri(Item.CategorizedItem(id = "item-cheese", name = "Cheese", category = DefaultCategoryIds.DAIRY), 50f),
-            ri(Item.CategorizedItem(id = "item-bread", name = "Bread", category = DefaultCategoryIds.BAKERY), 2f),
-            ri(Item.CategorizedItem(id = "item-olive-oil", name = "Olive Oil", category = DefaultCategoryIds.OTHER)),
-            ri(Item.CategorizedItem(id = "item-lemons", name = "Lemons", category = DefaultCategoryIds.FRUITS), 1f),
+            ri(ci("Cheese", "Dairy"), 50f),
+            ri(ci("Bread", "Bakery"), 2f),
+            ri(ci("Olive Oil", "Oils & Vinegars")),
+            ri(ci("Lemons", "Fruits"), 1f),
         ),
         steps = listOf(
             "Wash and chop romaine lettuce",
@@ -84,10 +86,10 @@ private fun defaultRecipes(): List<Recipe> = listOf(
         id = "recipe-omelette",
         name = "Cheese Omelette",
         ingredients = listOf(
-            ri(Item.CategorizedItem(id = "item-eggs", name = "Eggs", category = DefaultCategoryIds.DAIRY), 3f),
-            ri(Item.CategorizedItem(id = "item-cheese", name = "Cheese", category = DefaultCategoryIds.DAIRY), 50f),
-            ri(Item.CategorizedItem(id = "item-butter", name = "Butter", category = DefaultCategoryIds.DAIRY), 1f),
-            ri(Item.CategorizedItem(id = "item-salt", name = "Salt", category = DefaultCategoryIds.OTHER)),
+            ri(ci("Eggs", "Dairy"), 3f),
+            ri(ci("Cheese", "Dairy"), 50f),
+            ri(ci("Butter", "Dairy"), 1f),
+            ri(ci("Salt", "Spices & Herbs")),
         ),
         steps = listOf(
             "Beat eggs with a pinch of salt",
@@ -103,8 +105,8 @@ private fun defaultRecipes(): List<Recipe> = listOf(
         ingredients = listOf(
             ri(Item.FreeTextItem(name = "Spaghetti"), 400f),
             ri(Item.FreeTextItem(name = "Pancetta"), 150f),
-            ri(Item.CategorizedItem(id = "item-eggs", name = "Eggs", category = DefaultCategoryIds.DAIRY), 4f),
-            ri(Item.CategorizedItem(id = "item-cheese", name = "Cheese", category = DefaultCategoryIds.DAIRY), 100f),
+            ri(ci("Eggs", "Dairy"), 4f),
+            ri(ci("Cheese", "Dairy"), 100f),
             ri(Item.FreeTextItem(name = "Black pepper")),
         ),
         steps = listOf(
@@ -119,11 +121,11 @@ private fun defaultRecipes(): List<Recipe> = listOf(
         id = "recipe-pancakes",
         name = "Fluffy Pancakes",
         ingredients = listOf(
-            ri(Item.CategorizedItem(id = "item-flour", name = "Flour", category = DefaultCategoryIds.BAKERY), 200f),
-            ri(Item.CategorizedItem(id = "item-eggs", name = "Eggs", category = DefaultCategoryIds.DAIRY), 2f),
-            ri(Item.CategorizedItem(id = "item-milk", name = "Milk", category = DefaultCategoryIds.DAIRY), 250f),
-            ri(Item.CategorizedItem(id = "item-butter", name = "Butter", category = DefaultCategoryIds.DAIRY), 30f),
-            ri(Item.CategorizedItem(id = "item-sugar", name = "Sugar", category = DefaultCategoryIds.OTHER), 2f),
+            ri(ci("Flour", "Baking"), 200f),
+            ri(ci("Eggs", "Dairy"), 2f),
+            ri(ci("Milk", "Dairy"), 250f),
+            ri(ci("Butter", "Dairy"), 30f),
+            ri(ci("Sugar", "Baking"), 2f),
         ),
         steps = listOf(
             "Mix flour, sugar and a pinch of salt",
@@ -137,10 +139,10 @@ private fun defaultRecipes(): List<Recipe> = listOf(
         id = "recipe-stir-fry",
         name = "Chicken Stir Fry",
         ingredients = listOf(
-            ri(Item.CategorizedItem(id = "item-chicken", name = "Chicken", category = DefaultCategoryIds.MEAT), 400f),
-            ri(Item.CategorizedItem(id = "item-carrots", name = "Carrots", category = DefaultCategoryIds.VEGETABLES), 2f),
-            ri(Item.CategorizedItem(id = "item-onions", name = "Onions", category = DefaultCategoryIds.VEGETABLES), 1f),
-            ri(Item.CategorizedItem(id = "item-olive-oil", name = "Olive Oil", category = DefaultCategoryIds.OTHER)),
+            ri(ci("Chicken", "Meat"), 400f),
+            ri(ci("Carrots", "Vegetables"), 2f),
+            ri(ci("Onions", "Vegetables"), 1f),
+            ri(ci("Olive Oil", "Oils & Vinegars")),
             ri(Item.FreeTextItem(name = "Soy sauce"), 3f),
             ri(Item.FreeTextItem(name = "Rice"), 300f),
         ),
@@ -157,10 +159,10 @@ private fun defaultRecipes(): List<Recipe> = listOf(
         id = "recipe-greek-salad",
         name = "Greek Salad",
         ingredients = listOf(
-            ri(Item.CategorizedItem(id = "item-tomatoes", name = "Tomatoes", category = DefaultCategoryIds.VEGETABLES), 3f),
-            ri(Item.CategorizedItem(id = "item-onions", name = "Onions", category = DefaultCategoryIds.VEGETABLES), 1f),
-            ri(Item.CategorizedItem(id = "item-cheese", name = "Cheese", category = DefaultCategoryIds.DAIRY), 200f),
-            ri(Item.CategorizedItem(id = "item-olive-oil", name = "Olive Oil", category = DefaultCategoryIds.OTHER)),
+            ri(ci("Tomatoes", "Vegetables"), 3f),
+            ri(ci("Onions", "Vegetables"), 1f),
+            ri(ci("Cheese", "Dairy"), 200f),
+            ri(ci("Olive Oil", "Oils & Vinegars")),
             ri(Item.FreeTextItem(name = "Cucumber"), 1f),
             ri(Item.FreeTextItem(name = "Olives"), 100f),
         ),
@@ -176,12 +178,12 @@ private fun defaultRecipes(): List<Recipe> = listOf(
         name = "Pad Thai",
         ingredients = listOf(
             ri(Item.FreeTextItem(name = "Rice noodles"), 250f),
-            ri(Item.CategorizedItem(id = "item-chicken", name = "Chicken", category = DefaultCategoryIds.MEAT), 300f),
-            ri(Item.CategorizedItem(id = "item-eggs", name = "Eggs", category = DefaultCategoryIds.DAIRY), 2f),
+            ri(ci("Chicken", "Meat"), 300f),
+            ri(ci("Eggs", "Dairy"), 2f),
             ri(Item.FreeTextItem(name = "Bean sprouts"), 100f),
             ri(Item.FreeTextItem(name = "Peanuts"), 50f),
             ri(Item.FreeTextItem(name = "Fish sauce"), 3f),
-            ri(Item.CategorizedItem(id = "item-lemons", name = "Lemons", category = DefaultCategoryIds.FRUITS), 1f),
+            ri(ci("Lemons", "Fruits"), 1f),
         ),
         steps = listOf(
             "Soak rice noodles in warm water until soft",
@@ -196,8 +198,8 @@ private fun defaultRecipes(): List<Recipe> = listOf(
         id = "recipe-banana-smoothie",
         name = "Banana Smoothie",
         ingredients = listOf(
-            ri(Item.CategorizedItem(id = "item-bananas", name = "Bananas", category = DefaultCategoryIds.FRUITS), 2f),
-            ri(Item.CategorizedItem(id = "item-milk", name = "Milk", category = DefaultCategoryIds.DAIRY), 250f),
+            ri(ci("Bananas", "Fruits"), 2f),
+            ri(ci("Milk", "Dairy"), 250f),
             ri(Item.FreeTextItem(name = "Honey"), 1f),
             ri(Item.FreeTextItem(name = "Ice cubes")),
         ),
@@ -212,9 +214,9 @@ private fun defaultRecipes(): List<Recipe> = listOf(
         name = "Veggie Wrap",
         ingredients = listOf(
             ri(Item.FreeTextItem(name = "Tortilla"), 2f),
-            ri(Item.CategorizedItem(id = "item-tomatoes", name = "Tomatoes", category = DefaultCategoryIds.VEGETABLES), 2f),
-            ri(Item.CategorizedItem(id = "item-carrots", name = "Carrots", category = DefaultCategoryIds.VEGETABLES), 1f),
-            ri(Item.CategorizedItem(id = "item-cheese", name = "Cheese", category = DefaultCategoryIds.DAIRY), 50f),
+            ri(ci("Tomatoes", "Vegetables"), 2f),
+            ri(ci("Carrots", "Vegetables"), 1f),
+            ri(ci("Cheese", "Dairy"), 50f),
             ri(Item.FreeTextItem(name = "Lettuce"), 1f),
             ri(Item.FreeTextItem(name = "Hummus"), 100f),
         ),

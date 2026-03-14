@@ -2,8 +2,8 @@ package io.github.fgrutsch.ui.recipe
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import io.github.fgrutsch.catalog.CatalogRepository
 import io.github.fgrutsch.catalog.Item
+import io.github.fgrutsch.ui.catalog.CatalogItemRepository
 import io.github.fgrutsch.recipe.Recipe
 import io.github.fgrutsch.recipe.RecipeIngredient
 import io.github.fgrutsch.recipe.RecipeRepository
@@ -27,7 +27,7 @@ import kotlin.uuid.Uuid
 class AddRecipeViewModel(
     private val recipeRepository: RecipeRepository,
     private val tagRepository: TagRepository,
-    private val catalogRepository: CatalogRepository,
+    private val catalogItemRepository: CatalogItemRepository,
     private val editRecipeId: String? = null,
 ) : ViewModel() {
 
@@ -56,10 +56,10 @@ class AddRecipeViewModel(
     private val _ingredientQuery = MutableStateFlow("")
     val ingredientQuery: StateFlow<String> = _ingredientQuery.asStateFlow()
 
-    val ingredientSuggestions: StateFlow<List<Item.CategorizedItem>> = _ingredientQuery
+    val ingredientSuggestions: StateFlow<List<Item.CatalogItem>> = _ingredientQuery
         .debounce(150)
         .flatMapLatest { query ->
-            flow { emit(catalogRepository.search(query)) }
+            flow { emit(catalogItemRepository.search(query)) }
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 

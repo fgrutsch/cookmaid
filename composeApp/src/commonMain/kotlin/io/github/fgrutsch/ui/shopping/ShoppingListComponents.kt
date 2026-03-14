@@ -19,10 +19,10 @@ import io.github.fgrutsch.shopping.ShoppingItem
 @Composable
 internal fun AddItemField(
     query: String,
-    suggestions: List<Item.CategorizedItem>,
+    suggestions: List<Item.CatalogItem>,
     onQueryChange: (String) -> Unit,
     onAddFreeText: () -> Unit,
-    onAddCatalogItem: (Item.CategorizedItem) -> Unit,
+    onAddCatalogItem: (Item.CatalogItem) -> Unit,
 ) {
     val showSuggestions = suggestions.isNotEmpty() && query.isNotEmpty()
 

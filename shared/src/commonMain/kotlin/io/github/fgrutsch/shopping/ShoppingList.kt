@@ -1,11 +1,11 @@
 package io.github.fgrutsch.shopping
 
 import kotlinx.serialization.Serializable
+import kotlin.uuid.Uuid
 
 @Serializable
 data class ShoppingList(
-    val id: String,
+    val id: Uuid,
     val name: String,
-    val items: List<ShoppingItem> = emptyList(),
     val default: Boolean = false,
 )
