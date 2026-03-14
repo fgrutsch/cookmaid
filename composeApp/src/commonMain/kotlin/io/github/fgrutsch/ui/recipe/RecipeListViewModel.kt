@@ -7,7 +7,7 @@ import io.github.fgrutsch.recipe.Recipe
 import io.github.fgrutsch.recipe.RecipeIngredient
 import io.github.fgrutsch.recipe.RecipeRepository
 import io.github.fgrutsch.recipe.TagRepository
-import io.github.fgrutsch.shopping.ShoppingListRepository
+import io.github.fgrutsch.ui.shopping.ShoppingListRepository
 import io.github.fgrutsch.ui.common.addIngredientsToDefaultShoppingList
 import io.github.fgrutsch.ui.common.addRecipeToMealPlan
 import io.github.fgrutsch.ui.common.resolveMealPlanDayItems

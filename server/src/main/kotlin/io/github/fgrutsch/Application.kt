@@ -2,7 +2,11 @@ package io.github.fgrutsch
 
 import io.github.fgrutsch.auth.AUTH_JWT
 import io.github.fgrutsch.auth.configureAuth
+import io.github.fgrutsch.catalog.catalogModule
+import io.github.fgrutsch.catalog.catalogRoutes
 import io.github.fgrutsch.db.databaseModule
+import io.github.fgrutsch.shopping.shoppingModule
+import io.github.fgrutsch.shopping.shoppingRoutes
 import io.github.fgrutsch.user.userModule
 import io.github.fgrutsch.user.userRoutes
 import io.ktor.serialization.kotlinx.json.*
@@ -34,6 +38,8 @@ private fun Application.configureDI() {
             module { single<ApplicationConfig> { environment.config } },
             databaseModule,
             userModule,
+            catalogModule,
+            shoppingModule,
         )
     }
 }
@@ -47,6 +53,8 @@ private fun Application.configureRouting() {
         route("/api") {
             authenticate(AUTH_JWT) {
                 userRoutes()
+                catalogRoutes()
+                shoppingRoutes()
             }
         }
     }

@@ -1,6 +1,10 @@
 package io.github.fgrutsch.support
 
+import io.github.fgrutsch.catalog.catalogModule
 import io.github.fgrutsch.db.databaseModule
+import io.github.fgrutsch.shopping.ShoppingItemsTable
+import io.github.fgrutsch.shopping.ShoppingListsTable
+import io.github.fgrutsch.shopping.shoppingModule
 import io.github.fgrutsch.user.UsersTable
 import io.github.fgrutsch.user.userModule
 import io.ktor.server.config.ApplicationConfig
@@ -24,12 +28,18 @@ abstract class BaseTest : KoinTest {
             module { single<ApplicationConfig> { testConfig } },
             databaseModule,
             userModule,
+            catalogModule,
+            shoppingModule,
         )
     }
 
     @BeforeEach
     fun cleanDatabase() {
         val db = getKoin().get<Database>()
-        transaction(db) { UsersTable.deleteAll() }
+        transaction(db) {
+            ShoppingItemsTable.deleteAll()
+            ShoppingListsTable.deleteAll()
+            UsersTable.deleteAll()
+        }
     }
 }

@@ -1,22 +1,18 @@
 package io.github.fgrutsch.ui.common
 
+import io.github.fgrutsch.catalog.Item
 import io.github.fgrutsch.recipe.RecipeIngredient
-import io.github.fgrutsch.shopping.ShoppingItem
-import io.github.fgrutsch.shopping.ShoppingListRepository
-import kotlin.uuid.ExperimentalUuidApi
-import kotlin.uuid.Uuid
+import io.github.fgrutsch.ui.shopping.ShoppingListRepository
 
-@OptIn(ExperimentalUuidApi::class)
 suspend fun addIngredientsToDefaultShoppingList(
     shoppingListRepository: ShoppingListRepository,
     ingredients: List<RecipeIngredient>,
 ) {
-    val lists = shoppingListRepository.lists.value
+    val lists = shoppingListRepository.cachedLists
     val targetListId = lists.find { it.default }?.id ?: lists.firstOrNull()?.id ?: return
     ingredients.forEach { ingredient ->
-        shoppingListRepository.addItem(
-            targetListId,
-            ShoppingItem(id = Uuid.random().toString(), item = ingredient.item, quantity = ingredient.quantity),
-        )
+        val catalogItemId = (ingredient.item as? Item.CatalogItem)?.id
+        val freeTextName = (ingredient.item as? Item.FreeTextItem)?.name
+        shoppingListRepository.addItem(targetListId, catalogItemId, freeTextName, ingredient.quantity)
     }
 }

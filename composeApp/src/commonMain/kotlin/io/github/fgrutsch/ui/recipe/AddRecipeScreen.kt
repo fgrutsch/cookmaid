@@ -255,11 +255,11 @@ private fun IngredientRow(
 private fun IngredientAddField(
     query: String,
     quantityInput: String,
-    suggestions: List<Item.CategorizedItem>,
+    suggestions: List<Item.CatalogItem>,
     onQueryChange: (String) -> Unit,
     onQuantityChange: (String) -> Unit,
     onAddFreeText: () -> Unit,
-    onAddCatalogItem: (Item.CategorizedItem) -> Unit,
+    onAddCatalogItem: (Item.CatalogItem) -> Unit,
 ) {
     val showSuggestions = suggestions.isNotEmpty() && query.isNotEmpty()
 

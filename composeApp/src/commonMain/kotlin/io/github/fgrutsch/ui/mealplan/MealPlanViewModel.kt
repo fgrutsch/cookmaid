@@ -10,7 +10,7 @@ import io.github.fgrutsch.mealplan.mondayOfWeek
 import io.github.fgrutsch.recipe.Recipe
 import io.github.fgrutsch.recipe.RecipeIngredient
 import io.github.fgrutsch.recipe.RecipeRepository
-import io.github.fgrutsch.shopping.ShoppingListRepository
+import io.github.fgrutsch.ui.shopping.ShoppingListRepository
 import io.github.fgrutsch.ui.common.addIngredientsToDefaultShoppingList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
