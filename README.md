@@ -1,18 +1,23 @@
+![Cookmaid](docs/images/logo.png)
+
 # Cookmaid
 
 An app for managing shopping lists, recipes and meal planning.
 
 ## Tech Stack
 
-- Kotlin 2.3.0
-- Compose Multiplatform 1.10.0 (Android, JS, WasmJS)
-- Ktor 3.3.3 (Server)
-- Koin (Dependency Injection)
+- Kotlin 2.3.10
+- Compose Multiplatform 1.10.2 (Android, WasmJS)
+- Ktor 3.4.1 (Server)
+- Exposed 1.1.1 (Database ORM)
+- PostgreSQL (Database)
+- Flyway 12.1.0 (Migrations)
+- Koin 4.1.1 (Dependency Injection)
 
 ## Project Structure
 
-- **`shared/`** — Multiplatform library with business logic (Android, JVM, JS, WasmJS)
-- **`composeApp/`** — Compose Multiplatform UI (Android, JS, WasmJS)
+- **`shared/`** — Multiplatform library with business logic (Android, JVM, WasmJS)
+- **`composeApp/`** — Compose Multiplatform UI (Android, WasmJS)
 - **`server/`** — Ktor backend (JVM)
 
 ## Build & Run
@@ -20,9 +25,6 @@ An app for managing shopping lists, recipes and meal planning.
 ```shell
 # Run web app (Wasm)
 ./gradlew :composeApp:wasmJsBrowserDevelopmentRun
-
-# Run web app (JS)
-./gradlew :composeApp:jsBrowserDevelopmentRun
 
 # Build Android app
 ./gradlew :composeApp:assembleDebug

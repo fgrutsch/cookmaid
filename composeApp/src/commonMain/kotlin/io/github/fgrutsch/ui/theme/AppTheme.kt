@@ -5,7 +5,7 @@ import androidx.compose.ui.graphics.Color
 import com.materialkolor.DynamicMaterialTheme
 import com.materialkolor.PaletteStyle
 
-private val SeedColor = Color(0xFFBD4C00)
+private val SeedColor = Color(0xFF2D3E50)
 
 @Composable
 fun AppTheme(
@@ -14,8 +14,9 @@ fun AppTheme(
 ) {
     DynamicMaterialTheme(
         seedColor = SeedColor,
+//        primary = Color(0xFFDD7E34),
         isDark = isDark,
-        style = PaletteStyle.TonalSpot,
+        style = PaletteStyle.Fidelity,
         animate = true,
         content = content,
     )

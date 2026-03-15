@@ -2,11 +2,12 @@ package io.github.fgrutsch.ui.shopping
 
 import io.github.fgrutsch.shopping.ShoppingItem
 import io.github.fgrutsch.shopping.ShoppingList
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlin.uuid.Uuid
 
 interface ShoppingListRepository {
-    val cachedLists: List<ShoppingList>
-    suspend fun loadLists(): List<ShoppingList>
+    suspend fun getLists(refresh: Boolean = false): List<ShoppingList>
     suspend fun createList(name: String): ShoppingList
     suspend fun updateList(id: Uuid, name: String)
     suspend fun deleteList(id: Uuid)
@@ -21,30 +22,30 @@ class ApiShoppingListRepository(
     private val client: ShoppingListClient,
 ) : ShoppingListRepository {
 
-    private var _cachedLists: List<ShoppingList> = emptyList()
-    override val cachedLists: List<ShoppingList> get() = _cachedLists
+    private val mutex = Mutex()
+    private var cachedLists: List<ShoppingList> = emptyList()
 
-    override suspend fun loadLists(): List<ShoppingList> {
-        _cachedLists = client.fetchLists()
-        return _cachedLists
+    override suspend fun getLists(refresh: Boolean): List<ShoppingList> = mutex.withLock {
+        if (refresh || cachedLists.isEmpty()) cachedLists = client.fetchLists()
+        cachedLists
     }
 
-    override suspend fun createList(name: String): ShoppingList {
+    override suspend fun createList(name: String): ShoppingList = mutex.withLock {
         val list = client.createList(name)
-        _cachedLists = _cachedLists + list
-        return list
+        cachedLists = cachedLists + list
+        list
     }
 
-    override suspend fun updateList(id: Uuid, name: String) {
+    override suspend fun updateList(id: Uuid, name: String): Unit = mutex.withLock {
         client.updateList(id, name)
-        _cachedLists = _cachedLists.map {
+        cachedLists = cachedLists.map {
             if (it.id == id) it.copy(name = name.trim()) else it
         }
     }
 
-    override suspend fun deleteList(id: Uuid) {
+    override suspend fun deleteList(id: Uuid): Unit = mutex.withLock {
         client.deleteList(id)
-        _cachedLists = _cachedLists.filter { it.id != id }
+        cachedLists = cachedLists.filter { it.id != id }
     }
 
     override suspend fun loadItems(listId: Uuid): List<ShoppingItem> {

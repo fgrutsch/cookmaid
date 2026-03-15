@@ -46,22 +46,16 @@ import kotlin.uuid.Uuid
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
-    val lists by viewModel.lists.collectAsState()
-    val selectedListId by viewModel.selectedListId.collectAsState()
-    val searchQuery by viewModel.searchQuery.collectAsState()
-    val suggestions by viewModel.suggestions.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
+    val state by viewModel.state.collectAsState()
+    val onEvent = viewModel::onEvent
 
-    val listItems by viewModel.items.collectAsState()
-    val unchecked = listItems.filter { !it.checked }
-    val checked = listItems.filter { it.checked }
     var editingItem by remember { mutableStateOf<ShoppingItem?>(null) }
     var showNewListDialog by remember { mutableStateOf(false) }
     var editingList by remember { mutableStateOf<Pair<Uuid, String>?>(null) }
     var showMenu by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        viewModel.loadLists()
+        onEvent(ShoppingListEvent.LoadLists)
     }
 
     Scaffold(
@@ -87,7 +81,7 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
                                 showNewListDialog = true
                             },
                         )
-                        val currentList = lists.find { it.id == selectedListId }
+                        val currentList = state.selectedList
                         if (currentList != null) {
                             DropdownMenuItem(
                                 text = { Text("Rename list") },
@@ -96,12 +90,12 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
                                     editingList = currentList.id to currentList.name
                                 },
                             )
-                            if (!currentList.default && lists.size > 1) {
+                            if (!currentList.default && state.lists.size > 1) {
                                 DropdownMenuItem(
                                     text = { Text("Delete list") },
                                     onClick = {
                                         showMenu = false
-                                        viewModel.deleteList(currentList.id)
+                                        onEvent(ShoppingListEvent.DeleteList(currentList.id))
                                     },
                                 )
                             }
@@ -122,33 +116,33 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                lists.forEach { list ->
+                state.lists.forEach { list ->
                     FilterChip(
-                        selected = list.id == selectedListId,
-                        onClick = { viewModel.selectList(list.id) },
+                        selected = list.id == state.selectedListId,
+                        onClick = { onEvent(ShoppingListEvent.SelectList(list.id)) },
                         label = { Text(list.name) },
                     )
                 }
             }
 
             AddItemField(
-                query = searchQuery,
-                suggestions = suggestions,
-                onQueryChange = { viewModel.updateSearchQuery(it) },
+                query = state.searchQuery,
+                suggestions = state.suggestions,
+                onQueryChange = { onEvent(ShoppingListEvent.UpdateSearchQuery(it)) },
                 onAddFreeText = {
-                    if (searchQuery.isNotBlank()) {
-                        viewModel.addItem(Item.FreeTextItem(name = searchQuery.trim()))
+                    if (state.searchQuery.isNotBlank()) {
+                        onEvent(ShoppingListEvent.AddItem(Item.FreeTextItem(name = state.searchQuery.trim())))
                     }
                 },
-                onAddCatalogItem = { viewModel.addItem(it) },
+                onAddCatalogItem = { onEvent(ShoppingListEvent.AddItem(it)) },
             )
 
             PullToRefreshBox(
-                isRefreshing = isLoading,
-                onRefresh = { viewModel.loadLists() },
+                isRefreshing = state.isLoading,
+                onRefresh = { onEvent(ShoppingListEvent.LoadLists) },
                 modifier = Modifier.fillMaxSize(),
             ) {
-                if (!isLoading && listItems.isEmpty()) {
+                if (!state.isLoading && state.items.isEmpty()) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center,
@@ -164,7 +158,7 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
                     }
                 } else {
                     LazyColumn(modifier = Modifier.fillMaxSize()) {
-                        val grouped = unchecked.groupBy { item ->
+                        val grouped = state.uncheckedItems.groupBy { item ->
                             (item.item as? Item.CatalogItem)?.category?.name ?: "Uncategorized"
                         }.entries.sortedBy { entry -> entry.key }
 
@@ -179,18 +173,18 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
                             }
                             items(categoryItems, key = { it.id }) { shoppingItem ->
                                 SwipeToDeleteItem(
-                                    onDelete = { viewModel.deleteItem(shoppingItem.id) },
+                                    onDelete = { onEvent(ShoppingListEvent.DeleteItem(shoppingItem.id)) },
                                 ) {
                                     ShoppingItemRow(
                                         item = shoppingItem,
-                                        onToggle = { viewModel.toggleChecked(shoppingItem.id) },
+                                        onToggle = { onEvent(ShoppingListEvent.ToggleChecked(shoppingItem.id)) },
                                         onEdit = { editingItem = shoppingItem },
                                     )
                                 }
                             }
                         }
 
-                        if (checked.isNotEmpty()) {
+                        if (state.checkedItems.isNotEmpty()) {
                             item(key = "checked-divider") {
                                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
                             }
@@ -201,11 +195,11 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
                                     verticalAlignment = Alignment.CenterVertically,
                                 ) {
                                     Text(
-                                        text = "Checked (${checked.size})",
+                                        text = "Checked (${state.checkedItems.size})",
                                         style = MaterialTheme.typography.labelLarge,
                                         color = MaterialTheme.colorScheme.outline,
                                     )
-                                    IconButton(onClick = { viewModel.deleteChecked() }) {
+                                    IconButton(onClick = { onEvent(ShoppingListEvent.DeleteChecked) }) {
                                         Icon(
                                             Icons.Default.DeleteSweep,
                                             contentDescription = "Delete checked",
@@ -214,13 +208,13 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
                                     }
                                 }
                             }
-                            items(checked, key = { it.id }) { item ->
+                            items(state.checkedItems, key = { it.id }) { item ->
                                 SwipeToDeleteItem(
-                                    onDelete = { viewModel.deleteItem(item.id) },
+                                    onDelete = { onEvent(ShoppingListEvent.DeleteItem(item.id)) },
                                 ) {
                                     ShoppingItemRow(
                                         item = item,
-                                        onToggle = { viewModel.toggleChecked(item.id) },
+                                        onToggle = { onEvent(ShoppingListEvent.ToggleChecked(item.id)) },
                                         onEdit = { editingItem = item },
                                     )
                                 }
@@ -237,7 +231,7 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
             item = item,
             onDismiss = { editingItem = null },
             onSave = { updated ->
-                viewModel.updateItem(updated)
+                onEvent(ShoppingListEvent.UpdateItem(updated))
                 editingItem = null
             },
         )
@@ -249,7 +243,7 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
             initialName = "",
             onDismiss = { showNewListDialog = false },
             onConfirm = { name ->
-                viewModel.createList(name)
+                onEvent(ShoppingListEvent.CreateList(name))
                 showNewListDialog = false
             },
         )
@@ -261,7 +255,7 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
             initialName = listName,
             onDismiss = { editingList = null },
             onConfirm = { newName ->
-                viewModel.renameList(listId, newName)
+                onEvent(ShoppingListEvent.RenameList(listId, newName))
                 editingList = null
             },
         )
