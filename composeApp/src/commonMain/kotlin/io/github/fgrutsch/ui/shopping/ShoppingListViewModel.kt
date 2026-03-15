@@ -1,168 +1,167 @@
 package io.github.fgrutsch.ui.shopping
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import io.github.fgrutsch.catalog.Item
 import io.github.fgrutsch.shopping.ShoppingItem
-import io.github.fgrutsch.shopping.ShoppingList
 import io.github.fgrutsch.ui.catalog.CatalogItemRepository
+import androidx.lifecycle.viewModelScope
+import io.github.fgrutsch.ui.common.MviViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import kotlin.uuid.Uuid
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 class ShoppingListViewModel(
     private val repository: ShoppingListRepository,
     private val catalogItemRepository: CatalogItemRepository,
-) : ViewModel() {
+) : MviViewModel<ShoppingListState, ShoppingListEvent, ShoppingListEffect>(ShoppingListState()) {
 
-    private val _lists = MutableStateFlow<List<ShoppingList>>(emptyList())
-    val lists: StateFlow<List<ShoppingList>> = _lists.asStateFlow()
+    private val searchQueryFlow = MutableStateFlow("")
 
-    private val _selectedListId = MutableStateFlow<Uuid?>(null)
-    val selectedListId: StateFlow<Uuid?> = _selectedListId.asStateFlow()
-
-    val selectedList: StateFlow<ShoppingList?> =
-        combine(_lists, _selectedListId) { lists, id ->
-            lists.find { it.id == id }
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
-
-    private val _items = MutableStateFlow<List<ShoppingItem>>(emptyList())
-    val items: StateFlow<List<ShoppingItem>> = _items.asStateFlow()
-
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
-
-    private val _searchQuery = MutableStateFlow("")
-    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
-
-    val suggestions: StateFlow<List<Item.CatalogItem>> = _searchQuery
-        .debounce(150)
-        .flatMapLatest { query ->
-            flow { emit(catalogItemRepository.search(query)) }
-        }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-
-    fun loadLists() {
-        viewModelScope.launch {
-            _isLoading.value = true
-            val loaded = repository.loadLists()
-            _lists.value = loaded
-            if (_selectedListId.value == null || loaded.none { it.id == _selectedListId.value }) {
-                val defaultList = loaded.find { it.default } ?: loaded.firstOrNull()
-                selectList(defaultList?.id)
+    init {
+        searchQueryFlow
+            .debounce(150)
+            .flatMapLatest { query ->
+                flow { emit(catalogItemRepository.search(query)) }
             }
-            _isLoading.value = false
+            .onEach { results -> updateState { copy(suggestions = results) } }
+            .launchIn(viewModelScope)
+    }
+
+    override fun handleEvent(event: ShoppingListEvent) {
+        when (event) {
+            is ShoppingListEvent.LoadLists -> loadLists()
+            is ShoppingListEvent.SelectList -> selectList(event.listId)
+            is ShoppingListEvent.UpdateSearchQuery -> updateSearchQuery(event.query)
+            is ShoppingListEvent.ClearSearch -> clearSearch()
+            is ShoppingListEvent.AddItem -> addItem(event.item)
+            is ShoppingListEvent.UpdateItem -> updateItem(event.item)
+            is ShoppingListEvent.ToggleChecked -> toggleChecked(event.itemId)
+            is ShoppingListEvent.DeleteItem -> deleteItem(event.itemId)
+            is ShoppingListEvent.DeleteChecked -> deleteChecked()
+            is ShoppingListEvent.CreateList -> createList(event.name)
+            is ShoppingListEvent.RenameList -> renameList(event.listId, event.newName)
+            is ShoppingListEvent.DeleteList -> deleteList(event.listId)
         }
     }
 
-    fun selectList(listId: Uuid?) {
-        _selectedListId.value = listId
+    private fun loadLists() {
+        launch {
+            updateState { copy(isLoading = true) }
+            val loaded = repository.getLists(refresh = true)
+            val currentSelectedId = state.value.selectedListId
+            val selectedId = if (currentSelectedId == null || loaded.none { it.id == currentSelectedId }) {
+                (loaded.find { it.default } ?: loaded.firstOrNull())?.id
+            } else {
+                currentSelectedId
+            }
+            updateState { copy(lists = loaded, isLoading = false) }
+            selectList(selectedId)
+        }
+    }
+
+    private fun selectList(listId: Uuid?) {
+        updateState { copy(selectedListId = listId) }
         if (listId != null) {
-            viewModelScope.launch {
-                _isLoading.value = true
-                _items.value = repository.loadItems(listId)
-                _isLoading.value = false
+            launch {
+                updateState { copy(isLoading = true) }
+                val items = repository.loadItems(listId)
+                updateState { copy(items = items, isLoading = false) }
             }
         } else {
-            _items.value = emptyList()
+            updateState { copy(items = emptyList()) }
         }
     }
 
-    fun updateSearchQuery(query: String) {
-        _searchQuery.value = query
+    private fun updateSearchQuery(query: String) {
+        updateState { copy(searchQuery = query) }
+        searchQueryFlow.update { query }
     }
 
-    fun clearSearch() {
-        _searchQuery.value = ""
+    private fun clearSearch() {
+        updateState { copy(searchQuery = "", suggestions = emptyList()) }
+        searchQueryFlow.update { "" }
     }
 
-    fun addItem(item: Item) {
+    private fun addItem(item: Item) {
         if (item.name.isBlank()) return
-        val listId = _selectedListId.value ?: return
-        viewModelScope.launch {
+        val listId = state.value.selectedListId ?: return
+        clearSearch()
+        launch {
             val catalogItemId = (item as? Item.CatalogItem)?.id
             val freeTextName = (item as? Item.FreeTextItem)?.name
             val created = repository.addItem(listId, catalogItemId, freeTextName, null)
-            _items.update { it + created }
+            updateState { copy(items = items + created) }
         }
-        clearSearch()
     }
 
-    fun updateItem(item: ShoppingItem) {
-        val listId = _selectedListId.value ?: return
-        _items.update { items ->
-            items.map { if (it.id == item.id) item else it }
-        }
-        viewModelScope.launch {
+    private fun updateItem(item: ShoppingItem) {
+        val listId = state.value.selectedListId ?: return
+        updateState { copy(items = items.map { if (it.id == item.id) item else it }) }
+        launch {
             repository.updateItem(listId, item.id, item.quantity, item.checked)
         }
     }
 
-    fun toggleChecked(id: Uuid) {
-        val listId = _selectedListId.value ?: return
-        val item = _items.value.find { it.id == id } ?: return
+    private fun toggleChecked(id: Uuid) {
+        val listId = state.value.selectedListId ?: return
+        val item = state.value.items.find { it.id == id } ?: return
         val toggled = item.copy(checked = !item.checked)
-        _items.update { items ->
-            items.map { if (it.id == id) toggled else it }
-        }
-        viewModelScope.launch {
+        updateState { copy(items = items.map { if (it.id == id) toggled else it }) }
+        launch {
             repository.updateItem(listId, id, toggled.quantity, toggled.checked)
         }
     }
 
-    fun deleteItem(id: Uuid) {
-        val listId = _selectedListId.value ?: return
-        _items.update { items -> items.filter { it.id != id } }
-        viewModelScope.launch {
+    private fun deleteItem(id: Uuid) {
+        val listId = state.value.selectedListId ?: return
+        updateState { copy(items = items.filter { it.id != id }) }
+        launch {
             repository.deleteItem(listId, id)
         }
     }
 
-    fun deleteChecked() {
-        val listId = _selectedListId.value ?: return
-        _items.update { items -> items.filter { !it.checked } }
-        viewModelScope.launch {
+    private fun deleteChecked() {
+        val listId = state.value.selectedListId ?: return
+        updateState { copy(items = items.filter { !it.checked }) }
+        launch {
             repository.deleteCheckedItems(listId)
         }
     }
 
-    fun createList(name: String) {
+    private fun createList(name: String) {
         if (name.isBlank()) return
-        viewModelScope.launch {
+        launch {
             val newList = repository.createList(name)
-            _lists.value = repository.cachedLists
+            val lists = repository.getLists()
+            updateState { copy(lists = lists) }
             selectList(newList.id)
         }
     }
 
-    fun renameList(id: Uuid, newName: String) {
+    private fun renameList(id: Uuid, newName: String) {
         if (newName.isBlank()) return
-        val list = _lists.value.find { it.id == id } ?: return
-        viewModelScope.launch {
+        launch {
             repository.updateList(id, newName)
-            _lists.value = repository.cachedLists
+            val lists = repository.getLists()
+            updateState { copy(lists = lists) }
         }
     }
 
-    fun deleteList(id: Uuid) {
-        viewModelScope.launch {
+    private fun deleteList(id: Uuid) {
+        launch {
             repository.deleteList(id)
-            _lists.value = repository.cachedLists
-            if (_selectedListId.value == id) {
-                val defaultList = _lists.value.find { it.default }
-                selectList(defaultList?.id ?: _lists.value.firstOrNull()?.id)
+            val updatedLists = repository.getLists()
+            updateState { copy(lists = updatedLists) }
+            if (state.value.selectedListId == id) {
+                val fallback = updatedLists.find { it.default }?.id ?: updatedLists.firstOrNull()?.id
+                selectList(fallback)
             }
         }
     }

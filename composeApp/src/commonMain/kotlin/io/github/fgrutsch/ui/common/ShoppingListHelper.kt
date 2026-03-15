@@ -8,7 +8,7 @@ suspend fun addIngredientsToDefaultShoppingList(
     shoppingListRepository: ShoppingListRepository,
     ingredients: List<RecipeIngredient>,
 ) {
-    val lists = shoppingListRepository.cachedLists
+    val lists = shoppingListRepository.getLists()
     val targetListId = lists.find { it.default }?.id ?: lists.firstOrNull()?.id ?: return
     ingredients.forEach { ingredient ->
         val catalogItemId = (ingredient.item as? Item.CatalogItem)?.id
