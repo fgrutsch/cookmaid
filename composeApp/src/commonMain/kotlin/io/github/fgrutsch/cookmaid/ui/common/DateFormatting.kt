@@ -3,11 +3,19 @@ package io.github.fgrutsch.cookmaid.ui.common
 import kotlinx.datetime.LocalDate
 
 fun formatShortDate(date: LocalDate): String {
-    val monthName = when (date.monthNumber) {
-        1 -> "Jan"; 2 -> "Feb"; 3 -> "Mar"; 4 -> "Apr"
-        5 -> "May"; 6 -> "Jun"; 7 -> "Jul"; 8 -> "Aug"
-        9 -> "Sep"; 10 -> "Oct"; 11 -> "Nov"; 12 -> "Dec"
-        else -> ""
+    val monthName = when (date.month) {
+        kotlinx.datetime.Month.JANUARY -> "Jan"
+        kotlinx.datetime.Month.FEBRUARY -> "Feb"
+        kotlinx.datetime.Month.MARCH -> "Mar"
+        kotlinx.datetime.Month.APRIL -> "Apr"
+        kotlinx.datetime.Month.MAY -> "May"
+        kotlinx.datetime.Month.JUNE -> "Jun"
+        kotlinx.datetime.Month.JULY -> "Jul"
+        kotlinx.datetime.Month.AUGUST -> "Aug"
+        kotlinx.datetime.Month.SEPTEMBER -> "Sep"
+        kotlinx.datetime.Month.OCTOBER -> "Oct"
+        kotlinx.datetime.Month.NOVEMBER -> "Nov"
+        kotlinx.datetime.Month.DECEMBER -> "Dec"
     }
-    return "$monthName ${date.dayOfMonth}"
+    return "$monthName ${date.day}"
 }

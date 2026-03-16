@@ -21,7 +21,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Notes
+import androidx.compose.material.icons.automirrored.filled.Notes
 import androidx.compose.material.icons.filled.Today
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.Card
@@ -307,7 +307,7 @@ private fun MealPlanItemRow(
     ) {
         val icon = when (item) {
             is MealPlanItem.RecipeItem -> Icons.AutoMirrored.Filled.MenuBook
-            is MealPlanItem.NoteItem -> Icons.Default.Notes
+            is MealPlanItem.NoteItem -> Icons.AutoMirrored.Filled.Notes
         }
         Icon(
             icon,

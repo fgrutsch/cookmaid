@@ -14,7 +14,7 @@ suspend fun ApplicationCall.userId(): Uuid {
     val cached = attributes.getOrNull(UserIdKey)
     if (cached != null) return cached
 
-    val subject = principal<JWTPrincipal>()!!.payload.subject
+    val subject = requireNotNull(principal<JWTPrincipal>()) { "JWT principal missing" }.payload.subject
     val userService = application.get<UserService>()
     val userId = userService.findIdByOidcSubject(subject)
         ?: throw IllegalStateException("User not found for subject: $subject")

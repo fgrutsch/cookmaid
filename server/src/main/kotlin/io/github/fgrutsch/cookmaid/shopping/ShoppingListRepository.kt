@@ -9,7 +9,7 @@ import org.jetbrains.exposed.v1.core.Table
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
-import org.jetbrains.exposed.v1.jdbc.insert
+import org.jetbrains.exposed.v1.jdbc.insertReturning
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
 import org.jetbrains.exposed.v1.jdbc.update
@@ -58,11 +58,11 @@ class PostgresShoppingListRepository : ShoppingListRepository {
     }
 
     override suspend fun createList(userId: Uuid, name: String, default: Boolean): ShoppingList = suspendTransaction {
-        val row = ShoppingListsTable.insert {
+        val row = ShoppingListsTable.insertReturning {
             it[ShoppingListsTable.userId] = userId
             it[ShoppingListsTable.name] = name.trim()
             it[ShoppingListsTable.isDefault] = default
-        }.resultedValues!!.single()
+        }.single()
 
         ShoppingList(
             id = row[ShoppingListsTable.id],
@@ -93,14 +93,14 @@ class PostgresShoppingListRepository : ShoppingListRepository {
                 val item: Item = if (catalogItemId != null) {
                     Item.CatalogItem(
                         id = catalogItemId,
-                        name = row.getOrNull(CatalogItemsTable.name)!!,
+                        name = row[CatalogItemsTable.name],
                         category = ItemCategory(
-                            id = row.getOrNull(ItemCategoriesTable.id)!!,
-                            name = row.getOrNull(ItemCategoriesTable.name)!!,
+                            id = row[ItemCategoriesTable.id],
+                            name = row[ItemCategoriesTable.name],
                         ),
                     )
                 } else {
-                    Item.FreeTextItem(name = row[ShoppingItemsTable.freeTextName]!!)
+                    Item.FreeTextItem(name = requireNotNull(row[ShoppingItemsTable.freeTextName]))
                 }
                 ShoppingItem(
                     id = row[ShoppingItemsTable.id],
@@ -117,13 +117,13 @@ class PostgresShoppingListRepository : ShoppingListRepository {
         freeTextName: String?,
         quantity: Float?,
     ): ShoppingItem = suspendTransaction {
-        val row = ShoppingItemsTable.insert {
+        val row = ShoppingItemsTable.insertReturning {
             it[ShoppingItemsTable.listId] = listId
             it[ShoppingItemsTable.catalogItemId] = catalogItemId
             it[ShoppingItemsTable.freeTextName] = freeTextName
             it[ShoppingItemsTable.quantity] = quantity
             it[ShoppingItemsTable.checked] = false
-        }.resultedValues!!.single()
+        }.single()
 
         val itemId = row[ShoppingItemsTable.id]
 
@@ -138,14 +138,14 @@ class PostgresShoppingListRepository : ShoppingListRepository {
         val item: Item = if (catalogItemId != null) {
             Item.CatalogItem(
                 id = catalogItemId,
-                name = fetched.getOrNull(CatalogItemsTable.name)!!,
+                name = fetched[CatalogItemsTable.name],
                 category = ItemCategory(
-                    id = fetched.getOrNull(ItemCategoriesTable.id)!!,
-                    name = fetched.getOrNull(ItemCategoriesTable.name)!!,
+                    id = fetched[ItemCategoriesTable.id],
+                    name = fetched[ItemCategoriesTable.name],
                 ),
             )
         } else {
-            Item.FreeTextItem(name = freeTextName!!)
+            Item.FreeTextItem(name = requireNotNull(freeTextName))
         }
 
         ShoppingItem(

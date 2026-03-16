@@ -7,7 +7,7 @@ import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.config.*
 import io.ktor.server.response.*
-import java.net.URL
+import java.net.URI
 import java.util.concurrent.TimeUnit
 
 const val AUTH_JWT = "jwt-auth"
@@ -16,7 +16,7 @@ fun Application.configureAuth() {
     val issuer = environment.config.property("oidc.issuer").getString()
     val jwksUrl = environment.config.property("oidc.jwks-url").getString()
 
-    val jwkProvider = JwkProviderBuilder(URL(jwksUrl))
+    val jwkProvider = JwkProviderBuilder(URI(jwksUrl).toURL())
         .cached(10, 24, TimeUnit.HOURS)
         .rateLimited(10, 1, TimeUnit.MINUTES)
         .build()

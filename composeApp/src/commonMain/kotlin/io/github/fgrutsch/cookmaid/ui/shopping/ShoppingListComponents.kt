@@ -71,7 +71,6 @@ internal fun AddItemField(
 internal fun ShoppingItemRow(
     item: ShoppingItem,
     onToggle: () -> Unit,
-    onEdit: () -> Unit,
 ) {
     ListItem(
         headlineContent = {
@@ -81,7 +80,7 @@ internal fun ShoppingItemRow(
                 color = if (item.checked) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.onSurface,
             )
         },
-        modifier = Modifier.clickable(onClick = onEdit),
+        modifier = Modifier.clickable(onClick = onToggle),
         leadingContent = {
             Checkbox(checked = item.checked, onCheckedChange = { onToggle() })
         },

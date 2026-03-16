@@ -19,7 +19,7 @@ fun Route.userRoutes() {
 
     route("/users") {
         post("/me") {
-            val principal = call.principal<JWTPrincipal>()!!
+            val principal = requireNotNull(call.principal<JWTPrincipal>()) { "JWT principal missing" }
             val user = service.getOrCreate(oidcSubject = principal.payload.subject)
             call.respond(user)
         }

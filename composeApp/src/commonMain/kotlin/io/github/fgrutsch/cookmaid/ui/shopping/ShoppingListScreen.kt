@@ -40,7 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.github.fgrutsch.cookmaid.catalog.Item
 import io.github.fgrutsch.cookmaid.shopping.ShoppingItem
-import io.github.fgrutsch.cookmaid.ui.common.SwipeToDeleteItem
+import io.github.fgrutsch.cookmaid.ui.common.SwipeItem
 import kotlin.uuid.Uuid
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -172,13 +172,13 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
                                 )
                             }
                             items(categoryItems, key = { it.id }) { shoppingItem ->
-                                SwipeToDeleteItem(
+                                SwipeItem(
                                     onDelete = { onEvent(ShoppingListEvent.DeleteItem(shoppingItem.id)) },
+                                    onEdit = { editingItem = shoppingItem },
                                 ) {
                                     ShoppingItemRow(
                                         item = shoppingItem,
                                         onToggle = { onEvent(ShoppingListEvent.ToggleChecked(shoppingItem.id)) },
-                                        onEdit = { editingItem = shoppingItem },
                                     )
                                 }
                             }
@@ -209,13 +209,13 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
                                 }
                             }
                             items(state.checkedItems, key = { it.id }) { item ->
-                                SwipeToDeleteItem(
+                                SwipeItem(
                                     onDelete = { onEvent(ShoppingListEvent.DeleteItem(item.id)) },
+                                    onEdit = { editingItem = item },
                                 ) {
                                     ShoppingItemRow(
                                         item = item,
                                         onToggle = { onEvent(ShoppingListEvent.ToggleChecked(item.id)) },
-                                        onEdit = { editingItem = item },
                                     )
                                 }
                             }

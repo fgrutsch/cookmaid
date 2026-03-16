@@ -3,7 +3,7 @@ package io.github.fgrutsch.cookmaid.user
 import io.github.fgrutsch.cookmaid.auth.User
 import org.jetbrains.exposed.v1.core.Table
 import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.jdbc.insert
+import org.jetbrains.exposed.v1.jdbc.insertReturning
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
 
@@ -27,9 +27,9 @@ class PostgresUserRepository : UserRepository {
     }
 
     override suspend fun create(oidcSubject: String): User = suspendTransaction {
-        val row = UsersTable.insert {
+        val row = UsersTable.insertReturning {
             it[UsersTable.oidcSubject] = oidcSubject
-        }.resultedValues!!.single()
+        }.single()
 
         User(
             id = row[UsersTable.id],
