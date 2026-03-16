@@ -48,17 +48,9 @@ class OidcAuthRepository(
     }
 
     override suspend fun logout() {
-        try {
-            val idToken = tokenStore.getIdToken()
-            if (idToken != null) {
-                val endSessionFlow = authFlowFactory.createEndSessionFlow(oidcClient)
-                endSessionFlow.endSession(idToken)
-            }
-        } finally {
-            tokenStore.removeTokens()
-            _currentUser.value = null
-            _isAuthenticated.value = false
-            userProfile = UserProfile()
-        }
+        tokenStore.removeTokens()
+        _currentUser.value = null
+        _isAuthenticated.value = false
+        userProfile = UserProfile()
     }
 }
