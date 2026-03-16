@@ -64,14 +64,14 @@ kotlin {
 }
 
 android {
-    namespace = "io.github.fgrutsch"
+    namespace = "io.github.fgrutsch.cookmaid"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     buildFeatures {
         buildConfig = true
     }
     defaultConfig {
-        applicationId = "io.github.fgrutsch"
+        applicationId = "io.github.fgrutsch.cookmaid"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1

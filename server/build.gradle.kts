@@ -5,7 +5,7 @@ plugins {
     application
 }
 
-group = "io.github.fgrutsch"
+group = "io.github.fgrutsch.cookmaid"
 version = "1.0.0"
 
 kotlin {
@@ -14,7 +14,7 @@ kotlin {
     }
 }
 application {
-    mainClass.set("io.github.fgrutsch.ApplicationKt")
+    mainClass.set("io.github.fgrutsch.cookmaid.ApplicationKt")
     val isDevelopment: Boolean = project.ext.has("development")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
 }

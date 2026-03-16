@@ -39,7 +39,7 @@ kotlin {
 }
 
 android {
-    namespace = "io.github.fgrutsch.shared"
+    namespace = "io.github.fgrutsch.cookmaid.shared"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
