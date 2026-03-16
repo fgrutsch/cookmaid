@@ -1,6 +1,5 @@
 package io.github.fgrutsch.cookmaid.ui.shopping
 
-import io.github.fgrutsch.cookmaid.ApiBaseUrl
 import io.github.fgrutsch.cookmaid.shopping.CreateListRequest
 import io.github.fgrutsch.cookmaid.shopping.CreateShoppingItemRequest
 import io.github.fgrutsch.cookmaid.shopping.ShoppingItem
@@ -19,10 +18,9 @@ import io.ktor.http.contentType
 import kotlin.uuid.Uuid
 
 class ShoppingListClient(
-    private val baseUrl: ApiBaseUrl,
     private val apiClient: ApiClient,
 ) {
-    private val base get() = "${baseUrl.value}/api/shopping-lists"
+    private val base = "/api/shopping-lists"
 
     suspend fun fetchLists(): List<ShoppingList> =
         apiClient.httpClient.get(base).body()
