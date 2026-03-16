@@ -5,7 +5,6 @@ import io.github.fgrutsch.cookmaid.mealplan.MealPlanRepository
 import io.github.fgrutsch.cookmaid.mealplan.mondayOfWeek
 import io.github.fgrutsch.cookmaid.recipe.RecipeRepository
 import kotlinx.datetime.LocalDate
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 fun resolveMealPlanDayItems(
@@ -25,7 +24,7 @@ fun resolveMealPlanDayItems(
     }
 }
 
-@OptIn(ExperimentalUuidApi::class)
+
 suspend fun addRecipeToMealPlan(
     recipeId: String,
     dayDate: LocalDate,

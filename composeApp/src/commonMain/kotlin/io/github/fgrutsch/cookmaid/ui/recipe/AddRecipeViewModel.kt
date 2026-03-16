@@ -20,7 +20,6 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
@@ -129,7 +128,7 @@ class AddRecipeViewModel(
         }
     }
 
-    @OptIn(ExperimentalUuidApi::class)
+    
     fun save(): Boolean {
         _nameTouched.value = true
         if (_name.value.isBlank()) return false

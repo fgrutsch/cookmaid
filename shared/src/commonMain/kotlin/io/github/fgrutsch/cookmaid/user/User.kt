@@ -1,4 +1,4 @@
-package io.github.fgrutsch.cookmaid.auth
+package io.github.fgrutsch.cookmaid.user
 
 import kotlinx.serialization.Serializable
 import kotlin.uuid.Uuid

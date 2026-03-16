@@ -1,6 +1,5 @@
 package io.github.fgrutsch.cookmaid.user
 
-import io.github.fgrutsch.cookmaid.auth.User
 import io.github.fgrutsch.cookmaid.shopping.ShoppingListRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction

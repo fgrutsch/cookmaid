@@ -1,6 +1,5 @@
 package io.github.fgrutsch.cookmaid.user
 
-import io.github.fgrutsch.cookmaid.auth.User
 import io.github.fgrutsch.cookmaid.support.BaseIntegrationTest
 import io.github.fgrutsch.cookmaid.support.TestJwt
 import io.ktor.client.call.body

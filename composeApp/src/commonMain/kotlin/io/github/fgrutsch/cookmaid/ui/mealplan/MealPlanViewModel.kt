@@ -15,7 +15,6 @@ import io.github.fgrutsch.cookmaid.ui.common.addIngredientsToDefaultShoppingList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -25,7 +24,6 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import kotlinx.datetime.todayIn
 import kotlin.time.Clock
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 class MealPlanViewModel(
@@ -36,28 +34,28 @@ class MealPlanViewModel(
 
     private val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
 
-    private val _currentWeekStart = MutableStateFlow(mondayOfWeek(today))
-    val currentWeekStart: StateFlow<LocalDate> = _currentWeekStart.asStateFlow()
+    val currentWeekStart: StateFlow<LocalDate>
+        field = MutableStateFlow(mondayOfWeek(today))
 
     val currentWeek: StateFlow<MealPlanWeek> = combine(
         mealPlanRepository.weeks,
-        _currentWeekStart,
+        currentWeekStart,
     ) { weeks, weekStart ->
         weeks.find { it.startDate == weekStart } ?: createEmptyWeek(weekStart)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), createEmptyWeek(_currentWeekStart.value))
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), createEmptyWeek(currentWeekStart.value))
 
     val recipes: StateFlow<List<Recipe>> = recipeRepository.recipes
 
     fun previousWeek() {
-        _currentWeekStart.value = _currentWeekStart.value.plus(-7, DateTimeUnit.DAY)
+        currentWeekStart.value = currentWeekStart.value.plus(-7, DateTimeUnit.DAY)
     }
 
     fun nextWeek() {
-        _currentWeekStart.value = _currentWeekStart.value.plus(7, DateTimeUnit.DAY)
+        currentWeekStart.value = currentWeekStart.value.plus(7, DateTimeUnit.DAY)
     }
 
     fun goToCurrentWeek() {
-        _currentWeekStart.value = mondayOfWeek(today)
+        currentWeekStart.value = mondayOfWeek(today)
     }
 
     fun resolveRecipeName(recipeId: String): String {
@@ -68,25 +66,25 @@ class MealPlanViewModel(
         return recipeRepository.recipes.value.find { it.id == recipeId }?.ingredients ?: emptyList()
     }
 
-    @OptIn(ExperimentalUuidApi::class)
+    
     fun addRecipeItem(dayDate: LocalDate, recipeId: String) {
         viewModelScope.launch {
-            mealPlanRepository.getOrCreateWeek(_currentWeekStart.value)
+            mealPlanRepository.getOrCreateWeek(currentWeekStart.value)
             mealPlanRepository.addItem(
-                _currentWeekStart.value,
+                currentWeekStart.value,
                 dayDate,
                 MealPlanItem.RecipeItem(id = Uuid.random().toString(), recipeId = recipeId),
             )
         }
     }
 
-    @OptIn(ExperimentalUuidApi::class)
+    
     fun addNoteItem(dayDate: LocalDate, name: String) {
         if (name.isBlank()) return
         viewModelScope.launch {
-            mealPlanRepository.getOrCreateWeek(_currentWeekStart.value)
+            mealPlanRepository.getOrCreateWeek(currentWeekStart.value)
             mealPlanRepository.addItem(
-                _currentWeekStart.value,
+                currentWeekStart.value,
                 dayDate,
                 MealPlanItem.NoteItem(id = Uuid.random().toString(), name = name.trim()),
             )
@@ -97,7 +95,7 @@ class MealPlanViewModel(
         if (newName.isBlank()) return
         viewModelScope.launch {
             mealPlanRepository.updateItem(
-                _currentWeekStart.value,
+                currentWeekStart.value,
                 dayDate,
                 itemId,
                 MealPlanItem.NoteItem(id = itemId, name = newName.trim()),
@@ -107,7 +105,7 @@ class MealPlanViewModel(
 
     fun removeItem(dayDate: LocalDate, itemId: String) {
         viewModelScope.launch {
-            mealPlanRepository.removeItem(_currentWeekStart.value, dayDate, itemId)
+            mealPlanRepository.removeItem(currentWeekStart.value, dayDate, itemId)
         }
     }
 

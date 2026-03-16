@@ -25,7 +25,7 @@ import org.jetbrains.compose.resources.painterResource
 @Composable
 fun LoginScreen(viewModel: AuthViewModel) {
     val state by viewModel.state.collectAsState()
-    val loginError = (state as? AuthState.Unauthenticated)?.loginError
+    val loginError = state.loginError
 
     Column(
         modifier = Modifier.fillMaxSize().padding(32.dp),
@@ -41,7 +41,7 @@ fun LoginScreen(viewModel: AuthViewModel) {
         Spacer(modifier = Modifier.height(48.dp))
 
         Button(
-            onClick = { viewModel.login() },
+            onClick = { viewModel.onEvent(AuthEvent.Login) },
             modifier = Modifier.fillMaxWidth(),
         ) {
             Text("Sign in")

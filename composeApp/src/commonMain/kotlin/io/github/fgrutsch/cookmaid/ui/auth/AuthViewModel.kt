@@ -1,58 +1,72 @@
 package io.github.fgrutsch.cookmaid.ui.auth
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import io.github.fgrutsch.cookmaid.auth.User
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
+import io.github.fgrutsch.cookmaid.ui.common.MviViewModel
 
 class AuthViewModel(
-    private val authRepository: OidcAuthRepository,
-) : ViewModel() {
+    private val authHandler: AuthHandler,
+) : MviViewModel<AuthState, AuthEvent, AuthEffect>(AuthState()) {
 
-    private val _state = MutableStateFlow<AuthState>(AuthState.Initializing)
-    val state: StateFlow<AuthState> = _state.asStateFlow()
+    override fun handleEvent(event: AuthEvent) {
+        when (event) {
+            is AuthEvent.Initialize -> initialize()
+            is AuthEvent.Login -> login()
+            is AuthEvent.Logout -> logout()
+        }
+    }
 
-    init {
-        viewModelScope.launch {
+    private fun initialize() {
+        launch {
             try {
-                authRepository.tryAutoLogin()
-                _state.value = authenticated()
+                val result = authHandler.tryAutoLogin()
+                updateState {
+                    copy(
+                        status = AuthState.Status.Authenticated,
+                        user = result.user,
+                        profile = result.profile,
+                        loginError = null,
+                    )
+                }
             } catch (_: Exception) {
-                _state.value = AuthState.Unauthenticated()
+                updateState { copy(status = AuthState.Status.Unauthenticated) }
             }
         }
     }
 
-    fun login() {
-        viewModelScope.launch {
-            _state.value = AuthState.Initializing
+    private fun login() {
+        updateState { copy(status = AuthState.Status.Initializing, loginError = null) }
+        launch {
             try {
-                authRepository.login()
-                _state.value = authenticated()
+                val result = authHandler.login()
+                updateState {
+                    copy(
+                        status = AuthState.Status.Authenticated,
+                        user = result.user,
+                        profile = result.profile,
+                        loginError = null,
+                    )
+                }
             } catch (e: Exception) {
-                _state.value = AuthState.Unauthenticated(loginError = e.message ?: "Login failed")
+                updateState {
+                    copy(
+                        status = AuthState.Status.Unauthenticated,
+                        loginError = e.message ?: "Login failed",
+                    )
+                }
             }
         }
     }
 
-    fun logout() {
-        viewModelScope.launch {
-            authRepository.logout()
-            _state.value = AuthState.Unauthenticated()
+    private fun logout() {
+        launch {
+            authHandler.logout()
+            updateState {
+                copy(
+                    status = AuthState.Status.Unauthenticated,
+                    user = null,
+                    profile = UserProfile(),
+                    loginError = null,
+                )
+            }
         }
     }
-
-    private fun authenticated() = AuthState.Authenticated(
-        user = authRepository.currentUser.value!!,
-        profile = authRepository.userProfile,
-    )
-}
-
-sealed interface AuthState {
-    data object Initializing : AuthState
-    data class Unauthenticated(val loginError: String? = null) : AuthState
-    data class Authenticated(val user: User, val profile: UserProfile) : AuthState
 }

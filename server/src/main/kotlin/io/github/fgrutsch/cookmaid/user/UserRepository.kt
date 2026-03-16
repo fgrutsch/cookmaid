@@ -1,6 +1,5 @@
 package io.github.fgrutsch.cookmaid.user
 
-import io.github.fgrutsch.cookmaid.auth.User
 import org.jetbrains.exposed.v1.core.Table
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.insertReturning

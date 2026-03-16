@@ -10,6 +10,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,6 +24,7 @@ import androidx.navigation3.ui.NavDisplay
 import io.github.fgrutsch.cookmaid.navigation.Route
 import io.github.fgrutsch.cookmaid.navigation.TopLevelRoute
 import io.github.fgrutsch.cookmaid.navigation.navConfig
+import io.github.fgrutsch.cookmaid.ui.auth.AuthEvent
 import io.github.fgrutsch.cookmaid.ui.auth.AuthState
 import io.github.fgrutsch.cookmaid.ui.auth.AuthViewModel
 import io.github.fgrutsch.cookmaid.ui.auth.LoginScreen
@@ -72,17 +74,21 @@ fun App(
             val authViewModel = koinInject<AuthViewModel>()
             val authState by authViewModel.state.collectAsState()
 
-            when (val auth = authState) {
-                is AuthState.Initializing -> {
+            LaunchedEffect(Unit) {
+                authViewModel.onEvent(AuthEvent.Initialize)
+            }
+
+            when (authState.status) {
+                AuthState.Status.Initializing -> {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator()
                     }
                 }
-                is AuthState.Unauthenticated -> LoginScreen(viewModel = authViewModel)
-                is AuthState.Authenticated -> MainContent(
+                AuthState.Status.Unauthenticated -> LoginScreen(viewModel = authViewModel)
+                AuthState.Status.Authenticated -> MainContent(
                     settingsViewModel = settingsViewModel,
                     authViewModel = authViewModel,
-                    userProfile = auth.profile,
+                    userProfile = authState.profile,
                 )
             }
         }
@@ -180,7 +186,7 @@ private fun MainContent(settingsViewModel: SettingsViewModel, authViewModel: Aut
                     SettingsScreen(
                         viewModel = settingsViewModel,
                         userProfile = userProfile,
-                        onLogout = { authViewModel.logout() },
+                        onLogout = { authViewModel.onEvent(AuthEvent.Logout) },
                     )
                 }
             },

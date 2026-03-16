@@ -12,7 +12,6 @@ import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 import kotlinx.datetime.todayIn
 import kotlin.time.Clock
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 interface MealPlanRepository {
@@ -87,7 +86,7 @@ fun createEmptyWeek(startDate: LocalDate): MealPlanWeek {
     return MealPlanWeek(startDate = startDate, days = days)
 }
 
-@OptIn(ExperimentalUuidApi::class)
+
 private fun defaultWeeks(): List<MealPlanWeek> {
     val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
     val monday = mondayOfWeek(today)
