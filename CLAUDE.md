@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Cookmaid is a Kotlin Multiplatform (KMP) project targeting Android, Web (JS + WasmJS), and a Ktor backend server. All modules share a base package of `io.github.fgrutsch`.
+Cookmaid is a Kotlin Multiplatform (KMP) project targeting Android, Web (JS + WasmJS), and a Ktor backend server. All modules share a base package of `io.github.fgrutsch.cookmaid`.
 
 ## Build Commands
 
@@ -30,7 +30,7 @@ Cookmaid is a Kotlin Multiplatform (KMP) project targeting Android, Web (JS + Wa
 ./gradlew :composeApp:allTests
 
 # Run a single test class (server example)
-./gradlew :server:test --tests "io.github.fgrutsch.ApplicationTest"
+./gradlew :server:test --tests "io.github.fgrutsch.cookmaid.ApplicationTest"
 ```
 
 ## Architecture

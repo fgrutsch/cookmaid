@@ -4,7 +4,7 @@ ktor:
     host: 0.0.0.0
   application:
     modules:
-      - io.github.fgrutsch.ApplicationKt.module
+      - io.github.fgrutsch.cookmaid.ApplicationKt.module
 
 database:
   url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/cookmaid}
