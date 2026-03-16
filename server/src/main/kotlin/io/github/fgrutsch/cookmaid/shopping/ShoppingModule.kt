@@ -11,12 +11,14 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.put
 import io.ktor.server.routing.route
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.bind
 import org.koin.dsl.module
 import org.koin.ktor.ext.inject
 
 val shoppingModule = module {
-    single<ShoppingListRepository> { PostgresShoppingListRepository() }
-    single { ShoppingListService(get()) }
+    singleOf(::PostgresShoppingListRepository) bind ShoppingListRepository::class
+    singleOf(::ShoppingListService)
 }
 
 fun Route.shoppingRoutes() {

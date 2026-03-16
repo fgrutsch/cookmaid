@@ -6,12 +6,14 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.bind
 import org.koin.dsl.module
 import org.koin.ktor.ext.inject
 
 val userModule = module {
-    single<UserRepository> { PostgresUserRepository() }
-    single { UserService(get(), get()) }
+    singleOf(::PostgresUserRepository) bind UserRepository::class
+    singleOf(::UserService)
 }
 
 fun Route.userRoutes() {
