@@ -1,39 +1,13 @@
 package io.github.fgrutsch.cookmaid.ui.common
 
-import io.github.fgrutsch.cookmaid.mealplan.MealPlanItem
-import io.github.fgrutsch.cookmaid.mealplan.MealPlanRepository
-import io.github.fgrutsch.cookmaid.mealplan.mondayOfWeek
-import io.github.fgrutsch.cookmaid.recipe.Recipe
+import io.github.fgrutsch.cookmaid.ui.mealplan.MealPlanRepository
 import kotlinx.datetime.LocalDate
 import kotlin.uuid.Uuid
-
-fun resolveMealPlanDayItems(
-    date: LocalDate,
-    mealPlanRepository: MealPlanRepository,
-    recipes: List<Recipe>,
-): List<String> {
-    val weekStart = mondayOfWeek(date)
-    val week = mealPlanRepository.weeks.value.find { it.startDate == weekStart }
-    val day = week?.days?.find { it.date == date } ?: return emptyList()
-    return day.items.map { item ->
-        when (item) {
-            is MealPlanItem.RecipeItem ->
-                recipes.find { it.id == item.recipeId }?.name ?: "Unknown recipe"
-            is MealPlanItem.NoteItem -> item.name
-        }
-    }
-}
 
 suspend fun addRecipeToMealPlan(
     recipeId: Uuid,
     dayDate: LocalDate,
     mealPlanRepository: MealPlanRepository,
 ) {
-    val weekStart = mondayOfWeek(dayDate)
-    mealPlanRepository.getOrCreateWeek(weekStart)
-    mealPlanRepository.addItem(
-        weekStart,
-        dayDate,
-        MealPlanItem.RecipeItem(id = Uuid.random(), recipeId = recipeId),
-    )
+    mealPlanRepository.create(dayDate, recipeId = recipeId, note = null)
 }

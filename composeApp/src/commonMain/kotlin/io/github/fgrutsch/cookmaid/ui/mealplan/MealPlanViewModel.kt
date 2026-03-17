@@ -1,23 +1,14 @@
 package io.github.fgrutsch.cookmaid.ui.mealplan
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import io.github.fgrutsch.cookmaid.mealplan.MealPlanDay
 import io.github.fgrutsch.cookmaid.mealplan.MealPlanItem
-import io.github.fgrutsch.cookmaid.mealplan.MealPlanRepository
-import io.github.fgrutsch.cookmaid.mealplan.MealPlanWeek
-import io.github.fgrutsch.cookmaid.mealplan.createEmptyWeek
+import io.github.fgrutsch.cookmaid.mealplan.MealPlanItemResponse
 import io.github.fgrutsch.cookmaid.mealplan.mondayOfWeek
-import io.github.fgrutsch.cookmaid.recipe.Recipe
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
+import io.github.fgrutsch.cookmaid.ui.common.MviViewModel
+import io.github.fgrutsch.cookmaid.ui.common.addIngredientsToDefaultShoppingList
 import io.github.fgrutsch.cookmaid.ui.recipe.RecipeRepository
 import io.github.fgrutsch.cookmaid.ui.shopping.ShoppingListRepository
-import io.github.fgrutsch.cookmaid.ui.common.addIngredientsToDefaultShoppingList
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
@@ -30,93 +21,154 @@ class MealPlanViewModel(
     private val mealPlanRepository: MealPlanRepository,
     private val recipeRepository: RecipeRepository,
     private val shoppingListRepository: ShoppingListRepository,
-) : ViewModel() {
+) : MviViewModel<MealPlanState, MealPlanEvent, MealPlanEffect>(
+    MealPlanState(currentWeekStart = mondayOfWeek(Clock.System.todayIn(TimeZone.currentSystemDefault()))),
+) {
 
-    private val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
+    private var initialized = false
 
-    val currentWeekStart: StateFlow<LocalDate>
-        field = MutableStateFlow(mondayOfWeek(today))
-
-    val currentWeek: StateFlow<MealPlanWeek> = combine(
-        mealPlanRepository.weeks,
-        currentWeekStart,
-    ) { weeks, weekStart ->
-        weeks.find { it.startDate == weekStart } ?: createEmptyWeek(weekStart)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), createEmptyWeek(currentWeekStart.value))
-
-    private val _recipes = MutableStateFlow<List<Recipe>>(emptyList())
-    val recipes: StateFlow<List<Recipe>> = _recipes
-
-    init {
-        viewModelScope.launch {
-            _recipes.value = recipeRepository.fetchPage(cursor = null, limit = 100, search = null, tag = null).items
+    override fun handleEvent(event: MealPlanEvent) {
+        when (event) {
+            is MealPlanEvent.Load -> load()
+            is MealPlanEvent.PreviousWeek -> navigateWeek(-7)
+            is MealPlanEvent.NextWeek -> navigateWeek(7)
+            is MealPlanEvent.GoToCurrentWeek -> goToCurrentWeek()
+            is MealPlanEvent.AddRecipeItem -> addRecipeItem(event.dayDate, event.recipeId)
+            is MealPlanEvent.AddNoteItem -> addNoteItem(event.dayDate, event.note)
+            is MealPlanEvent.UpdateNote -> updateNote(event.itemId, event.dayDate, event.newNote)
+            is MealPlanEvent.DeleteItem -> deleteItem(event.itemId, event.dayDate)
+            is MealPlanEvent.AddIngredientsToShoppingList -> addToShoppingList(event.ingredients)
         }
     }
 
-    fun previousWeek() {
-        currentWeekStart.value = currentWeekStart.value.plus(-7, DateTimeUnit.DAY)
+    private fun load() {
+        val firstLoad = !initialized
+        initialized = true
+        launch {
+            if (firstLoad) updateState { copy(isLoading = true) }
+            val recipes = recipeRepository.fetchPage(cursor = null, limit = 100).items
+            val items = fetchWeekItems(state.value.currentWeekStart)
+            updateState {
+                copy(
+                    recipes = recipes,
+                    days = groupIntoDays(currentWeekStart, items),
+                    isLoading = false,
+                )
+            }
+        }
     }
 
-    fun nextWeek() {
-        currentWeekStart.value = currentWeekStart.value.plus(7, DateTimeUnit.DAY)
+    private fun navigateWeek(dayOffset: Int) {
+        val newStart = state.value.currentWeekStart.plus(dayOffset, DateTimeUnit.DAY)
+        updateState { copy(currentWeekStart = newStart) }
+        launch {
+            val items = fetchWeekItems(newStart)
+            updateState { copy(days = groupIntoDays(newStart, items)) }
+        }
     }
 
-    fun goToCurrentWeek() {
-        currentWeekStart.value = mondayOfWeek(today)
+    private fun goToCurrentWeek() {
+        val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
+        val newStart = mondayOfWeek(today)
+        updateState { copy(currentWeekStart = newStart) }
+        launch {
+            val items = fetchWeekItems(newStart)
+            updateState { copy(days = groupIntoDays(newStart, items)) }
+        }
     }
 
-    fun resolveRecipeName(recipeId: Uuid): String {
-        return _recipes.value.find { it.id == recipeId }?.name ?: "Unknown recipe"
+    private fun addRecipeItem(dayDate: LocalDate, recipeId: Uuid) {
+        launch {
+            val created = mealPlanRepository.create(dayDate, recipeId = recipeId, note = null)
+            addItemToDay(dayDate, created)
+        }
+    }
+
+    private fun addNoteItem(dayDate: LocalDate, note: String) {
+        if (note.isBlank()) return
+        launch {
+            val created = mealPlanRepository.create(dayDate, recipeId = null, note = note.trim())
+            addItemToDay(dayDate, created)
+        }
+    }
+
+    private fun updateNote(itemId: Uuid, dayDate: LocalDate, newNote: String) {
+        if (newNote.isBlank()) return
+        launch {
+            mealPlanRepository.update(itemId, dayDate = null, note = newNote.trim())
+            updateState {
+                copy(days = days.map { day ->
+                    if (day.date == dayDate) {
+                        day.copy(items = day.items.map { item ->
+                            if (item.id == itemId && item is MealPlanItem.NoteItem) {
+                                item.copy(name = newNote.trim())
+                            } else item
+                        })
+                    } else day
+                })
+            }
+        }
+    }
+
+    private fun deleteItem(itemId: Uuid, dayDate: LocalDate) {
+        launchOptimistic(
+            optimisticUpdate = {
+                copy(days = days.map { day ->
+                    if (day.date == dayDate) day.copy(items = day.items.filter { it.id != itemId })
+                    else day
+                })
+            },
+        ) {
+            mealPlanRepository.delete(itemId)
+        }
+    }
+
+    private fun addToShoppingList(ingredients: List<RecipeIngredient>) {
+        launch {
+            addIngredientsToDefaultShoppingList(shoppingListRepository, ingredients)
+            sendEffect(MealPlanEffect.IngredientsAdded)
+        }
     }
 
     fun resolveRecipeIngredients(recipeId: Uuid): List<RecipeIngredient> {
-        return _recipes.value.find { it.id == recipeId }?.ingredients ?: emptyList()
+        return state.value.recipes.find { it.id == recipeId }?.ingredients ?: emptyList()
     }
 
-    fun addRecipeItem(dayDate: LocalDate, recipeId: Uuid) {
-        viewModelScope.launch {
-            mealPlanRepository.getOrCreateWeek(currentWeekStart.value)
-            mealPlanRepository.addItem(
-                currentWeekStart.value,
-                dayDate,
-                MealPlanItem.RecipeItem(id = Uuid.random(), recipeId = recipeId),
-            )
+    private suspend fun fetchWeekItems(weekStart: LocalDate): List<MealPlanItemResponse> {
+        val weekEnd = weekStart.plus(6, DateTimeUnit.DAY)
+        return mealPlanRepository.fetchItems(weekStart, weekEnd)
+    }
+
+    private fun addItemToDay(dayDate: LocalDate, response: MealPlanItemResponse) {
+        val item = response.toMealPlanItem()
+        updateState {
+            copy(days = days.map { day ->
+                if (day.date == dayDate) day.copy(items = day.items + item)
+                else day
+            })
         }
     }
 
-    fun addNoteItem(dayDate: LocalDate, name: String) {
-        if (name.isBlank()) return
-        viewModelScope.launch {
-            mealPlanRepository.getOrCreateWeek(currentWeekStart.value)
-            mealPlanRepository.addItem(
-                currentWeekStart.value,
-                dayDate,
-                MealPlanItem.NoteItem(id = Uuid.random(), name = name.trim()),
-            )
-        }
+    override fun onError(e: Exception) {
+        updateState { copy(isLoading = false) }
+        sendEffect(MealPlanEffect.Error("Something went wrong. Please try again."))
     }
+}
 
-    fun updateNoteItem(dayDate: LocalDate, itemId: Uuid, newName: String) {
-        if (newName.isBlank()) return
-        viewModelScope.launch {
-            mealPlanRepository.updateItem(
-                currentWeekStart.value,
-                dayDate,
-                itemId,
-                MealPlanItem.NoteItem(id = itemId, name = newName.trim()),
-            )
-        }
+private fun groupIntoDays(weekStart: LocalDate, items: List<MealPlanItemResponse>): List<MealPlanDay> {
+    val itemsByDate = items.groupBy { it.dayDate }
+    return (0..6).map { offset ->
+        val date = weekStart.plus(offset, DateTimeUnit.DAY)
+        val dayItems = itemsByDate[date]?.map { it.toMealPlanItem() } ?: emptyList()
+        MealPlanDay(date, dayItems)
     }
+}
 
-    fun removeItem(dayDate: LocalDate, itemId: Uuid) {
-        viewModelScope.launch {
-            mealPlanRepository.removeItem(currentWeekStart.value, dayDate, itemId)
-        }
-    }
-
-    fun addIngredientsToShoppingList(ingredients: List<RecipeIngredient>) {
-        viewModelScope.launch {
-            addIngredientsToDefaultShoppingList(shoppingListRepository, ingredients)
-        }
+private fun MealPlanItemResponse.toMealPlanItem(): MealPlanItem {
+    val rid = recipeId
+    return if (rid != null) {
+        MealPlanItem.RecipeItem(id = id, recipeId = rid, recipeName = recipeName ?: "Unknown recipe")
+    } else {
+        MealPlanItem.NoteItem(id = id, name = note ?: "")
     }
 }

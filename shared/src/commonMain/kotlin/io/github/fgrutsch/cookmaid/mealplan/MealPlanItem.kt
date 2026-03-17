@@ -11,6 +11,7 @@ sealed interface MealPlanItem {
     data class RecipeItem(
         override val id: Uuid,
         val recipeId: Uuid,
+        val recipeName: String,
     ) : MealPlanItem
 
     @Serializable

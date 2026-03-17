@@ -1,5 +1,5 @@
 package io.github.fgrutsch.cookmaid.di
 
-import io.github.fgrutsch.cookmaid.mealplan.mealPlanModule
+import org.koin.core.module.Module
 
-val sharedModules = listOf(mealPlanModule)
+val sharedModules = emptyList<Module>()
