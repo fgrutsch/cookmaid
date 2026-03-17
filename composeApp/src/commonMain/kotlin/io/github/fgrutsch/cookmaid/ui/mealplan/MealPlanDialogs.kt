@@ -46,6 +46,7 @@ import io.github.fgrutsch.cookmaid.recipe.Recipe
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
 import io.github.fgrutsch.cookmaid.ui.common.formatShortDate
 import io.github.fgrutsch.cookmaid.ui.shopping.formatQuantity
+import kotlin.uuid.Uuid
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
@@ -57,7 +58,7 @@ import kotlin.time.Clock
 fun AddMealPlanItemDialog(
     dayDate: LocalDate,
     recipes: List<Recipe>,
-    onAddRecipe: (recipeId: String) -> Unit,
+    onAddRecipe: (recipeId: Uuid) -> Unit,
     onAddNote: (name: String) -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -226,7 +227,7 @@ fun IngredientPickerDialog(
 @Composable
 private fun RecipePickerTab(
     recipes: List<Recipe>,
-    onSelect: (String) -> Unit,
+    onSelect: (Uuid) -> Unit,
 ) {
     var searchQuery by remember { mutableStateOf("") }
     val keyboardController = LocalSoftwareKeyboardController.current

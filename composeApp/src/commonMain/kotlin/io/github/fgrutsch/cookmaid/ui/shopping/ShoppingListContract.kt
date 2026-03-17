@@ -10,6 +10,7 @@ data class ShoppingListState(
     val selectedListId: Uuid? = null,
     val items: List<ShoppingItem> = emptyList(),
     val isLoading: Boolean = false,
+    val isRefreshing: Boolean = false,
     val searchQuery: String = "",
     val suggestions: List<Item.CatalogItem> = emptyList(),
 ) {
@@ -25,6 +26,7 @@ data class ShoppingListState(
 
 sealed interface ShoppingListEvent {
     data object LoadLists : ShoppingListEvent
+    data object Refresh : ShoppingListEvent
     data class SelectList(val listId: Uuid?) : ShoppingListEvent
     data class UpdateSearchQuery(val query: String) : ShoppingListEvent
     data object ClearSearch : ShoppingListEvent
@@ -39,5 +41,5 @@ sealed interface ShoppingListEvent {
 }
 
 sealed interface ShoppingListEffect {
-    // Placeholder for future one-shot effects (e.g. navigation, snackbars)
+    data class Error(val message: String) : ShoppingListEffect
 }

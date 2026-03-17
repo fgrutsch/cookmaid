@@ -79,6 +79,7 @@ materialkolor = { module = "com.materialkolor:material-kolor", version.ref = "ma
 navigation3-ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "navigation3" }
 exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "exposed" }
 exposed-jdbc = { module = "org.jetbrains.exposed:exposed-jdbc", version.ref = "exposed" }
+exposed-kotlin-datetime = { module = "org.jetbrains.exposed:exposed-kotlin-datetime", version.ref = "exposed" }
 flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
 flyway-postgresql = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
@@ -89,7 +90,7 @@ oidc-ktor = { module = "io.github.kalinjul.kotlin.multiplatform:oidc-ktor", vers
 oidc-tokenstore = { module = "io.github.kalinjul.kotlin.multiplatform:oidc-tokenstore", version.ref = "oidc" }
 
 [bundles]
-exposed = ["exposed-core", "exposed-jdbc"]
+exposed = ["exposed-core", "exposed-jdbc", "exposed-kotlin-datetime"]
 flyway = ["flyway-core", "flyway-postgresql"]
 oidc = ["oidc-appsupport", "oidc-ktor", "oidc-tokenstore"]
 ktor-server = ["ktor-serverCore", "ktor-serverNetty", "ktor-serverAuthJwt", "ktor-serverConfigYaml", "ktor-serverContentNegotiation", "ktor-serializationJson"]

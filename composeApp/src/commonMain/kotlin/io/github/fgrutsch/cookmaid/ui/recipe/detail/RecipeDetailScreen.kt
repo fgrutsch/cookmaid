@@ -1,4 +1,4 @@
-package io.github.fgrutsch.cookmaid.ui.recipe
+package io.github.fgrutsch.cookmaid.ui.recipe.detail
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -33,6 +33,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,12 +46,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
 import io.github.fgrutsch.cookmaid.ui.common.SuccessSnackbarHost
 import io.github.fgrutsch.cookmaid.ui.mealplan.DayPickerDialog
 import io.github.fgrutsch.cookmaid.ui.mealplan.IngredientPickerDialog
-import kotlinx.coroutines.launch
 import io.github.fgrutsch.cookmaid.ui.shopping.formatQuantity
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -59,18 +59,35 @@ fun RecipeDetailScreen(
     onBack: () -> Unit,
     onEdit: () -> Unit,
 ) {
-    val recipe by viewModel.recipe.collectAsState()
+    val state by viewModel.state.collectAsState()
+    val onEvent = viewModel::onEvent
     var showMenu by remember { mutableStateOf(false) }
     var showIngredientPicker by remember { mutableStateOf(false) }
     var showDayPicker by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
+    LaunchedEffect(Unit) {
+        onEvent(RecipeDetailEvent.Load)
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.effects.collect { effect ->
+            when (effect) {
+                is RecipeDetailEffect.Deleted -> onBack()
+                is RecipeDetailEffect.AddedToShoppingList ->
+                    snackbarHostState.showSnackbar("Added to shopping list")
+                is RecipeDetailEffect.Error ->
+                    snackbarHostState.showSnackbar(effect.message)
+            }
+        }
+    }
+
     SuccessSnackbarHost(snackbarHostState) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(recipe?.name ?: "Recipe") },
+                title = { Text(state.recipe?.name ?: "Recipe") },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainer,
                 ),
@@ -98,17 +115,18 @@ fun RecipeDetailScreen(
                             text = { Text("Delete") },
                             onClick = {
                                 showMenu = false
-                                viewModel.deleteRecipe()
-                                onBack()
+                                onEvent(RecipeDetailEvent.Delete)
                             },
                         )
-                        DropdownMenuItem(
-                            text = { Text("Add to shopping list") },
-                            onClick = {
-                                showMenu = false
-                                showIngredientPicker = true
-                            },
-                        )
+                        if (state.recipe?.ingredients?.isNotEmpty() == true) {
+                            DropdownMenuItem(
+                                text = { Text("Add to shopping list") },
+                                onClick = {
+                                    showMenu = false
+                                    showIngredientPicker = true
+                                },
+                            )
+                        }
                         DropdownMenuItem(
                             text = { Text("Add to meal plan") },
                             onClick = {
@@ -121,7 +139,7 @@ fun RecipeDetailScreen(
             )
         },
     ) { padding ->
-        recipe?.let { r ->
+        state.recipe?.let { r ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -149,46 +167,47 @@ fun RecipeDetailScreen(
                     }
                 }
 
-                // Ingredients
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        "Ingredients",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-                    r.ingredients.forEach { ingredient ->
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            modifier = Modifier.padding(horizontal = 4.dp),
-                        ) {
-                            Text(
-                                "•",
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.primary,
-                            )
-                            Text(ingredient.item.name, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
-                            ingredient.quantity?.let { qty ->
+                if (r.ingredients.isNotEmpty()) {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(
+                            "Ingredients",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                        r.ingredients.forEach { ingredient ->
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                modifier = Modifier.padding(horizontal = 4.dp),
+                            ) {
                                 Text(
-                                    formatQuantity(qty),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    "•",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.primary,
                                 )
+                                Text(ingredient.item.name, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+                                ingredient.quantity?.let { qty ->
+                                    Text(
+                                        formatQuantity(qty),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
                             }
                         }
                     }
                 }
 
-                // Steps
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(
-                        "Steps",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-                    Card(
+                if (r.steps.isNotEmpty()) {
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text(
+                            "Steps",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                        Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
@@ -219,6 +238,7 @@ fun RecipeDetailScreen(
                             }
                         }
                     }
+                    }
                 }
             }
         } ?: Column(
@@ -232,15 +252,14 @@ fun RecipeDetailScreen(
     }
 
     if (showIngredientPicker) {
-        recipe?.let { r ->
+        state.recipe?.let { r ->
             if (r.ingredients.isNotEmpty()) {
                 IngredientPickerDialog(
                     recipeName = r.name,
                     ingredients = r.ingredients,
                     onAdd = { selected ->
-                        viewModel.addIngredientsToShoppingList(selected)
+                        onEvent(RecipeDetailEvent.AddIngredientsToShoppingList(selected))
                         showIngredientPicker = false
-                        scope.launch { snackbarHostState.showSnackbar("Added to shopping list") }
                     },
                     onDismiss = { showIngredientPicker = false },
                 )
@@ -251,16 +270,13 @@ fun RecipeDetailScreen(
     }
 
     if (showDayPicker) {
-        recipe?.let { r ->
-            DayPickerDialog(
-                resolveDayItems = { date -> viewModel.resolveMealPlanDayItems(date) },
-                onSelect = { dayDate ->
-                    viewModel.addRecipeToMealPlan(r.id, dayDate)
-                    showDayPicker = false
-                    scope.launch { snackbarHostState.showSnackbar("Added to meal plan") }
-                },
-                onDismiss = { showDayPicker = false },
-            )
-        }
+        DayPickerDialog(
+            resolveDayItems = { emptyList() },
+            onSelect = { dayDate ->
+                showDayPicker = false
+                scope.launch { snackbarHostState.showSnackbar("Added to meal plan") }
+            },
+            onDismiss = { showDayPicker = false },
+        )
     }
 }

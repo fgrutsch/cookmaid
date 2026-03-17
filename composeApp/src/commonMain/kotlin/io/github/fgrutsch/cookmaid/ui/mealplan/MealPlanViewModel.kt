@@ -9,7 +9,7 @@ import io.github.fgrutsch.cookmaid.mealplan.createEmptyWeek
 import io.github.fgrutsch.cookmaid.mealplan.mondayOfWeek
 import io.github.fgrutsch.cookmaid.recipe.Recipe
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
-import io.github.fgrutsch.cookmaid.recipe.RecipeRepository
+import io.github.fgrutsch.cookmaid.ui.recipe.RecipeRepository
 import io.github.fgrutsch.cookmaid.ui.shopping.ShoppingListRepository
 import io.github.fgrutsch.cookmaid.ui.common.addIngredientsToDefaultShoppingList
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -44,7 +44,14 @@ class MealPlanViewModel(
         weeks.find { it.startDate == weekStart } ?: createEmptyWeek(weekStart)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), createEmptyWeek(currentWeekStart.value))
 
-    val recipes: StateFlow<List<Recipe>> = recipeRepository.recipes
+    private val _recipes = MutableStateFlow<List<Recipe>>(emptyList())
+    val recipes: StateFlow<List<Recipe>> = _recipes
+
+    init {
+        viewModelScope.launch {
+            _recipes.value = recipeRepository.fetchPage(cursor = null, limit = 100, search = null, tag = null).items
+        }
+    }
 
     fun previousWeek() {
         currentWeekStart.value = currentWeekStart.value.plus(-7, DateTimeUnit.DAY)
@@ -58,27 +65,25 @@ class MealPlanViewModel(
         currentWeekStart.value = mondayOfWeek(today)
     }
 
-    fun resolveRecipeName(recipeId: String): String {
-        return recipeRepository.recipes.value.find { it.id == recipeId }?.name ?: "Unknown recipe"
+    fun resolveRecipeName(recipeId: Uuid): String {
+        return _recipes.value.find { it.id == recipeId }?.name ?: "Unknown recipe"
     }
 
-    fun resolveRecipeIngredients(recipeId: String): List<RecipeIngredient> {
-        return recipeRepository.recipes.value.find { it.id == recipeId }?.ingredients ?: emptyList()
+    fun resolveRecipeIngredients(recipeId: Uuid): List<RecipeIngredient> {
+        return _recipes.value.find { it.id == recipeId }?.ingredients ?: emptyList()
     }
 
-    
-    fun addRecipeItem(dayDate: LocalDate, recipeId: String) {
+    fun addRecipeItem(dayDate: LocalDate, recipeId: Uuid) {
         viewModelScope.launch {
             mealPlanRepository.getOrCreateWeek(currentWeekStart.value)
             mealPlanRepository.addItem(
                 currentWeekStart.value,
                 dayDate,
-                MealPlanItem.RecipeItem(id = Uuid.random().toString(), recipeId = recipeId),
+                MealPlanItem.RecipeItem(id = Uuid.random(), recipeId = recipeId),
             )
         }
     }
 
-    
     fun addNoteItem(dayDate: LocalDate, name: String) {
         if (name.isBlank()) return
         viewModelScope.launch {
@@ -86,12 +91,12 @@ class MealPlanViewModel(
             mealPlanRepository.addItem(
                 currentWeekStart.value,
                 dayDate,
-                MealPlanItem.NoteItem(id = Uuid.random().toString(), name = name.trim()),
+                MealPlanItem.NoteItem(id = Uuid.random(), name = name.trim()),
             )
         }
     }
 
-    fun updateNoteItem(dayDate: LocalDate, itemId: String, newName: String) {
+    fun updateNoteItem(dayDate: LocalDate, itemId: Uuid, newName: String) {
         if (newName.isBlank()) return
         viewModelScope.launch {
             mealPlanRepository.updateItem(
@@ -103,7 +108,7 @@ class MealPlanViewModel(
         }
     }
 
-    fun removeItem(dayDate: LocalDate, itemId: String) {
+    fun removeItem(dayDate: LocalDate, itemId: Uuid) {
         viewModelScope.launch {
             mealPlanRepository.removeItem(currentWeekStart.value, dayDate, itemId)
         }

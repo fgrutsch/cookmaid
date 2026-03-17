@@ -1,5 +1,6 @@
 package io.github.fgrutsch.cookmaid.ui.shopping
 
+import io.github.fgrutsch.cookmaid.shopping.CreateShoppingItemRequest
 import io.github.fgrutsch.cookmaid.shopping.ShoppingItem
 import io.github.fgrutsch.cookmaid.shopping.ShoppingList
 import kotlinx.coroutines.sync.Mutex
@@ -13,6 +14,7 @@ interface ShoppingListRepository {
     suspend fun deleteList(id: Uuid)
     suspend fun loadItems(listId: Uuid): List<ShoppingItem>
     suspend fun addItem(listId: Uuid, catalogItemId: Uuid?, freeTextName: String?, quantity: Float?): ShoppingItem
+    suspend fun addItems(listId: Uuid, items: List<CreateShoppingItemRequest>): List<ShoppingItem>
     suspend fun updateItem(listId: Uuid, itemId: Uuid, quantity: Float?, checked: Boolean)
     suspend fun deleteItem(listId: Uuid, itemId: Uuid)
     suspend fun deleteCheckedItems(listId: Uuid)
@@ -54,6 +56,10 @@ class ApiShoppingListRepository(
 
     override suspend fun addItem(listId: Uuid, catalogItemId: Uuid?, freeTextName: String?, quantity: Float?): ShoppingItem {
         return client.addItem(listId, catalogItemId, freeTextName, quantity)
+    }
+
+    override suspend fun addItems(listId: Uuid, items: List<CreateShoppingItemRequest>): List<ShoppingItem> {
+        return client.addItems(listId, items)
     }
 
     override suspend fun updateItem(listId: Uuid, itemId: Uuid, quantity: Float?, checked: Boolean) {

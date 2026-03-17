@@ -40,6 +40,11 @@ class ShoppingListService(
         return repository.addItem(listId, catalogItemId, freeTextName, quantity)
     }
 
+    suspend fun addItems(userId: Uuid, listId: Uuid, items: List<CreateShoppingItemRequest>): List<ShoppingItem>? {
+        if (!repository.isListOwnedByUser(userId, listId)) return null
+        return repository.addItems(listId, items)
+    }
+
     suspend fun updateItem(userId: Uuid, itemId: Uuid, quantity: Float?, checked: Boolean): Boolean {
         if (!repository.isItemOwnedByUser(userId, itemId)) return false
         repository.updateItem(itemId, quantity, checked)

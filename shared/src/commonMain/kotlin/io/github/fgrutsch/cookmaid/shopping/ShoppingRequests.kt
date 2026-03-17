@@ -18,3 +18,6 @@ data class CreateShoppingItemRequest(
 
 @Serializable
 data class UpdateItemRequest(val quantity: Float?, val checked: Boolean)
+
+@Serializable
+data class BatchAddItemsRequest(val items: List<CreateShoppingItemRequest>)

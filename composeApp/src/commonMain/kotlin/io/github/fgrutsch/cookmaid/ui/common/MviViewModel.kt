@@ -2,6 +2,7 @@ package io.github.fgrutsch.cookmaid.ui.common
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -41,6 +42,35 @@ abstract class MviViewModel<S, E, F>(initialState: S) : ViewModel() {
     }
 
     protected fun launch(block: suspend () -> Unit) {
-        viewModelScope.launch { block() }
+        viewModelScope.launch {
+            try {
+                block()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                onError(e)
+            }
+        }
     }
+
+    /**
+     * Apply an optimistic state change, then run a suspend block.
+     * If the block throws, the state is rolled back to the snapshot taken before the change.
+     */
+    protected fun launchOptimistic(optimisticUpdate: S.() -> S, block: suspend () -> Unit) {
+        val snapshot = state.value
+        updateState(optimisticUpdate)
+        viewModelScope.launch {
+            try {
+                block()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                state.update { snapshot }
+                onError(e)
+            }
+        }
+    }
+
+    protected open fun onError(e: Exception) {}
 }

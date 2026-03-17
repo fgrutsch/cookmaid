@@ -18,6 +18,7 @@ class PostgresCatalogItemRepository : CatalogItemRepository {
 
     override suspend fun findAll(): List<Item.CatalogItem> = suspendTransaction {
         joined.selectAll()
+            .orderBy(CatalogItemsTable.name)
             .map { it.toCatalogItem() }
     }
 
