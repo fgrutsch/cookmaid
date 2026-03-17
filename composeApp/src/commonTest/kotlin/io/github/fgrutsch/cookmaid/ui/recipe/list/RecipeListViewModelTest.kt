@@ -1,11 +1,9 @@
-package io.github.fgrutsch.cookmaid.ui.recipe
+package io.github.fgrutsch.cookmaid.ui.recipe.list
 
 import io.github.fgrutsch.cookmaid.catalog.Item
 import io.github.fgrutsch.cookmaid.recipe.Recipe
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
-import io.github.fgrutsch.cookmaid.ui.recipe.list.RecipeListEffect
-import io.github.fgrutsch.cookmaid.ui.recipe.list.RecipeListEvent
-import io.github.fgrutsch.cookmaid.ui.recipe.list.RecipeListViewModel
+import io.github.fgrutsch.cookmaid.ui.recipe.FakeRecipeRepository
 import io.github.fgrutsch.cookmaid.ui.shopping.FakeShoppingListRepository
 import io.github.fgrutsch.cookmaid.shopping.ShoppingList
 import io.github.fgrutsch.cookmaid.support.BaseViewModelTest

@@ -1,12 +1,10 @@
-package io.github.fgrutsch.cookmaid.ui.recipe
+package io.github.fgrutsch.cookmaid.ui.recipe.detail
 
 import io.github.fgrutsch.cookmaid.catalog.Item
 import io.github.fgrutsch.cookmaid.recipe.Recipe
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
 import io.github.fgrutsch.cookmaid.shopping.ShoppingList
-import io.github.fgrutsch.cookmaid.ui.recipe.detail.RecipeDetailEffect
-import io.github.fgrutsch.cookmaid.ui.recipe.detail.RecipeDetailEvent
-import io.github.fgrutsch.cookmaid.ui.recipe.detail.RecipeDetailViewModel
+import io.github.fgrutsch.cookmaid.ui.recipe.FakeRecipeRepository
 import io.github.fgrutsch.cookmaid.ui.shopping.FakeShoppingListRepository
 import io.github.fgrutsch.cookmaid.support.BaseViewModelTest
 import kotlinx.coroutines.ExperimentalCoroutinesApi
