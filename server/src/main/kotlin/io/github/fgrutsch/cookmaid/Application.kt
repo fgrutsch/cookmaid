@@ -5,6 +5,8 @@ import io.github.fgrutsch.cookmaid.auth.configureAuth
 import io.github.fgrutsch.cookmaid.catalog.catalogModule
 import io.github.fgrutsch.cookmaid.catalog.catalogRoutes
 import io.github.fgrutsch.cookmaid.db.databaseModule
+import io.github.fgrutsch.cookmaid.recipe.recipeModule
+import io.github.fgrutsch.cookmaid.recipe.recipeRoutes
 import io.github.fgrutsch.cookmaid.shopping.shoppingModule
 import io.github.fgrutsch.cookmaid.shopping.shoppingRoutes
 import io.github.fgrutsch.cookmaid.user.userModule
@@ -40,6 +42,7 @@ private fun Application.configureDI() {
             userModule,
             catalogModule,
             shoppingModule,
+            recipeModule,
         )
     }
 }
@@ -55,6 +58,7 @@ private fun Application.configureRouting() {
                 userRoutes()
                 catalogRoutes()
                 shoppingRoutes()
+                recipeRoutes()
             }
         }
     }

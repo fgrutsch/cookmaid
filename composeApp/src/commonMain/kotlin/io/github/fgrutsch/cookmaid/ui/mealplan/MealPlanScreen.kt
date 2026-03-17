@@ -56,6 +56,7 @@ import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
 import io.github.fgrutsch.cookmaid.ui.common.formatShortDate
 import io.github.fgrutsch.cookmaid.ui.common.SuccessSnackbarHost
 import io.github.fgrutsch.cookmaid.ui.common.SwipeToDeleteItem
+import kotlin.uuid.Uuid
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
@@ -68,7 +69,7 @@ private fun isUrl(text: String): Boolean = urlPattern.matches(text.trim())
 @Composable
 fun MealPlanScreen(
     viewModel: MealPlanViewModel,
-    onRecipeClick: (String) -> Unit,
+    onRecipeClick: (Uuid) -> Unit,
 ) {
     val currentWeek by viewModel.currentWeek.collectAsState()
     val weekStart by viewModel.currentWeekStart.collectAsState()
@@ -190,7 +191,7 @@ fun MealPlanScreen(
 
 private data class EditNoteState(
     val dayDate: LocalDate,
-    val itemId: String,
+    val itemId: Uuid,
     val currentName: String,
 )
 
@@ -234,9 +235,9 @@ private fun DayCard(
     day: MealPlanDay,
     onAddItem: () -> Unit,
     onItemClick: (MealPlanItem) -> Unit,
-    onDeleteItem: (String) -> Unit,
+    onDeleteItem: (Uuid) -> Unit,
     onAddToShoppingList: (MealPlanItem) -> Unit,
-    resolveRecipeName: (String) -> String,
+    resolveRecipeName: (Uuid) -> String,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -291,7 +292,7 @@ private fun DayCard(
 @Composable
 private fun MealPlanItemRow(
     item: MealPlanItem,
-    resolveRecipeName: (String) -> String,
+    resolveRecipeName: (Uuid) -> String,
     onClick: () -> Unit,
     onAddToShoppingList: () -> Unit,
 ) {

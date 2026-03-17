@@ -1,10 +1,12 @@
 package io.github.fgrutsch.cookmaid.ui.recipe
 
-import org.koin.core.module.dsl.factoryOf
+import io.github.fgrutsch.cookmaid.ui.recipe.list.RecipeListViewModel
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.bind
 import org.koin.dsl.module
 
 val recipeModule = module {
-    factoryOf(::RecipeListViewModel)
-    factory { (recipeId: String) -> RecipeDetailViewModel(recipeId, get(), get(), get()) }
-    factory { AddRecipeViewModel(get(), get(), get()) }
+    singleOf(::RecipeClient)
+    singleOf(::ApiRecipeRepository) bind RecipeRepository::class
+    singleOf(::RecipeListViewModel)
 }

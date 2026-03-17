@@ -32,12 +32,12 @@ import io.github.fgrutsch.cookmaid.ui.auth.OidcConfig
 import io.github.fgrutsch.cookmaid.ui.auth.UserProfile
 import io.github.fgrutsch.cookmaid.ui.mealplan.MealPlanScreen
 import io.github.fgrutsch.cookmaid.ui.mealplan.MealPlanViewModel
-import io.github.fgrutsch.cookmaid.ui.recipe.AddRecipeScreen
-import io.github.fgrutsch.cookmaid.ui.recipe.AddRecipeViewModel
-import io.github.fgrutsch.cookmaid.ui.recipe.RecipeDetailScreen
-import io.github.fgrutsch.cookmaid.ui.recipe.RecipeDetailViewModel
-import io.github.fgrutsch.cookmaid.ui.recipe.RecipeListScreen
-import io.github.fgrutsch.cookmaid.ui.recipe.RecipeListViewModel
+import io.github.fgrutsch.cookmaid.ui.recipe.detail.RecipeDetailScreen
+import io.github.fgrutsch.cookmaid.ui.recipe.detail.RecipeDetailViewModel
+import io.github.fgrutsch.cookmaid.ui.recipe.edit.AddRecipeScreen
+import io.github.fgrutsch.cookmaid.ui.recipe.edit.AddRecipeViewModel
+import io.github.fgrutsch.cookmaid.ui.recipe.list.RecipeListScreen
+import io.github.fgrutsch.cookmaid.ui.recipe.list.RecipeListViewModel
 import io.github.fgrutsch.cookmaid.ui.settings.SettingsScreen
 import io.github.fgrutsch.cookmaid.ui.settings.SettingsViewModel
 import io.github.fgrutsch.cookmaid.ui.shopping.ShoppingListScreen
@@ -138,8 +138,11 @@ private fun MainContent(settingsViewModel: SettingsViewModel, authViewModel: Aut
                 }
 
                 entry<Route.AddRecipe> {
+                    val koin = getKoin()
                     AddRecipeScreen(
-                        viewModel = koinInject<AddRecipeViewModel>(),
+                        viewModel = remember {
+                            AddRecipeViewModel(koin.get(), koin.get())
+                        },
                         onBack = { backStack.removeLastOrNull() },
                     )
                 }
@@ -148,12 +151,7 @@ private fun MainContent(settingsViewModel: SettingsViewModel, authViewModel: Aut
                     val koin = getKoin()
                     RecipeDetailScreen(
                         viewModel = remember(key.id) {
-                            RecipeDetailViewModel(
-                                recipeId = key.id,
-                                recipeRepository = koin.get(),
-                                shoppingListRepository = koin.get(),
-                                mealPlanRepository = koin.get(),
-                            )
+                            RecipeDetailViewModel(key.id, koin.get(), koin.get())
                         },
                         onBack = { backStack.removeLastOrNull() },
                         onEdit = { backStack.add(Route.EditRecipe(key.id)) },
@@ -164,12 +162,7 @@ private fun MainContent(settingsViewModel: SettingsViewModel, authViewModel: Aut
                     val koin = getKoin()
                     AddRecipeScreen(
                         viewModel = remember(key.id) {
-                            AddRecipeViewModel(
-                                recipeRepository = koin.get(),
-                                tagRepository = koin.get(),
-                                catalogItemRepository = koin.get(),
-                                editRecipeId = key.id,
-                            )
+                            AddRecipeViewModel(koin.get(), koin.get(), key.id)
                         },
                         onBack = { backStack.removeLastOrNull() },
                     )

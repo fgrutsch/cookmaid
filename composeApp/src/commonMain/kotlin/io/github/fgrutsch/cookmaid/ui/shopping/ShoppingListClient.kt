@@ -1,5 +1,6 @@
 package io.github.fgrutsch.cookmaid.ui.shopping
 
+import io.github.fgrutsch.cookmaid.shopping.BatchAddItemsRequest
 import io.github.fgrutsch.cookmaid.shopping.CreateListRequest
 import io.github.fgrutsch.cookmaid.shopping.CreateShoppingItemRequest
 import io.github.fgrutsch.cookmaid.shopping.ShoppingItem
@@ -44,6 +45,12 @@ class ShoppingListClient(
 
     suspend fun fetchItems(listId: Uuid): List<ShoppingItem> =
         apiClient.httpClient.get("$base/$listId/items").body()
+
+    suspend fun addItems(listId: Uuid, items: List<CreateShoppingItemRequest>): List<ShoppingItem> =
+        apiClient.httpClient.post("$base/$listId/items/batch") {
+            contentType(ContentType.Application.Json)
+            setBody(BatchAddItemsRequest(items))
+        }.body()
 
     suspend fun addItem(listId: Uuid, catalogItemId: Uuid?, freeTextName: String?, quantity: Float?): ShoppingItem =
         apiClient.httpClient.post("$base/$listId/items") {

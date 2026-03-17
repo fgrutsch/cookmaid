@@ -2,6 +2,7 @@ package io.github.fgrutsch.cookmaid.ui.shopping
 
 import io.github.fgrutsch.cookmaid.catalog.Item
 import io.github.fgrutsch.cookmaid.shopping.ShoppingItem
+import io.github.fgrutsch.cookmaid.shopping.ShoppingList
 import io.github.fgrutsch.cookmaid.ui.catalog.CatalogItemRepository
 import androidx.lifecycle.viewModelScope
 import io.github.fgrutsch.cookmaid.ui.common.MviViewModel
@@ -23,6 +24,7 @@ class ShoppingListViewModel(
 ) : MviViewModel<ShoppingListState, ShoppingListEvent, ShoppingListEffect>(ShoppingListState()) {
 
     private val searchQueryFlow = MutableStateFlow("")
+    private var initialized = false
 
     init {
         searchQueryFlow
@@ -37,6 +39,7 @@ class ShoppingListViewModel(
     override fun handleEvent(event: ShoppingListEvent) {
         when (event) {
             is ShoppingListEvent.LoadLists -> loadLists()
+            is ShoppingListEvent.Refresh -> refresh()
             is ShoppingListEvent.SelectList -> selectList(event.listId)
             is ShoppingListEvent.UpdateSearchQuery -> updateSearchQuery(event.query)
             is ShoppingListEvent.ClearSearch -> clearSearch()
@@ -52,30 +55,49 @@ class ShoppingListViewModel(
     }
 
     private fun loadLists() {
+        val firstLoad = !initialized
+        initialized = true
         launch {
-            updateState { copy(isLoading = true) }
+            if (firstLoad) updateState { copy(isLoading = true) }
             val loaded = repository.getLists(refresh = true)
-            val currentSelectedId = state.value.selectedListId
-            val selectedId = if (currentSelectedId == null || loaded.none { it.id == currentSelectedId }) {
-                (loaded.find { it.default } ?: loaded.firstOrNull())?.id
-            } else {
-                currentSelectedId
-            }
+            val selectedId = resolveSelectedListId(loaded)
             updateState { copy(lists = loaded, isLoading = false) }
-            selectList(selectedId)
+            loadItems(selectedId)
+        }
+    }
+
+    private fun refresh() {
+        launch {
+            updateState { copy(isRefreshing = true) }
+            val loaded = repository.getLists(refresh = true)
+            val selectedId = resolveSelectedListId(loaded)
+            updateState { copy(lists = loaded, isRefreshing = false) }
+            loadItems(selectedId)
         }
     }
 
     private fun selectList(listId: Uuid?) {
+        loadItems(listId)
+    }
+
+    private fun loadItems(listId: Uuid?) {
         updateState { copy(selectedListId = listId) }
         if (listId != null) {
             launch {
-                updateState { copy(isLoading = true) }
                 val items = repository.loadItems(listId)
-                updateState { copy(items = items, isLoading = false) }
+                updateState { copy(items = items) }
             }
         } else {
             updateState { copy(items = emptyList()) }
+        }
+    }
+
+    private fun resolveSelectedListId(lists: List<ShoppingList>): Uuid? {
+        val currentSelectedId = state.value.selectedListId
+        return if (currentSelectedId != null && lists.any { it.id == currentSelectedId }) {
+            currentSelectedId
+        } else {
+            (lists.find { it.default } ?: lists.firstOrNull())?.id
         }
     }
 
@@ -103,8 +125,9 @@ class ShoppingListViewModel(
 
     private fun updateItem(item: ShoppingItem) {
         val listId = state.value.selectedListId ?: return
-        updateState { copy(items = items.map { if (it.id == item.id) item else it }) }
-        launch {
+        launchOptimistic(
+            optimisticUpdate = { copy(items = items.map { if (it.id == item.id) item else it }) },
+        ) {
             repository.updateItem(listId, item.id, item.quantity, item.checked)
         }
     }
@@ -113,24 +136,27 @@ class ShoppingListViewModel(
         val listId = state.value.selectedListId ?: return
         val item = state.value.items.find { it.id == id } ?: return
         val toggled = item.copy(checked = !item.checked)
-        updateState { copy(items = items.map { if (it.id == id) toggled else it }) }
-        launch {
+        launchOptimistic(
+            optimisticUpdate = { copy(items = items.map { if (it.id == id) toggled else it }) },
+        ) {
             repository.updateItem(listId, id, toggled.quantity, toggled.checked)
         }
     }
 
     private fun deleteItem(id: Uuid) {
         val listId = state.value.selectedListId ?: return
-        updateState { copy(items = items.filter { it.id != id }) }
-        launch {
+        launchOptimistic(
+            optimisticUpdate = { copy(items = items.filter { it.id != id }) },
+        ) {
             repository.deleteItem(listId, id)
         }
     }
 
     private fun deleteChecked() {
         val listId = state.value.selectedListId ?: return
-        updateState { copy(items = items.filter { !it.checked }) }
-        launch {
+        launchOptimistic(
+            optimisticUpdate = { copy(items = items.filter { !it.checked }) },
+        ) {
             repository.deleteCheckedItems(listId)
         }
     }
@@ -139,30 +165,36 @@ class ShoppingListViewModel(
         if (name.isBlank()) return
         launch {
             val newList = repository.createList(name)
-            val lists = repository.getLists()
-            updateState { copy(lists = lists) }
-            selectList(newList.id)
+            updateState { copy(lists = lists + newList) }
+            loadItems(newList.id)
         }
     }
 
     private fun renameList(id: Uuid, newName: String) {
         if (newName.isBlank()) return
-        launch {
+        launchOptimistic(
+            optimisticUpdate = { copy(lists = lists.map { if (it.id == id) it.copy(name = newName.trim()) else it }) },
+        ) {
             repository.updateList(id, newName)
-            val lists = repository.getLists()
-            updateState { copy(lists = lists) }
         }
     }
 
     private fun deleteList(id: Uuid) {
-        launch {
+        val fallback = state.value.lists.filter { it.id != id }.let { remaining ->
+            remaining.find { it.default }?.id ?: remaining.firstOrNull()?.id
+        }
+        launchOptimistic(
+            optimisticUpdate = { copy(lists = lists.filter { it.id != id }) },
+        ) {
             repository.deleteList(id)
-            val updatedLists = repository.getLists()
-            updateState { copy(lists = updatedLists) }
             if (state.value.selectedListId == id) {
-                val fallback = updatedLists.find { it.default }?.id ?: updatedLists.firstOrNull()?.id
-                selectList(fallback)
+                loadItems(fallback)
             }
         }
+    }
+
+    override fun onError(e: Exception) {
+        updateState { copy(isLoading = false, isRefreshing = false) }
+        sendEffect(ShoppingListEffect.Error("Something went wrong. Please try again."))
     }
 }

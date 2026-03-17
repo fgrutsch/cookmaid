@@ -31,6 +31,7 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.koin.ktor)
     implementation(libs.koin.logger.slf4j)
+    implementation(libs.kotlinx.datetime)
     implementation(libs.bundles.exposed)
     implementation(libs.bundles.flyway)
     runtimeOnly(libs.postgresql)

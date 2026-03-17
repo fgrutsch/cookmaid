@@ -1,4 +1,4 @@
-package io.github.fgrutsch.cookmaid.ui.recipe
+package io.github.fgrutsch.cookmaid.ui.recipe.edit
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -31,11 +31,14 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -55,23 +58,33 @@ fun AddRecipeScreen(
     viewModel: AddRecipeViewModel,
     onBack: () -> Unit,
 ) {
-    val name by viewModel.name.collectAsState()
-    val ingredients by viewModel.ingredients.collectAsState()
-    val steps by viewModel.steps.collectAsState()
-    val selectedTags by viewModel.selectedTags.collectAsState()
-    val availableTags by viewModel.availableTags.collectAsState()
-    val nameError by viewModel.nameError.collectAsState()
-    val ingredientQuery by viewModel.ingredientQuery.collectAsState()
-    val ingredientSuggestions by viewModel.ingredientSuggestions.collectAsState()
+    val state by viewModel.state.collectAsState()
+    val onEvent = viewModel::onEvent
 
     var stepInput by remember { mutableStateOf("") }
     var ingredientQuantityInput by remember { mutableStateOf("") }
     var showNewTagDialog by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(Unit) {
+        onEvent(AddRecipeEvent.Load)
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.effects.collect { effect ->
+            when (effect) {
+                is AddRecipeEffect.Saved -> onBack()
+                is AddRecipeEffect.Error ->
+                    snackbarHostState.showSnackbar(effect.message)
+            }
+        }
+    }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text(if (viewModel.isEditing) "Edit Recipe" else "Add Recipe") },
+                title = { Text(if (state.isEditing) "Edit Recipe" else "Add Recipe") },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainer,
                 ),
@@ -81,7 +94,7 @@ fun AddRecipeScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { if (viewModel.save()) onBack() }) {
+                    IconButton(onClick = { onEvent(AddRecipeEvent.Save) }) {
                         Icon(Icons.Default.Check, contentDescription = "Save")
                     }
                 },
@@ -96,67 +109,43 @@ fun AddRecipeScreen(
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
-            // Name
             OutlinedTextField(
-                value = name,
-                onValueChange = { viewModel.setName(it) },
+                value = state.name,
+                onValueChange = { onEvent(AddRecipeEvent.SetName(it)) },
                 label = { Text("Recipe name") },
                 singleLine = true,
-                isError = nameError,
-                supportingText = if (nameError) {{ Text("Name is required") }} else null,
+                isError = state.nameError,
+                supportingText = if (state.nameError) {{ Text("Name is required") }} else null,
                 modifier = Modifier.fillMaxWidth(),
             )
 
-            // Tags
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Tags", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
-                    availableTags.forEach { tag ->
-                        FilterChip(
-                            selected = tag in selectedTags,
-                            onClick = { viewModel.toggleTag(tag) },
-                            label = { Text(tag) },
-                        )
-                    }
-                    IconButton(onClick = { showNewTagDialog = true }) {
-                        Icon(Icons.Default.Add, contentDescription = "Add tag")
-                    }
-                }
-            }
-
-            HorizontalDivider()
-
-            // Ingredients
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text("Ingredients", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                ingredients.forEachIndexed { index, ingredient ->
+                state.ingredients.forEachIndexed { index, ingredient ->
                     IngredientRow(
                         name = ingredient.item.name,
                         quantity = ingredient.quantity,
-                        onQuantityChange = { viewModel.updateIngredientQuantity(index, it) },
-                        onRemove = { viewModel.removeIngredient(index) },
+                        onQuantityChange = { onEvent(AddRecipeEvent.UpdateIngredientQuantity(index, it)) },
+                        onRemove = { onEvent(AddRecipeEvent.RemoveIngredient(index)) },
                     )
                 }
                 IngredientAddField(
-                    query = ingredientQuery,
+                    query = state.ingredientQuery,
                     quantityInput = ingredientQuantityInput,
-                    suggestions = ingredientSuggestions,
-                    onQueryChange = { viewModel.updateIngredientQuery(it) },
+                    suggestions = state.ingredientSuggestions,
+                    onQueryChange = { onEvent(AddRecipeEvent.UpdateIngredientQuery(it)) },
                     onQuantityChange = { ingredientQuantityInput = it },
                     onAddFreeText = {
-                        if (ingredientQuery.isNotBlank()) {
-                            viewModel.addIngredient(
-                                Item.FreeTextItem(name = ingredientQuery.trim()),
+                        if (state.ingredientQuery.isNotBlank()) {
+                            onEvent(AddRecipeEvent.AddIngredient(
+                                Item.FreeTextItem(name = state.ingredientQuery.trim()),
                                 ingredientQuantityInput.toFloatOrNull(),
-                            )
+                            ))
                             ingredientQuantityInput = ""
                         }
                     },
                     onAddCatalogItem = { item ->
-                        viewModel.addIngredient(item, ingredientQuantityInput.toFloatOrNull())
+                        onEvent(AddRecipeEvent.AddIngredient(item, ingredientQuantityInput.toFloatOrNull()))
                         ingredientQuantityInput = ""
                     },
                 )
@@ -164,14 +153,13 @@ fun AddRecipeScreen(
 
             HorizontalDivider()
 
-            // Steps
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text("Steps", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                steps.forEachIndexed { index, step ->
+                state.steps.forEachIndexed { index, step ->
                     ListItem(
                         headlineContent = { Text("${index + 1}. $step") },
                         trailingContent = {
-                            IconButton(onClick = { viewModel.removeStep(index) }) {
+                            IconButton(onClick = { onEvent(AddRecipeEvent.RemoveStep(index)) }) {
                                 Icon(Icons.Default.Close, contentDescription = "Remove")
                             }
                         },
@@ -184,13 +172,13 @@ fun AddRecipeScreen(
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = {
-                        viewModel.addStep(stepInput)
+                        onEvent(AddRecipeEvent.AddStep(stepInput))
                         stepInput = ""
                     }),
                     trailingIcon = {
                         if (stepInput.isNotBlank()) {
                             IconButton(onClick = {
-                                viewModel.addStep(stepInput)
+                                onEvent(AddRecipeEvent.AddStep(stepInput))
                                 stepInput = ""
                             }) {
                                 Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Add step")
@@ -199,6 +187,27 @@ fun AddRecipeScreen(
                     },
                 )
             }
+
+            HorizontalDivider()
+
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("Tags", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    state.availableTags.forEach { tag ->
+                        FilterChip(
+                            selected = tag in state.selectedTags,
+                            onClick = { onEvent(AddRecipeEvent.ToggleTag(tag)) },
+                            label = { Text(tag) },
+                        )
+                    }
+                    IconButton(onClick = { showNewTagDialog = true }) {
+                        Icon(Icons.Default.Add, contentDescription = "Add tag")
+                    }
+                }
+            }
         }
     }
 
@@ -206,7 +215,7 @@ fun AddRecipeScreen(
         NewTagDialog(
             onDismiss = { showNewTagDialog = false },
             onConfirm = { tag ->
-                viewModel.createAndAddTag(tag)
+                onEvent(AddRecipeEvent.CreateAndAddTag(tag))
                 showNewTagDialog = false
             },
         )

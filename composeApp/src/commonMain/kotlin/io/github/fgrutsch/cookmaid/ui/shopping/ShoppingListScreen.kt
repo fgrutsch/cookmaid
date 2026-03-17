@@ -24,6 +24,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -53,12 +55,22 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
     var showNewListDialog by remember { mutableStateOf(false) }
     var editingList by remember { mutableStateOf<Pair<Uuid, String>?>(null) }
     var showMenu by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(Unit) {
         onEvent(ShoppingListEvent.LoadLists)
     }
 
+    LaunchedEffect(Unit) {
+        viewModel.effects.collect { effect ->
+            when (effect) {
+                is ShoppingListEffect.Error -> snackbarHostState.showSnackbar(effect.message)
+            }
+        }
+    }
+
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text("Shopping") },
@@ -138,8 +150,8 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
             )
 
             PullToRefreshBox(
-                isRefreshing = state.isLoading,
-                onRefresh = { onEvent(ShoppingListEvent.LoadLists) },
+                isRefreshing = state.isRefreshing,
+                onRefresh = { onEvent(ShoppingListEvent.Refresh) },
                 modifier = Modifier.fillMaxSize(),
             ) {
                 if (!state.isLoading && state.items.isEmpty()) {

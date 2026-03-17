@@ -1,4 +1,4 @@
-package io.github.fgrutsch.cookmaid.ui.recipe
+package io.github.fgrutsch.cookmaid.ui.recipe.list
 
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -24,6 +25,8 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilterChip
@@ -42,6 +45,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,41 +61,66 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import kotlin.uuid.Uuid
 import io.github.fgrutsch.cookmaid.recipe.Recipe
-import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
-import io.github.fgrutsch.cookmaid.ui.mealplan.DayPickerDialog
 import io.github.fgrutsch.cookmaid.ui.common.SuccessSnackbarHost
+import io.github.fgrutsch.cookmaid.ui.mealplan.DayPickerDialog
 import io.github.fgrutsch.cookmaid.ui.mealplan.IngredientPickerDialog
 
 @Composable
 fun RecipeListScreen(
     viewModel: RecipeListViewModel,
-    onRecipeClick: (String) -> Unit,
+    onRecipeClick: (Uuid) -> Unit,
     onAddRecipe: () -> Unit,
 ) {
-    val recipes by viewModel.filteredRecipes.collectAsState()
-    val searchQuery by viewModel.searchQuery.collectAsState()
-    val searchActive by viewModel.searchActive.collectAsState()
-    val randomRecipe by viewModel.randomRecipe.collectAsState()
-    val tags by viewModel.tags.collectAsState()
-    val selectedTags by viewModel.selectedTags.collectAsState()
+    val state by viewModel.state.collectAsState()
+    val onEvent = viewModel::onEvent
     val keyboardController = LocalSoftwareKeyboardController.current
     val searchFocusRequester = remember { FocusRequester() }
 
-    var ingredientPickerRecipeId by remember { mutableStateOf<String?>(null) }
-    var dayPickerRecipeId by remember { mutableStateOf<String?>(null) }
+    var ingredientPickerRecipeId by remember { mutableStateOf<Uuid?>(null) }
+    var dayPickerRecipeId by remember { mutableStateOf<Uuid?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+
+    val listState = rememberLazyListState()
+    val shouldLoadMore by remember {
+        derivedStateOf {
+            val totalItems = listState.layoutInfo.totalItemsCount
+            if (totalItems == 0) return@derivedStateOf false
+            val lastVisible = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+            lastVisible >= totalItems - 5
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        onEvent(RecipeListEvent.LoadRecipes)
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.effects.collect { effect ->
+            when (effect) {
+                is RecipeListEffect.AddedToShoppingList ->
+                    snackbarHostState.showSnackbar("Added to shopping list")
+                is RecipeListEffect.Error ->
+                    snackbarHostState.showSnackbar(effect.message)
+            }
+        }
+    }
+
+    LaunchedEffect(shouldLoadMore) {
+        if (shouldLoadMore) onEvent(RecipeListEvent.LoadMore)
+    }
 
     SuccessSnackbarHost(snackbarHostState) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
-                    if (searchActive) {
+                    if (state.searchActive) {
                         TextField(
-                            value = searchQuery,
-                            onValueChange = { viewModel.updateSearchQuery(it) },
+                            value = state.searchQuery,
+                            onValueChange = { onEvent(RecipeListEvent.UpdateSearchQuery(it)) },
                             placeholder = { Text("Search recipes...") },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth().focusRequester(searchFocusRequester),
@@ -115,15 +144,15 @@ fun RecipeListScreen(
                     containerColor = MaterialTheme.colorScheme.surfaceContainer,
                 ),
                 actions = {
-                    if (searchActive) {
-                        IconButton(onClick = { viewModel.setSearchActive(false) }) {
+                    if (state.searchActive) {
+                        IconButton(onClick = { onEvent(RecipeListEvent.SetSearchActive(false)) }) {
                             Icon(Icons.Default.Close, contentDescription = "Close search")
                         }
                     } else {
-                        IconButton(onClick = { viewModel.setSearchActive(true) }) {
+                        IconButton(onClick = { onEvent(RecipeListEvent.SetSearchActive(true)) }) {
                             Icon(Icons.Default.Search, contentDescription = "Search")
                         }
-                        IconButton(onClick = { viewModel.rollRandomRecipe() }) {
+                        IconButton(onClick = { onEvent(RecipeListEvent.RollRandomRecipe) }) {
                             Icon(Icons.Default.Casino, contentDescription = "Random recipe")
                         }
                     }
@@ -136,10 +165,15 @@ fun RecipeListScreen(
             }
         },
     ) { padding ->
-        Column(
+        PullToRefreshBox(
+            isRefreshing = state.isRefreshing,
+            onRefresh = { onEvent(RecipeListEvent.Refresh) },
             modifier = Modifier.fillMaxSize().padding(padding),
         ) {
-            if (tags.isNotEmpty()) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+        ) {
+            if (state.availableTags.isNotEmpty()) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -147,18 +181,21 @@ fun RecipeListScreen(
                         .padding(horizontal = 12.dp, vertical = 4.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    tags.forEach { tag ->
+                    state.availableTags.forEach { tag ->
                         FilterChip(
-                            selected = tag in selectedTags,
-                            onClick = { viewModel.toggleTagFilter(tag) },
+                            selected = tag == state.selectedTag,
+                            onClick = { onEvent(RecipeListEvent.SelectTag(tag)) },
                             label = { Text(tag) },
                         )
                     }
                 }
             }
 
-
-            if (recipes.isEmpty()) {
+            if (state.isLoading && state.recipes.isEmpty()) {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            } else if (state.recipes.isEmpty()) {
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
@@ -167,59 +204,51 @@ fun RecipeListScreen(
                     Text("No recipes found", style = MaterialTheme.typography.bodyLarge)
                 }
             } else {
-                val grouped = recipes.groupBy { recipe ->
-                    recipe.tags.firstOrNull() ?: "Uncategorized"
-                }.entries.sortedBy { if (it.key == "Uncategorized") "zzz" else it.key }
-
                 LazyColumn(
+                    state = listState,
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    grouped.forEach { (tag, tagRecipes) ->
-                        item(key = "header-$tag") {
-                            Text(
-                                text = tag,
-                                style = MaterialTheme.typography.titleSmall,
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(
-                                    start = 4.dp,
-                                    top = if (tag == grouped.first().key) 0.dp else 8.dp,
-                                ),
-                            )
-                        }
-                        items(tagRecipes, key = { it.id }) { recipe ->
-                            RecipeCard(
-                                recipe = recipe,
-                                onClick = { onRecipeClick(recipe.id) },
-                                onAddToShoppingList = { ingredientPickerRecipeId = recipe.id },
-                                onAddToMealPlan = { dayPickerRecipeId = recipe.id },
-                            )
+                    items(state.recipes, key = { it.id }) { recipe ->
+                        RecipeCard(
+                            recipe = recipe,
+                            onClick = { onRecipeClick(recipe.id) },
+                            onAddToShoppingList = { ingredientPickerRecipeId = recipe.id },
+                            onAddToMealPlan = { dayPickerRecipeId = recipe.id },
+                        )
+                    }
+                    if (state.isLoadingMore) {
+                        item {
+                            Box(Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator()
+                            }
                         }
                     }
                 }
             }
         }
+        }
     }
     }
 
-    randomRecipe?.let { recipe ->
+    state.randomRecipe?.let { recipe ->
         RandomRecipeDialog(
             recipe = recipe,
             onView = {
-                viewModel.clearRandomRecipe()
+                onEvent(RecipeListEvent.ClearRandomRecipe)
                 onRecipeClick(recipe.id)
             },
-            onReroll = { viewModel.rollRandomRecipe() },
-            onAddToShoppingList = {
-                viewModel.clearRandomRecipe()
+            onReroll = { onEvent(RecipeListEvent.RollRandomRecipe) },
+            onAddToShoppingList = if (recipe.ingredients.isNotEmpty()) {{
+                onEvent(RecipeListEvent.ClearRandomRecipe)
                 ingredientPickerRecipeId = recipe.id
-            },
+            }} else null,
             onAddToMealPlan = {
-                viewModel.clearRandomRecipe()
+                onEvent(RecipeListEvent.ClearRandomRecipe)
                 dayPickerRecipeId = recipe.id
             },
-            onDismiss = { viewModel.clearRandomRecipe() },
+            onDismiss = { onEvent(RecipeListEvent.ClearRandomRecipe) },
         )
     }
 
@@ -230,9 +259,8 @@ fun RecipeListScreen(
                 recipeName = viewModel.resolveRecipeName(recipeId),
                 ingredients = ingredients,
                 onAdd = { selected ->
-                    viewModel.addIngredientsToShoppingList(selected)
+                    onEvent(RecipeListEvent.AddIngredientsToShoppingList(selected))
                     ingredientPickerRecipeId = null
-                    scope.launch { snackbarHostState.showSnackbar("Added to shopping list") }
                 },
                 onDismiss = { ingredientPickerRecipeId = null },
             )
@@ -243,9 +271,8 @@ fun RecipeListScreen(
 
     dayPickerRecipeId?.let { recipeId ->
         DayPickerDialog(
-            resolveDayItems = { date -> viewModel.resolveMealPlanDayItems(date) },
+            resolveDayItems = { emptyList() },
             onSelect = { dayDate ->
-                viewModel.addRecipeToMealPlan(recipeId, dayDate)
                 dayPickerRecipeId = null
                 scope.launch { snackbarHostState.showSnackbar("Added to meal plan") }
             },
@@ -299,13 +326,15 @@ private fun RecipeCard(
                     expanded = showMenu,
                     onDismissRequest = { showMenu = false },
                 ) {
-                    DropdownMenuItem(
-                        text = { Text("Add to shopping list") },
-                        onClick = {
-                            showMenu = false
-                            onAddToShoppingList()
-                        },
-                    )
+                    if (recipe.ingredients.isNotEmpty()) {
+                        DropdownMenuItem(
+                            text = { Text("Add to shopping list") },
+                            onClick = {
+                                showMenu = false
+                                onAddToShoppingList()
+                            },
+                        )
+                    }
                     DropdownMenuItem(
                         text = { Text("Add to meal plan") },
                         onClick = {
@@ -324,7 +353,7 @@ private fun RandomRecipeDialog(
     recipe: Recipe,
     onView: () -> Unit,
     onReroll: () -> Unit,
-    onAddToShoppingList: () -> Unit,
+    onAddToShoppingList: (() -> Unit)?,
     onAddToMealPlan: () -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -345,7 +374,9 @@ private fun RandomRecipeDialog(
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 TextButton(onClick = onView) { Text("View details") }
-                TextButton(onClick = onAddToShoppingList) { Text("Add to shopping list") }
+                onAddToShoppingList?.let {
+                    TextButton(onClick = it) { Text("Add to shopping list") }
+                }
                 TextButton(onClick = onAddToMealPlan) { Text("Add to meal plan") }
             }
         },

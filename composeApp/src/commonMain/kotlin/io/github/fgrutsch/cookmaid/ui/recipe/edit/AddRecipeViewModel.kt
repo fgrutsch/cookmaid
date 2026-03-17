@@ -1,0 +1,152 @@
+package io.github.fgrutsch.cookmaid.ui.recipe.edit
+
+import androidx.lifecycle.viewModelScope
+import io.github.fgrutsch.cookmaid.catalog.Item
+import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
+import io.github.fgrutsch.cookmaid.ui.catalog.CatalogItemRepository
+import io.github.fgrutsch.cookmaid.ui.common.MviViewModel
+import io.github.fgrutsch.cookmaid.ui.recipe.RecipeRepository
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlin.uuid.Uuid
+
+@OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
+class AddRecipeViewModel(
+    private val recipeRepository: RecipeRepository,
+    private val catalogItemRepository: CatalogItemRepository,
+    private val editRecipeId: Uuid? = null,
+) : MviViewModel<AddRecipeState, AddRecipeEvent, AddRecipeEffect>(
+    AddRecipeState(isEditing = editRecipeId != null),
+) {
+
+    private val ingredientQueryFlow = MutableStateFlow("")
+
+    init {
+        ingredientQueryFlow
+            .debounce(150)
+            .flatMapLatest { query -> flow { emit(catalogItemRepository.search(query)) } }
+            .onEach { results -> updateState { copy(ingredientSuggestions = results) } }
+            .launchIn(viewModelScope)
+    }
+
+    override fun handleEvent(event: AddRecipeEvent) {
+        when (event) {
+            is AddRecipeEvent.Load -> load()
+            is AddRecipeEvent.SetName -> setName(event.value)
+            is AddRecipeEvent.UpdateIngredientQuery -> updateIngredientQuery(event.query)
+            is AddRecipeEvent.AddIngredient -> addIngredient(event.item, event.quantity)
+            is AddRecipeEvent.UpdateIngredientQuantity -> updateIngredientQuantity(event.index, event.quantity)
+            is AddRecipeEvent.RemoveIngredient -> updateState {
+                copy(ingredients = ingredients.filterIndexed { i, _ -> i != event.index })
+            }
+            is AddRecipeEvent.AddStep -> addStep(event.step)
+            is AddRecipeEvent.RemoveStep -> updateState {
+                copy(steps = steps.filterIndexed { i, _ -> i != event.index })
+            }
+            is AddRecipeEvent.ToggleTag -> toggleTag(event.tag)
+            is AddRecipeEvent.CreateAndAddTag -> createAndAddTag(event.tag)
+            is AddRecipeEvent.Save -> save()
+        }
+    }
+
+    private fun load() {
+        launch {
+            updateState { copy(isLoading = true) }
+            val tags = recipeRepository.fetchTags()
+            updateState { copy(availableTags = tags) }
+
+            if (editRecipeId != null) {
+                recipeRepository.getById(editRecipeId)?.let { recipe ->
+                    updateState {
+                        copy(
+                            name = recipe.name,
+                            ingredients = recipe.ingredients,
+                            steps = recipe.steps,
+                            selectedTags = recipe.tags,
+                        )
+                    }
+                }
+            }
+            updateState { copy(isLoading = false) }
+        }
+    }
+
+    private fun setName(value: String) {
+        updateState { copy(name = value, nameError = false) }
+    }
+
+    private fun updateIngredientQuery(query: String) {
+        updateState { copy(ingredientQuery = query) }
+        ingredientQueryFlow.value = query
+    }
+
+    private fun addIngredient(item: Item, quantity: Float?) {
+        if (item.name.isBlank()) return
+        updateState {
+            copy(
+                ingredients = ingredients + RecipeIngredient(item, quantity),
+                ingredientQuery = "",
+                ingredientSuggestions = emptyList(),
+            )
+        }
+        ingredientQueryFlow.value = ""
+    }
+
+    private fun updateIngredientQuantity(index: Int, quantity: Float?) {
+        updateState {
+            copy(ingredients = ingredients.mapIndexed { i, ing ->
+                if (i == index) ing.copy(quantity = quantity) else ing
+            })
+        }
+    }
+
+    private fun addStep(step: String) {
+        if (step.isBlank()) return
+        updateState { copy(steps = steps + step.trim()) }
+    }
+
+    private fun toggleTag(tag: String) {
+        updateState {
+            val updated = if (tag in selectedTags) selectedTags - tag else selectedTags + tag
+            copy(selectedTags = updated)
+        }
+    }
+
+    private fun createAndAddTag(tag: String) {
+        val trimmed = tag.trim()
+        if (trimmed.isBlank()) return
+        updateState {
+            copy(
+                availableTags = if (trimmed !in availableTags) (availableTags + trimmed).sorted() else availableTags,
+                selectedTags = if (trimmed !in selectedTags) selectedTags + trimmed else selectedTags,
+            )
+        }
+    }
+
+    private fun save() {
+        if (state.value.name.isBlank()) {
+            updateState { copy(nameError = true) }
+            return
+        }
+        val s = state.value
+        launch {
+            if (s.isEditing) {
+                recipeRepository.update(editRecipeId!!, s.name.trim(), s.ingredients, s.steps, s.selectedTags)
+            } else {
+                recipeRepository.create(s.name.trim(), s.ingredients, s.steps, s.selectedTags)
+            }
+            sendEffect(AddRecipeEffect.Saved)
+        }
+    }
+
+    override fun onError(e: Exception) {
+        updateState { copy(isLoading = false) }
+        sendEffect(AddRecipeEffect.Error("Something went wrong. Please try again."))
+    }
+}

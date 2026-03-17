@@ -19,6 +19,7 @@ class ApiClient(
     private val refreshHandler = TokenRefreshHandler(tokenStore)
 
     val httpClient = HttpClient {
+        expectSuccess = true
         defaultRequest { url(baseUrl.value) }
         install(ContentNegotiation) { json() }
         install(Auth) {

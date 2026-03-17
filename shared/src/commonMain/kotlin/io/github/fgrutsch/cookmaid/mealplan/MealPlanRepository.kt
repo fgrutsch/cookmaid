@@ -18,8 +18,8 @@ interface MealPlanRepository {
     val weeks: StateFlow<List<MealPlanWeek>>
     suspend fun getOrCreateWeek(startDate: LocalDate): MealPlanWeek
     suspend fun addItem(weekStartDate: LocalDate, dayDate: LocalDate, item: MealPlanItem)
-    suspend fun updateItem(weekStartDate: LocalDate, dayDate: LocalDate, itemId: String, newItem: MealPlanItem)
-    suspend fun removeItem(weekStartDate: LocalDate, dayDate: LocalDate, itemId: String)
+    suspend fun updateItem(weekStartDate: LocalDate, dayDate: LocalDate, itemId: Uuid, newItem: MealPlanItem)
+    suspend fun removeItem(weekStartDate: LocalDate, dayDate: LocalDate, itemId: Uuid)
 }
 
 class InMemoryMealPlanRepository : MealPlanRepository {
@@ -47,7 +47,7 @@ class InMemoryMealPlanRepository : MealPlanRepository {
         }
     }
 
-    override suspend fun updateItem(weekStartDate: LocalDate, dayDate: LocalDate, itemId: String, newItem: MealPlanItem) {
+    override suspend fun updateItem(weekStartDate: LocalDate, dayDate: LocalDate, itemId: Uuid, newItem: MealPlanItem) {
         _weeks.update { weeks ->
             weeks.map { week ->
                 if (week.startDate == weekStartDate) {
@@ -60,7 +60,7 @@ class InMemoryMealPlanRepository : MealPlanRepository {
         }
     }
 
-    override suspend fun removeItem(weekStartDate: LocalDate, dayDate: LocalDate, itemId: String) {
+    override suspend fun removeItem(weekStartDate: LocalDate, dayDate: LocalDate, itemId: Uuid) {
         _weeks.update { weeks ->
             weeks.map { week ->
                 if (week.startDate == weekStartDate) {
@@ -86,7 +86,6 @@ fun createEmptyWeek(startDate: LocalDate): MealPlanWeek {
     return MealPlanWeek(startDate = startDate, days = days)
 }
 
-
 private fun defaultWeeks(): List<MealPlanWeek> {
     val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
     val monday = mondayOfWeek(today)
@@ -96,15 +95,7 @@ private fun defaultWeeks(): List<MealPlanWeek> {
             val date = monday.plus(offset, DateTimeUnit.DAY)
             when (offset) {
                 0 -> MealPlanDay(date, listOf(
-                    MealPlanItem.RecipeItem(id = Uuid.random().toString(), recipeId = "recipe-pasta"),
-                    MealPlanItem.NoteItem(id = Uuid.random().toString(), name = "Quick Sandwich"),
-                ))
-                2 -> MealPlanDay(date, listOf(
-                    MealPlanItem.RecipeItem(id = Uuid.random().toString(), recipeId = "recipe-stir-fry"),
-                ))
-                4 -> MealPlanDay(date, listOf(
-                    MealPlanItem.RecipeItem(id = Uuid.random().toString(), recipeId = "recipe-pad-thai"),
-                    MealPlanItem.NoteItem(id = Uuid.random().toString(), name = "https://example.com/lasagna"),
+                    MealPlanItem.NoteItem(id = Uuid.random(), name = "Quick Sandwich"),
                 ))
                 else -> MealPlanDay(date)
             }

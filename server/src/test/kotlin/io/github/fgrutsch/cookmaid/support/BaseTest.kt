@@ -2,6 +2,9 @@ package io.github.fgrutsch.cookmaid.support
 
 import io.github.fgrutsch.cookmaid.catalog.catalogModule
 import io.github.fgrutsch.cookmaid.db.databaseModule
+import io.github.fgrutsch.cookmaid.recipe.RecipeIngredientsTable
+import io.github.fgrutsch.cookmaid.recipe.RecipesTable
+import io.github.fgrutsch.cookmaid.recipe.recipeModule
 import io.github.fgrutsch.cookmaid.shopping.ShoppingItemsTable
 import io.github.fgrutsch.cookmaid.shopping.ShoppingListsTable
 import io.github.fgrutsch.cookmaid.shopping.shoppingModule
@@ -30,6 +33,7 @@ abstract class BaseTest : KoinTest {
             userModule,
             catalogModule,
             shoppingModule,
+            recipeModule,
         )
     }
 
@@ -37,6 +41,8 @@ abstract class BaseTest : KoinTest {
     fun cleanDatabase() {
         val db = getKoin().get<Database>()
         transaction(db) {
+            RecipeIngredientsTable.deleteAll()
+            RecipesTable.deleteAll()
             ShoppingItemsTable.deleteAll()
             ShoppingListsTable.deleteAll()
             UsersTable.deleteAll()

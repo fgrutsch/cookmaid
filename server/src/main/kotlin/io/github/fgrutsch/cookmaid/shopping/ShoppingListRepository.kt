@@ -5,6 +5,7 @@ import io.github.fgrutsch.cookmaid.catalog.Item
 import io.github.fgrutsch.cookmaid.catalog.ItemCategoriesTable
 import io.github.fgrutsch.cookmaid.catalog.ItemCategory
 import org.jetbrains.exposed.v1.core.JoinType
+import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.Table
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
@@ -23,6 +24,7 @@ interface ShoppingListRepository {
     suspend fun deleteList(id: Uuid)
     suspend fun findItemsByListId(listId: Uuid): List<ShoppingItem>
     suspend fun addItem(listId: Uuid, catalogItemId: Uuid?, freeTextName: String?, quantity: Float?): ShoppingItem
+    suspend fun addItems(listId: Uuid, items: List<CreateShoppingItemRequest>): List<ShoppingItem>
     suspend fun updateItem(itemId: Uuid, quantity: Float?, checked: Boolean)
     suspend fun deleteItem(itemId: Uuid)
     suspend fun deleteCheckedItems(listId: Uuid)
@@ -35,6 +37,7 @@ class PostgresShoppingListRepository : ShoppingListRepository {
     override suspend fun findByUserId(userId: Uuid): List<ShoppingList> = suspendTransaction {
         ShoppingListsTable.selectAll()
             .where(ShoppingListsTable.userId eq userId)
+            .orderBy(ShoppingListsTable.isDefault to SortOrder.DESC, ShoppingListsTable.name to SortOrder.ASC)
             .map { row ->
                 ShoppingList(
                     id = row[ShoppingListsTable.id],
@@ -117,6 +120,15 @@ class PostgresShoppingListRepository : ShoppingListRepository {
         freeTextName: String?,
         quantity: Float?,
     ): ShoppingItem = suspendTransaction {
+        addItemInternal(listId, catalogItemId, freeTextName, quantity)
+    }
+
+    private fun addItemInternal(
+        listId: Uuid,
+        catalogItemId: Uuid?,
+        freeTextName: String?,
+        quantity: Float?,
+    ): ShoppingItem {
         val row = ShoppingItemsTable.insertReturning {
             it[ShoppingItemsTable.listId] = listId
             it[ShoppingItemsTable.catalogItemId] = catalogItemId
@@ -148,13 +160,20 @@ class PostgresShoppingListRepository : ShoppingListRepository {
             Item.FreeTextItem(name = requireNotNull(freeTextName))
         }
 
-        ShoppingItem(
+        return ShoppingItem(
             id = itemId,
             item = item,
             quantity = row[ShoppingItemsTable.quantity],
             checked = row[ShoppingItemsTable.checked],
         )
     }
+
+    override suspend fun addItems(listId: Uuid, items: List<CreateShoppingItemRequest>): List<ShoppingItem> =
+        suspendTransaction {
+            items.map { req ->
+                addItemInternal(listId, req.catalogItemId, req.freeTextName, req.quantity)
+            }
+        }
 
     override suspend fun updateItem(itemId: Uuid, quantity: Float?, checked: Boolean): Unit = suspendTransaction {
         ShoppingItemsTable.update({ ShoppingItemsTable.id eq itemId }) {

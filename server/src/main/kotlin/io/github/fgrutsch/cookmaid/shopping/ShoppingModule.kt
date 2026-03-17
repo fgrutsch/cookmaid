@@ -75,6 +75,17 @@ fun Route.shoppingRoutes() {
                     }
                 }
 
+                post("/batch") {
+                    val listId = call.parameters.uuid("listId")
+                    val body = call.receive<BatchAddItemsRequest>()
+                    val created = service.addItems(call.userId(), listId, body.items)
+                    if (created == null) {
+                        call.respond(HttpStatusCode.NotFound)
+                    } else {
+                        call.respond(HttpStatusCode.Created, created)
+                    }
+                }
+
                 delete {
                     val listId = call.parameters.uuid("listId")
                     val checked = call.request.queryParameters["checked"]?.toBooleanStrictOrNull()
