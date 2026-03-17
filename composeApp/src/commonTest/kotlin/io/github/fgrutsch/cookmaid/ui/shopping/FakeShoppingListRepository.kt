@@ -1,6 +1,7 @@
 package io.github.fgrutsch.cookmaid.ui.shopping
 
 import io.github.fgrutsch.cookmaid.catalog.Item
+import io.github.fgrutsch.cookmaid.shopping.CreateShoppingItemRequest
 import io.github.fgrutsch.cookmaid.shopping.ShoppingItem
 import io.github.fgrutsch.cookmaid.shopping.ShoppingList
 import kotlin.uuid.Uuid
@@ -44,6 +45,12 @@ class FakeShoppingListRepository : ShoppingListRepository {
         )
         itemsByList.getOrPut(listId) { mutableListOf() }.add(item)
         return item
+    }
+
+    override suspend fun addItems(listId: Uuid, items: List<CreateShoppingItemRequest>): List<ShoppingItem> {
+        return items.map { req ->
+            addItem(listId, req.catalogItemId, req.freeTextName, req.quantity)
+        }
     }
 
     override suspend fun updateItem(listId: Uuid, itemId: Uuid, quantity: Float?, checked: Boolean) {
