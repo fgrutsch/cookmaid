@@ -6,8 +6,8 @@ import kotlin.uuid.Uuid
 
 suspend fun addRecipeToMealPlan(
     recipeId: Uuid,
-    dayDate: LocalDate,
+    day: LocalDate,
     mealPlanRepository: MealPlanRepository,
 ) {
-    mealPlanRepository.create(dayDate, recipeId = recipeId, note = null)
+    mealPlanRepository.create(day, recipeId = recipeId, note = null)
 }

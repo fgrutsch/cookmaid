@@ -9,13 +9,13 @@ class FakeMealPlanRepository : MealPlanRepository {
     val items: MutableList<MealPlanItemResponse> = mutableListOf()
 
     override suspend fun fetchItems(from: LocalDate, to: LocalDate): List<MealPlanItemResponse> {
-        return items.filter { it.dayDate in from..to }
+        return items.filter { it.day in from..to }
     }
 
-    override suspend fun create(dayDate: LocalDate, recipeId: Uuid?, note: String?): MealPlanItemResponse {
+    override suspend fun create(day: LocalDate, recipeId: Uuid?, note: String?): MealPlanItemResponse {
         val item = MealPlanItemResponse(
             id = Uuid.random(),
-            dayDate = dayDate,
+            day = day,
             recipeId = recipeId,
             recipeName = if (recipeId != null) "Recipe" else null,
             note = note,
@@ -24,12 +24,12 @@ class FakeMealPlanRepository : MealPlanRepository {
         return item
     }
 
-    override suspend fun update(id: Uuid, dayDate: LocalDate?, note: String?) {
+    override suspend fun update(id: Uuid, day: LocalDate?, note: String?) {
         val index = items.indexOfFirst { it.id == id }
         if (index >= 0) {
             val existing = items[index]
             items[index] = existing.copy(
-                dayDate = dayDate ?: existing.dayDate,
+                day = day ?: existing.day,
                 note = note ?: existing.note,
             )
         }

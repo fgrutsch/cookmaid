@@ -33,10 +33,10 @@ class MealPlanViewModel(
             is MealPlanEvent.PreviousWeek -> navigateWeek(-7)
             is MealPlanEvent.NextWeek -> navigateWeek(7)
             is MealPlanEvent.GoToCurrentWeek -> goToCurrentWeek()
-            is MealPlanEvent.AddRecipeItem -> addRecipeItem(event.dayDate, event.recipeId)
-            is MealPlanEvent.AddNoteItem -> addNoteItem(event.dayDate, event.note)
-            is MealPlanEvent.UpdateNote -> updateNote(event.itemId, event.dayDate, event.newNote)
-            is MealPlanEvent.DeleteItem -> deleteItem(event.itemId, event.dayDate)
+            is MealPlanEvent.AddRecipeItem -> addRecipeItem(event.day, event.recipeId)
+            is MealPlanEvent.AddNoteItem -> addNoteItem(event.day, event.note)
+            is MealPlanEvent.UpdateNote -> updateNote(event.itemId, event.day, event.newNote)
+            is MealPlanEvent.DeleteItem -> deleteItem(event.itemId, event.day)
             is MealPlanEvent.AddIngredientsToShoppingList -> addToShoppingList(event.ingredients)
         }
     }
@@ -77,30 +77,30 @@ class MealPlanViewModel(
         }
     }
 
-    private fun addRecipeItem(dayDate: LocalDate, recipeId: Uuid) {
+    private fun addRecipeItem(day: LocalDate, recipeId: Uuid) {
         launch {
-            val created = mealPlanRepository.create(dayDate, recipeId = recipeId, note = null)
-            addItemToDay(dayDate, created)
+            val created = mealPlanRepository.create(day, recipeId = recipeId, note = null)
+            addItemToDay(day, created)
         }
     }
 
-    private fun addNoteItem(dayDate: LocalDate, note: String) {
+    private fun addNoteItem(day: LocalDate, note: String) {
         if (note.isBlank()) return
         launch {
-            val created = mealPlanRepository.create(dayDate, recipeId = null, note = note.trim())
-            addItemToDay(dayDate, created)
+            val created = mealPlanRepository.create(day, recipeId = null, note = note.trim())
+            addItemToDay(day, created)
         }
     }
 
-    private fun updateNote(itemId: Uuid, dayDate: LocalDate, newNote: String) {
+    private fun updateNote(itemId: Uuid, day: LocalDate, newNote: String) {
         if (newNote.isBlank()) return
         launch {
-            mealPlanRepository.update(itemId, dayDate = null, note = newNote.trim())
+            mealPlanRepository.update(itemId, day = null, note = newNote.trim())
             updateState {
                 copy(days = days.map { day ->
-                    if (day.date == dayDate) {
+                    if (day.date == day) {
                         day.copy(items = day.items.map { item ->
-                            if (item.id == itemId && item is MealPlanItem.NoteItem) {
+                            if (item.id == itemId && item is MealPlanItem.Note) {
                                 item.copy(name = newNote.trim())
                             } else item
                         })
@@ -110,11 +110,11 @@ class MealPlanViewModel(
         }
     }
 
-    private fun deleteItem(itemId: Uuid, dayDate: LocalDate) {
+    private fun deleteItem(itemId: Uuid, day: LocalDate) {
         launchOptimistic(
             optimisticUpdate = {
                 copy(days = days.map { day ->
-                    if (day.date == dayDate) day.copy(items = day.items.filter { it.id != itemId })
+                    if (day.date == day) day.copy(items = day.items.filter { it.id != itemId })
                     else day
                 })
             },
@@ -139,11 +139,11 @@ class MealPlanViewModel(
         return mealPlanRepository.fetchItems(weekStart, weekEnd)
     }
 
-    private fun addItemToDay(dayDate: LocalDate, response: MealPlanItemResponse) {
+    private fun addItemToDay(day: LocalDate, response: MealPlanItemResponse) {
         val item = response.toMealPlanItem()
         updateState {
             copy(days = days.map { day ->
-                if (day.date == dayDate) day.copy(items = day.items + item)
+                if (day.date == day) day.copy(items = day.items + item)
                 else day
             })
         }
@@ -156,7 +156,7 @@ class MealPlanViewModel(
 }
 
 private fun groupIntoDays(weekStart: LocalDate, items: List<MealPlanItemResponse>): List<MealPlanDay> {
-    val itemsByDate = items.groupBy { it.dayDate }
+    val itemsByDate = items.groupBy { it.day }
     return (0..6).map { offset ->
         val date = weekStart.plus(offset, DateTimeUnit.DAY)
         val dayItems = itemsByDate[date]?.map { it.toMealPlanItem() } ?: emptyList()
@@ -167,8 +167,8 @@ private fun groupIntoDays(weekStart: LocalDate, items: List<MealPlanItemResponse
 private fun MealPlanItemResponse.toMealPlanItem(): MealPlanItem {
     val rid = recipeId
     return if (rid != null) {
-        MealPlanItem.RecipeItem(id = id, recipeId = rid, recipeName = recipeName ?: "Unknown recipe")
+        MealPlanItem.Recipe(id = id, recipeId = rid, recipeName = recipeName ?: "Unknown recipe")
     } else {
-        MealPlanItem.NoteItem(id = id, name = note ?: "")
+        MealPlanItem.Note(id = id, name = note ?: "")
     }
 }

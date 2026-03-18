@@ -14,7 +14,7 @@ sealed interface RecipeDetailEvent {
     data object Load : RecipeDetailEvent
     data object Delete : RecipeDetailEvent
     data class AddIngredientsToShoppingList(val ingredients: List<RecipeIngredient>) : RecipeDetailEvent
-    data class AddToMealPlan(val recipeId: Uuid, val dayDate: LocalDate) : RecipeDetailEvent
+    data class AddToMealPlan(val recipeId: Uuid, val day: LocalDate) : RecipeDetailEvent
 }
 
 sealed interface RecipeDetailEffect {

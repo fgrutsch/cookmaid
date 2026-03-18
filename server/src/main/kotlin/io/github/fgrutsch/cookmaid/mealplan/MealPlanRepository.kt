@@ -17,25 +17,15 @@ import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
 import org.jetbrains.exposed.v1.jdbc.update
 import kotlin.uuid.Uuid
 
-object MealPlanItemsTable : Table("meal_plan_items") {
-    val id = uuid("id").autoGenerate()
-    val userId = uuid("user_id")
-    val dayDate = date("day_date")
-    val recipeId = uuid("recipe_id").references(RecipesTable.id).nullable()
-    val note = text("note").nullable()
-
-    override val primaryKey = PrimaryKey(id)
-}
-
-interface ServerMealPlanRepository {
+interface MealPlanRepository {
     suspend fun findByUserAndDateRange(userId: Uuid, from: LocalDate, to: LocalDate): List<MealPlanItemResponse>
-    suspend fun create(userId: Uuid, dayDate: LocalDate, recipeId: Uuid?, note: String?): MealPlanItemResponse
-    suspend fun update(id: Uuid, dayDate: LocalDate?, note: String?)
+    suspend fun create(userId: Uuid, day: LocalDate, recipeId: Uuid?, note: String?): MealPlanItemResponse
+    suspend fun update(id: Uuid, day: LocalDate?, note: String?)
     suspend fun delete(id: Uuid)
     suspend fun isOwnedByUser(userId: Uuid, itemId: Uuid): Boolean
 }
 
-class PostgresMealPlanRepository : ServerMealPlanRepository {
+class PostgresMealPlanRepository : MealPlanRepository {
 
     override suspend fun findByUserAndDateRange(
         userId: Uuid,
@@ -48,14 +38,14 @@ class PostgresMealPlanRepository : ServerMealPlanRepository {
         joined.selectAll()
             .where {
                 (MealPlanItemsTable.userId eq userId) and
-                    (MealPlanItemsTable.dayDate greaterEq from) and
-                    (MealPlanItemsTable.dayDate lessEq to)
+                    (MealPlanItemsTable.day greaterEq from) and
+                    (MealPlanItemsTable.day lessEq to)
             }
             .orderBy(MealPlanItemsTable.id, SortOrder.ASC)
             .map { row ->
                 MealPlanItemResponse(
                     id = row[MealPlanItemsTable.id],
-                    dayDate = row[MealPlanItemsTable.dayDate],
+                    day = row[MealPlanItemsTable.day],
                     recipeId = row[MealPlanItemsTable.recipeId],
                     recipeName = row.getOrNull(RecipesTable.name),
                     note = row[MealPlanItemsTable.note],
@@ -65,13 +55,13 @@ class PostgresMealPlanRepository : ServerMealPlanRepository {
 
     override suspend fun create(
         userId: Uuid,
-        dayDate: LocalDate,
+        day: LocalDate,
         recipeId: Uuid?,
         note: String?,
     ): MealPlanItemResponse = suspendTransaction {
         val row = MealPlanItemsTable.insertReturning {
             it[MealPlanItemsTable.userId] = userId
-            it[MealPlanItemsTable.dayDate] = dayDate
+            it[MealPlanItemsTable.day] = day
             it[MealPlanItemsTable.recipeId] = recipeId
             it[MealPlanItemsTable.note] = note?.trim()
         }.single()
@@ -88,16 +78,16 @@ class PostgresMealPlanRepository : ServerMealPlanRepository {
 
         MealPlanItemResponse(
             id = fetched[MealPlanItemsTable.id],
-            dayDate = fetched[MealPlanItemsTable.dayDate],
+            day = fetched[MealPlanItemsTable.day],
             recipeId = fetched[MealPlanItemsTable.recipeId],
             recipeName = fetched.getOrNull(RecipesTable.name),
             note = fetched[MealPlanItemsTable.note],
         )
     }
 
-    override suspend fun update(id: Uuid, dayDate: LocalDate?, note: String?): Unit = suspendTransaction {
+    override suspend fun update(id: Uuid, day: LocalDate?, note: String?): Unit = suspendTransaction {
         MealPlanItemsTable.update({ MealPlanItemsTable.id eq id }) {
-            if (dayDate != null) it[MealPlanItemsTable.dayDate] = dayDate
+            if (day != null) it[MealPlanItemsTable.day] = day
             if (note != null) it[MealPlanItemsTable.note] = note.trim()
         }
     }
@@ -111,4 +101,14 @@ class PostgresMealPlanRepository : ServerMealPlanRepository {
             .where { (MealPlanItemsTable.id eq itemId) and (MealPlanItemsTable.userId eq userId) }
             .count() > 0
     }
+}
+
+object MealPlanItemsTable : Table("meal_plan_items") {
+    val id = uuid("id").autoGenerate()
+    val userId = uuid("user_id")
+    val day = date("day")
+    val recipeId = uuid("recipe_id").references(RecipesTable.id).nullable()
+    val note = text("note").nullable()
+
+    override val primaryKey = PrimaryKey(id)
 }

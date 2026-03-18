@@ -21,7 +21,7 @@ class RecipeDetailViewModel(
             is RecipeDetailEvent.Load -> loadRecipe()
             is RecipeDetailEvent.Delete -> deleteRecipe()
             is RecipeDetailEvent.AddIngredientsToShoppingList -> addToShoppingList(event)
-            is RecipeDetailEvent.AddToMealPlan -> addToMealPlan(event.recipeId, event.dayDate)
+            is RecipeDetailEvent.AddToMealPlan -> addToMealPlan(event.recipeId, event.day)
         }
     }
 
@@ -47,9 +47,9 @@ class RecipeDetailViewModel(
         }
     }
 
-    private fun addToMealPlan(recipeId: Uuid, dayDate: LocalDate) {
+    private fun addToMealPlan(recipeId: Uuid, day: LocalDate) {
         launch {
-            addRecipeToMealPlan(recipeId, dayDate, mealPlanRepository)
+            addRecipeToMealPlan(recipeId, day, mealPlanRepository)
             sendEffect(RecipeDetailEffect.AddedToMealPlan)
         }
     }

@@ -7,7 +7,7 @@ import kotlin.uuid.Uuid
 @Serializable
 data class MealPlanItemResponse(
     val id: Uuid,
-    val dayDate: LocalDate,
+    val day: LocalDate,
     val recipeId: Uuid? = null,
     val recipeName: String? = null,
     val note: String? = null,
@@ -15,13 +15,13 @@ data class MealPlanItemResponse(
 
 @Serializable
 data class CreateMealPlanItemRequest(
-    val dayDate: LocalDate,
+    val day: LocalDate,
     val recipeId: Uuid? = null,
     val note: String? = null,
 )
 
 @Serializable
 data class UpdateMealPlanItemRequest(
-    val dayDate: LocalDate? = null,
+    val day: LocalDate? = null,
     val note: String? = null,
 )

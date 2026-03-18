@@ -1,24 +1,19 @@
 package io.github.fgrutsch.cookmaid.mealplan
 
+import io.github.fgrutsch.cookmaid.common.ktor.localDate
 import io.github.fgrutsch.cookmaid.common.ktor.userId
 import io.github.fgrutsch.cookmaid.common.ktor.uuid
-import io.ktor.http.HttpStatusCode
-import io.ktor.server.request.receive
-import io.ktor.server.response.respond
-import io.ktor.server.routing.Route
-import io.ktor.server.routing.delete
-import io.ktor.server.routing.get
-import io.ktor.server.routing.post
-import io.ktor.server.routing.put
-import io.ktor.server.routing.route
-import kotlinx.datetime.LocalDate
+import io.ktor.http.*
+import io.ktor.server.request.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
 import org.koin.ktor.ext.inject
 
 val mealPlanModule = module {
-    singleOf(::PostgresMealPlanRepository) bind ServerMealPlanRepository::class
+    singleOf(::PostgresMealPlanRepository) bind MealPlanRepository::class
     singleOf(::MealPlanService)
 }
 
@@ -28,14 +23,14 @@ fun Route.mealPlanRoutes() {
     route("/meal-plan") {
 
         get {
-            val from = LocalDate.parse(call.request.queryParameters["from"]!!)
-            val to = LocalDate.parse(call.request.queryParameters["to"]!!)
+            val from = call.request.queryParameters.localDate("from")
+            val to = call.request.queryParameters.localDate("to")
             call.respond(service.findByUser(call.userId(), from, to))
         }
 
         post {
             val body = call.receive<CreateMealPlanItemRequest>()
-            val item = service.create(call.userId(), body.dayDate, body.recipeId, body.note)
+            val item = service.create(call.userId(), body.day, body.recipeId, body.note)
             call.respond(HttpStatusCode.Created, item)
         }
 
@@ -44,7 +39,7 @@ fun Route.mealPlanRoutes() {
             put {
                 val id = call.parameters.uuid("id")
                 val body = call.receive<UpdateMealPlanItemRequest>()
-                if (!service.update(call.userId(), id, body.dayDate, body.note)) {
+                if (!service.update(call.userId(), id, body.day, body.note)) {
                     call.respond(HttpStatusCode.NotFound)
                 } else {
                     call.respond(HttpStatusCode.NoContent)

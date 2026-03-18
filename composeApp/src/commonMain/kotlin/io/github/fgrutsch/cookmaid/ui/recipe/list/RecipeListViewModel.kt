@@ -47,7 +47,7 @@ class RecipeListViewModel(
             is RecipeListEvent.ClearRandomRecipe -> updateState { copy(randomRecipe = null) }
             is RecipeListEvent.DeleteRecipe -> deleteRecipe(event.id)
             is RecipeListEvent.AddIngredientsToShoppingList -> addToShoppingList(event.ingredients)
-            is RecipeListEvent.AddToMealPlan -> addToMealPlan(event.recipeId, event.dayDate)
+            is RecipeListEvent.AddToMealPlan -> addToMealPlan(event.recipeId, event.day)
         }
     }
 
@@ -182,9 +182,9 @@ class RecipeListViewModel(
         }
     }
 
-    private fun addToMealPlan(recipeId: Uuid, dayDate: LocalDate) {
+    private fun addToMealPlan(recipeId: Uuid, day: LocalDate) {
         launch {
-            addRecipeToMealPlan(recipeId, dayDate, mealPlanRepository)
+            addRecipeToMealPlan(recipeId, day, mealPlanRepository)
             sendEffect(RecipeListEffect.AddedToMealPlan)
         }
     }

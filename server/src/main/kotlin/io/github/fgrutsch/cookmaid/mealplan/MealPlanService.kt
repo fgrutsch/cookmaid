@@ -4,20 +4,20 @@ import kotlinx.datetime.LocalDate
 import kotlin.uuid.Uuid
 
 class MealPlanService(
-    private val repository: ServerMealPlanRepository,
+    private val repository: MealPlanRepository,
 ) {
 
     suspend fun findByUser(userId: Uuid, from: LocalDate, to: LocalDate): List<MealPlanItemResponse> {
         return repository.findByUserAndDateRange(userId, from, to)
     }
 
-    suspend fun create(userId: Uuid, dayDate: LocalDate, recipeId: Uuid?, note: String?): MealPlanItemResponse {
-        return repository.create(userId, dayDate, recipeId, note)
+    suspend fun create(userId: Uuid, day: LocalDate, recipeId: Uuid?, note: String?): MealPlanItemResponse {
+        return repository.create(userId, day, recipeId, note)
     }
 
-    suspend fun update(userId: Uuid, itemId: Uuid, dayDate: LocalDate?, note: String?): Boolean {
+    suspend fun update(userId: Uuid, itemId: Uuid, day: LocalDate?, note: String?): Boolean {
         if (!repository.isOwnedByUser(userId, itemId)) return false
-        repository.update(itemId, dayDate, note)
+        repository.update(itemId, day, note)
         return true
     }
 

@@ -137,8 +137,8 @@ fun MealPlanScreen(
                             onAddItem = { addItemForDay = day.date },
                             onItemClick = { item ->
                                 when (item) {
-                                    is MealPlanItem.RecipeItem -> onRecipeClick(item.recipeId)
-                                    is MealPlanItem.NoteItem -> {
+                                    is MealPlanItem.Recipe -> onRecipeClick(item.recipeId)
+                                    is MealPlanItem.Note -> {
                                         if (isUrl(item.name)) {
                                             uriHandler.openUri(item.name.trim())
                                         } else {
@@ -149,7 +149,7 @@ fun MealPlanScreen(
                             },
                             onDeleteItem = { itemId -> onEvent(MealPlanEvent.DeleteItem(itemId, day.date)) },
                             onAddToShoppingList = { item ->
-                                if (item is MealPlanItem.RecipeItem) {
+                                if (item is MealPlanItem.Recipe) {
                                     val ingredients = viewModel.resolveRecipeIngredients(item.recipeId)
                                     if (ingredients.isNotEmpty()) {
                                         ingredientPickerState = IngredientPickerState(
@@ -167,16 +167,16 @@ fun MealPlanScreen(
     }
     }
 
-    addItemForDay?.let { dayDate ->
+    addItemForDay?.let { day ->
         AddMealPlanItemDialog(
-            dayDate = dayDate,
+            day = day,
             recipes = state.recipes,
             onAddRecipe = { recipeId ->
-                onEvent(MealPlanEvent.AddRecipeItem(dayDate, recipeId))
+                onEvent(MealPlanEvent.AddRecipeItem(day, recipeId))
                 addItemForDay = null
             },
             onAddNote = { name ->
-                onEvent(MealPlanEvent.AddNoteItem(dayDate, name))
+                onEvent(MealPlanEvent.AddNoteItem(day, name))
                 addItemForDay = null
             },
             onDismiss = { addItemForDay = null },
@@ -187,7 +187,7 @@ fun MealPlanScreen(
         EditNoteDialog(
             currentName = noteState.currentName,
             onSave = { newName ->
-                onEvent(MealPlanEvent.UpdateNote(noteState.itemId, noteState.dayDate, newName))
+                onEvent(MealPlanEvent.UpdateNote(noteState.itemId, noteState.day, newName))
                 editingNote = null
             },
             onDismiss = { editingNote = null },
@@ -208,7 +208,7 @@ fun MealPlanScreen(
 }
 
 private data class EditNoteState(
-    val dayDate: LocalDate,
+    val day: LocalDate,
     val itemId: Uuid,
     val currentName: String,
 )
@@ -322,8 +322,8 @@ private fun MealPlanItemRow(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         val icon = when (item) {
-            is MealPlanItem.RecipeItem -> Icons.AutoMirrored.Filled.MenuBook
-            is MealPlanItem.NoteItem -> Icons.AutoMirrored.Filled.Notes
+            is MealPlanItem.Recipe -> Icons.AutoMirrored.Filled.MenuBook
+            is MealPlanItem.Note -> Icons.AutoMirrored.Filled.Notes
         }
         Icon(
             icon,
@@ -334,15 +334,15 @@ private fun MealPlanItemRow(
         Spacer(modifier = Modifier.width(16.dp))
         Text(
             text = when (item) {
-                is MealPlanItem.RecipeItem -> item.recipeName
-                is MealPlanItem.NoteItem -> item.name
+                is MealPlanItem.Recipe -> item.recipeName
+                is MealPlanItem.Note -> item.name
             },
             modifier = Modifier.weight(1f),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             style = MaterialTheme.typography.bodyLarge,
         )
-        if (item is MealPlanItem.RecipeItem) {
+        if (item is MealPlanItem.Recipe) {
             Box {
                 IconButton(onClick = { showMenu = true }) {
                     Icon(Icons.Default.MoreVert, contentDescription = "Options")

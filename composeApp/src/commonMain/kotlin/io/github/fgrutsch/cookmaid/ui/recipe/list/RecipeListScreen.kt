@@ -274,8 +274,8 @@ fun RecipeListScreen(
     dayPickerRecipeId?.let { recipeId ->
         DayPickerDialog(
             resolveDayItems = { emptyList() },
-            onSelect = { dayDate ->
-                onEvent(RecipeListEvent.AddToMealPlan(recipeId, dayDate))
+            onSelect = { day ->
+                onEvent(RecipeListEvent.AddToMealPlan(recipeId, day))
                 dayPickerRecipeId = null
             },
             onDismiss = { dayPickerRecipeId = null },

@@ -8,14 +8,14 @@ sealed interface MealPlanItem {
     val id: Uuid
 
     @Serializable
-    data class RecipeItem(
+    data class Recipe(
         override val id: Uuid,
         val recipeId: Uuid,
         val recipeName: String,
     ) : MealPlanItem
 
     @Serializable
-    data class NoteItem(
+    data class Note(
         override val id: Uuid,
         val name: String,
     ) : MealPlanItem

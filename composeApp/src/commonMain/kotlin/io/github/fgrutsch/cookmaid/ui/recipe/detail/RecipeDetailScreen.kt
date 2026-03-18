@@ -275,8 +275,8 @@ fun RecipeDetailScreen(
         state.recipe?.let { recipe ->
             DayPickerDialog(
                 resolveDayItems = { emptyList() },
-                onSelect = { dayDate ->
-                    onEvent(RecipeDetailEvent.AddToMealPlan(recipe.id, dayDate))
+                onSelect = { day ->
+                    onEvent(RecipeDetailEvent.AddToMealPlan(recipe.id, day))
                     showDayPicker = false
                 },
                 onDismiss = { showDayPicker = false },

@@ -56,7 +56,7 @@ import kotlin.time.Clock
 
 @Composable
 fun AddMealPlanItemDialog(
-    dayDate: LocalDate,
+    day: LocalDate,
     recipes: List<Recipe>,
     onAddRecipe: (recipeId: Uuid) -> Unit,
     onAddNote: (name: String) -> Unit,
@@ -70,7 +70,7 @@ fun AddMealPlanItemDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Add to ${formatDayNameShort(dayDate)}") },
+        title = { Text("Add to ${formatDayNameShort(day)}") },
         text = {
             Column {
                 SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {

@@ -8,8 +8,8 @@ import kotlin.uuid.Uuid
 
 interface MealPlanRepository {
     suspend fun fetchItems(from: LocalDate, to: LocalDate): List<MealPlanItemResponse>
-    suspend fun create(dayDate: LocalDate, recipeId: Uuid?, note: String?): MealPlanItemResponse
-    suspend fun update(id: Uuid, dayDate: LocalDate?, note: String?)
+    suspend fun create(day: LocalDate, recipeId: Uuid?, note: String?): MealPlanItemResponse
+    suspend fun update(id: Uuid, day: LocalDate?, note: String?)
     suspend fun delete(id: Uuid)
 }
 
@@ -21,12 +21,12 @@ class ApiMealPlanRepository(
         return client.fetchItems(from, to)
     }
 
-    override suspend fun create(dayDate: LocalDate, recipeId: Uuid?, note: String?): MealPlanItemResponse {
-        return client.create(CreateMealPlanItemRequest(dayDate, recipeId, note))
+    override suspend fun create(day: LocalDate, recipeId: Uuid?, note: String?): MealPlanItemResponse {
+        return client.create(CreateMealPlanItemRequest(day, recipeId, note))
     }
 
-    override suspend fun update(id: Uuid, dayDate: LocalDate?, note: String?) {
-        client.update(id, UpdateMealPlanItemRequest(dayDate, note))
+    override suspend fun update(id: Uuid, day: LocalDate?, note: String?) {
+        client.update(id, UpdateMealPlanItemRequest(day, note))
     }
 
     override suspend fun delete(id: Uuid) {
