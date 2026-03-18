@@ -1,25 +1,23 @@
 package io.github.fgrutsch.cookmaid.ui.mealplan
 
-import io.github.fgrutsch.cookmaid.mealplan.MealPlanItemResponse
+import io.github.fgrutsch.cookmaid.mealplan.MealPlanItem
 import kotlinx.datetime.LocalDate
 import kotlin.uuid.Uuid
 
 class FakeMealPlanRepository : MealPlanRepository {
 
-    val items: MutableList<MealPlanItemResponse> = mutableListOf()
+    val items: MutableList<MealPlanItem> = mutableListOf()
 
-    override suspend fun fetchItems(from: LocalDate, to: LocalDate): List<MealPlanItemResponse> {
+    override suspend fun fetchItems(from: LocalDate, to: LocalDate): List<MealPlanItem> {
         return items.filter { it.day in from..to }
     }
 
-    override suspend fun create(day: LocalDate, recipeId: Uuid?, note: String?): MealPlanItemResponse {
-        val item = MealPlanItemResponse(
-            id = Uuid.random(),
-            day = day,
-            recipeId = recipeId,
-            recipeName = if (recipeId != null) "Recipe" else null,
-            note = note,
-        )
+    override suspend fun create(day: LocalDate, recipeId: Uuid?, note: String?): MealPlanItem {
+        val item = if (recipeId != null) {
+            MealPlanItem.Recipe(id = Uuid.random(), day = day, recipeId = recipeId, recipeName = "Recipe")
+        } else {
+            MealPlanItem.Note(id = Uuid.random(), day = day, name = note ?: "")
+        }
         items.add(item)
         return item
     }
@@ -28,10 +26,9 @@ class FakeMealPlanRepository : MealPlanRepository {
         val index = items.indexOfFirst { it.id == id }
         if (index >= 0) {
             val existing = items[index]
-            items[index] = existing.copy(
-                day = day ?: existing.day,
-                note = note ?: existing.note,
-            )
+            if (existing is MealPlanItem.Note && note != null) {
+                items[index] = existing.copy(name = note, day = day ?: existing.day)
+            }
         }
     }
 

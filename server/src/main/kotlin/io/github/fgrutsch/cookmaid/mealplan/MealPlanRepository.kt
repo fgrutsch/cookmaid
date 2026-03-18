@@ -3,6 +3,7 @@ package io.github.fgrutsch.cookmaid.mealplan
 import io.github.fgrutsch.cookmaid.recipe.RecipesTable
 import kotlinx.datetime.LocalDate
 import org.jetbrains.exposed.v1.core.JoinType
+import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.Table
 import org.jetbrains.exposed.v1.core.and
@@ -18,8 +19,8 @@ import org.jetbrains.exposed.v1.jdbc.update
 import kotlin.uuid.Uuid
 
 interface MealPlanRepository {
-    suspend fun findByUserAndDateRange(userId: Uuid, from: LocalDate, to: LocalDate): List<MealPlanItemResponse>
-    suspend fun create(userId: Uuid, day: LocalDate, recipeId: Uuid?, note: String?): MealPlanItemResponse
+    suspend fun findByUserAndDateRange(userId: Uuid, from: LocalDate, to: LocalDate): List<MealPlanItem>
+    suspend fun create(userId: Uuid, day: LocalDate, recipeId: Uuid?, note: String?): MealPlanItem
     suspend fun update(id: Uuid, day: LocalDate?, note: String?)
     suspend fun delete(id: Uuid)
     suspend fun isOwnedByUser(userId: Uuid, itemId: Uuid): Boolean
@@ -27,14 +28,14 @@ interface MealPlanRepository {
 
 class PostgresMealPlanRepository : MealPlanRepository {
 
+    private val joined = MealPlanItemsTable
+        .join(RecipesTable, JoinType.LEFT, MealPlanItemsTable.recipeId, RecipesTable.id)
+
     override suspend fun findByUserAndDateRange(
         userId: Uuid,
         from: LocalDate,
         to: LocalDate,
-    ): List<MealPlanItemResponse> = suspendTransaction {
-        val joined = MealPlanItemsTable
-            .join(RecipesTable, JoinType.LEFT, MealPlanItemsTable.recipeId, RecipesTable.id)
-
+    ): List<MealPlanItem> = suspendTransaction {
         joined.selectAll()
             .where {
                 (MealPlanItemsTable.userId eq userId) and
@@ -42,15 +43,7 @@ class PostgresMealPlanRepository : MealPlanRepository {
                     (MealPlanItemsTable.day lessEq to)
             }
             .orderBy(MealPlanItemsTable.id, SortOrder.ASC)
-            .map { row ->
-                MealPlanItemResponse(
-                    id = row[MealPlanItemsTable.id],
-                    day = row[MealPlanItemsTable.day],
-                    recipeId = row[MealPlanItemsTable.recipeId],
-                    recipeName = row.getOrNull(RecipesTable.name),
-                    note = row[MealPlanItemsTable.note],
-                )
-            }
+            .map { it.toMealPlanItem() }
     }
 
     override suspend fun create(
@@ -58,7 +51,7 @@ class PostgresMealPlanRepository : MealPlanRepository {
         day: LocalDate,
         recipeId: Uuid?,
         note: String?,
-    ): MealPlanItemResponse = suspendTransaction {
+    ): MealPlanItem = suspendTransaction {
         val row = MealPlanItemsTable.insertReturning {
             it[MealPlanItemsTable.userId] = userId
             it[MealPlanItemsTable.day] = day
@@ -67,22 +60,10 @@ class PostgresMealPlanRepository : MealPlanRepository {
         }.single()
 
         val id = row[MealPlanItemsTable.id]
-
-        // Re-fetch with join to get recipe name
-        val joined = MealPlanItemsTable
-            .join(RecipesTable, JoinType.LEFT, MealPlanItemsTable.recipeId, RecipesTable.id)
-
-        val fetched = joined.selectAll()
+        joined.selectAll()
             .where { MealPlanItemsTable.id eq id }
             .single()
-
-        MealPlanItemResponse(
-            id = fetched[MealPlanItemsTable.id],
-            day = fetched[MealPlanItemsTable.day],
-            recipeId = fetched[MealPlanItemsTable.recipeId],
-            recipeName = fetched.getOrNull(RecipesTable.name),
-            note = fetched[MealPlanItemsTable.note],
-        )
+            .toMealPlanItem()
     }
 
     override suspend fun update(id: Uuid, day: LocalDate?, note: String?): Unit = suspendTransaction {
@@ -100,6 +81,24 @@ class PostgresMealPlanRepository : MealPlanRepository {
         MealPlanItemsTable.selectAll()
             .where { (MealPlanItemsTable.id eq itemId) and (MealPlanItemsTable.userId eq userId) }
             .count() > 0
+    }
+
+    private fun ResultRow.toMealPlanItem(): MealPlanItem {
+        val recipeId = this[MealPlanItemsTable.recipeId]
+        return if (recipeId != null) {
+            MealPlanItem.Recipe(
+                id = this[MealPlanItemsTable.id],
+                day = this[MealPlanItemsTable.day],
+                recipeId = recipeId,
+                recipeName = this[RecipesTable.name],
+            )
+        } else {
+            MealPlanItem.Note(
+                id = this[MealPlanItemsTable.id],
+                day = this[MealPlanItemsTable.day],
+                name = this[MealPlanItemsTable.note]!!,
+            )
+        }
     }
 }
 

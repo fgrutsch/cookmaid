@@ -2,7 +2,6 @@ package io.github.fgrutsch.cookmaid.ui.mealplan
 
 import io.github.fgrutsch.cookmaid.mealplan.MealPlanDay
 import io.github.fgrutsch.cookmaid.mealplan.MealPlanItem
-import io.github.fgrutsch.cookmaid.mealplan.MealPlanItemResponse
 import io.github.fgrutsch.cookmaid.mealplan.mondayOfWeek
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
 import io.github.fgrutsch.cookmaid.ui.common.MviViewModel
@@ -97,14 +96,14 @@ class MealPlanViewModel(
         launch {
             mealPlanRepository.update(itemId, day = null, note = newNote.trim())
             updateState {
-                copy(days = days.map { day ->
-                    if (day.date == day) {
-                        day.copy(items = day.items.map { item ->
+                copy(days = days.map { d ->
+                    if (d.date == day) {
+                        d.copy(items = d.items.map { item ->
                             if (item.id == itemId && item is MealPlanItem.Note) {
                                 item.copy(name = newNote.trim())
                             } else item
                         })
-                    } else day
+                    } else d
                 })
             }
         }
@@ -113,9 +112,9 @@ class MealPlanViewModel(
     private fun deleteItem(itemId: Uuid, day: LocalDate) {
         launchOptimistic(
             optimisticUpdate = {
-                copy(days = days.map { day ->
-                    if (day.date == day) day.copy(items = day.items.filter { it.id != itemId })
-                    else day
+                copy(days = days.map { d ->
+                    if (d.date == day) d.copy(items = d.items.filter { it.id != itemId })
+                    else d
                 })
             },
         ) {
@@ -134,17 +133,16 @@ class MealPlanViewModel(
         return state.value.recipes.find { it.id == recipeId }?.ingredients ?: emptyList()
     }
 
-    private suspend fun fetchWeekItems(weekStart: LocalDate): List<MealPlanItemResponse> {
+    private suspend fun fetchWeekItems(weekStart: LocalDate): List<MealPlanItem> {
         val weekEnd = weekStart.plus(6, DateTimeUnit.DAY)
         return mealPlanRepository.fetchItems(weekStart, weekEnd)
     }
 
-    private fun addItemToDay(day: LocalDate, response: MealPlanItemResponse) {
-        val item = response.toMealPlanItem()
+    private fun addItemToDay(day: LocalDate, item: MealPlanItem) {
         updateState {
-            copy(days = days.map { day ->
-                if (day.date == day) day.copy(items = day.items + item)
-                else day
+            copy(days = days.map { d ->
+                if (d.date == day) d.copy(items = d.items + item)
+                else d
             })
         }
     }
@@ -155,20 +153,10 @@ class MealPlanViewModel(
     }
 }
 
-private fun groupIntoDays(weekStart: LocalDate, items: List<MealPlanItemResponse>): List<MealPlanDay> {
+private fun groupIntoDays(weekStart: LocalDate, items: List<MealPlanItem>): List<MealPlanDay> {
     val itemsByDate = items.groupBy { it.day }
     return (0..6).map { offset ->
         val date = weekStart.plus(offset, DateTimeUnit.DAY)
-        val dayItems = itemsByDate[date]?.map { it.toMealPlanItem() } ?: emptyList()
-        MealPlanDay(date, dayItems)
-    }
-}
-
-private fun MealPlanItemResponse.toMealPlanItem(): MealPlanItem {
-    val rid = recipeId
-    return if (rid != null) {
-        MealPlanItem.Recipe(id = id, recipeId = rid, recipeName = recipeName ?: "Unknown recipe")
-    } else {
-        MealPlanItem.Note(id = id, name = note ?: "")
+        MealPlanDay(date, itemsByDate[date] ?: emptyList())
     }
 }

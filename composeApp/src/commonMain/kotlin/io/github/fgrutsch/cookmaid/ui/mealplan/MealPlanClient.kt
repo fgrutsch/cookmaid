@@ -1,7 +1,7 @@
 package io.github.fgrutsch.cookmaid.ui.mealplan
 
 import io.github.fgrutsch.cookmaid.mealplan.CreateMealPlanItemRequest
-import io.github.fgrutsch.cookmaid.mealplan.MealPlanItemResponse
+import io.github.fgrutsch.cookmaid.mealplan.MealPlanItem
 import io.github.fgrutsch.cookmaid.mealplan.UpdateMealPlanItemRequest
 import io.github.fgrutsch.cookmaid.ui.auth.ApiClient
 import io.ktor.client.call.body
@@ -21,13 +21,13 @@ class MealPlanClient(
 ) {
     private val base = "/api/meal-plan"
 
-    suspend fun fetchItems(from: LocalDate, to: LocalDate): List<MealPlanItemResponse> =
+    suspend fun fetchItems(from: LocalDate, to: LocalDate): List<MealPlanItem> =
         apiClient.httpClient.get(base) {
             parameter("from", from.toString())
             parameter("to", to.toString())
         }.body()
 
-    suspend fun create(request: CreateMealPlanItemRequest): MealPlanItemResponse =
+    suspend fun create(request: CreateMealPlanItemRequest): MealPlanItem =
         apiClient.httpClient.post(base) {
             contentType(ContentType.Application.Json)
             setBody(request)

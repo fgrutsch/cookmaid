@@ -7,11 +7,11 @@ class MealPlanService(
     private val repository: MealPlanRepository,
 ) {
 
-    suspend fun findByUser(userId: Uuid, from: LocalDate, to: LocalDate): List<MealPlanItemResponse> {
+    suspend fun findByUser(userId: Uuid, from: LocalDate, to: LocalDate): List<MealPlanItem> {
         return repository.findByUserAndDateRange(userId, from, to)
     }
 
-    suspend fun create(userId: Uuid, day: LocalDate, recipeId: Uuid?, note: String?): MealPlanItemResponse {
+    suspend fun create(userId: Uuid, day: LocalDate, recipeId: Uuid?, note: String?): MealPlanItem {
         return repository.create(userId, day, recipeId, note)
     }
 
