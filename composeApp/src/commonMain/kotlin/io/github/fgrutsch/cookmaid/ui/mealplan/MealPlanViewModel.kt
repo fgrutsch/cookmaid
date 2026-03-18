@@ -29,14 +29,16 @@ class MealPlanViewModel(
     override fun handleEvent(event: MealPlanEvent) {
         when (event) {
             is MealPlanEvent.Load -> load()
+            is MealPlanEvent.Refresh -> refresh()
             is MealPlanEvent.PreviousWeek -> navigateWeek(-7)
             is MealPlanEvent.NextWeek -> navigateWeek(7)
             is MealPlanEvent.GoToCurrentWeek -> goToCurrentWeek()
+            is MealPlanEvent.SearchRecipes -> searchRecipes(event.query)
             is MealPlanEvent.AddRecipeItem -> addRecipeItem(event.day, event.recipeId)
             is MealPlanEvent.AddNoteItem -> addNoteItem(event.day, event.note)
             is MealPlanEvent.UpdateNote -> updateNote(event.itemId, event.day, event.newNote)
             is MealPlanEvent.DeleteItem -> deleteItem(event.itemId, event.day)
-            is MealPlanEvent.AddIngredientsToShoppingList -> addToShoppingList(event.ingredients)
+            is MealPlanEvent.AddRecipeToShoppingList -> addRecipeToShoppingList(event.recipeId, event.recipeName)
         }
     }
 
@@ -45,13 +47,24 @@ class MealPlanViewModel(
         initialized = true
         launch {
             if (firstLoad) updateState { copy(isLoading = true) }
-            val recipes = recipeRepository.fetchPage(cursor = null, limit = 100).items
             val items = fetchWeekItems(state.value.currentWeekStart)
             updateState {
                 copy(
-                    recipes = recipes,
                     days = groupIntoDays(currentWeekStart, items),
                     isLoading = false,
+                )
+            }
+        }
+    }
+
+    private fun refresh() {
+        launch {
+            updateState { copy(isRefreshing = true) }
+            val items = fetchWeekItems(state.value.currentWeekStart)
+            updateState {
+                copy(
+                    days = groupIntoDays(currentWeekStart, items),
+                    isRefreshing = false,
                 )
             }
         }
@@ -73,6 +86,14 @@ class MealPlanViewModel(
         launch {
             val items = fetchWeekItems(newStart)
             updateState { copy(days = groupIntoDays(newStart, items)) }
+        }
+    }
+
+    private fun searchRecipes(query: String) {
+        launch {
+            val search = query.takeIf { it.isNotBlank() }
+            val page = recipeRepository.fetchPage(cursor = null, limit = 20, search = search)
+            updateState { copy(recipeSearchResults = page.items) }
         }
     }
 
@@ -122,15 +143,21 @@ class MealPlanViewModel(
         }
     }
 
-    private fun addToShoppingList(ingredients: List<RecipeIngredient>) {
+    private fun addRecipeToShoppingList(recipeId: Uuid, recipeName: String) {
+        launch {
+            val recipe = recipeRepository.getById(recipeId)
+            val ingredients = recipe?.ingredients ?: emptyList()
+            if (ingredients.isNotEmpty()) {
+                sendEffect(MealPlanEffect.ShowIngredientPicker(recipeName, ingredients))
+            }
+        }
+    }
+
+    fun addIngredientsToShoppingList(ingredients: List<RecipeIngredient>) {
         launch {
             addIngredientsToDefaultShoppingList(shoppingListRepository, ingredients)
             sendEffect(MealPlanEffect.IngredientsAdded)
         }
-    }
-
-    fun resolveRecipeIngredients(recipeId: Uuid): List<RecipeIngredient> {
-        return state.value.recipes.find { it.id == recipeId }?.ingredients ?: emptyList()
     }
 
     private suspend fun fetchWeekItems(weekStart: LocalDate): List<MealPlanItem> {
@@ -148,7 +175,7 @@ class MealPlanViewModel(
     }
 
     override fun onError(e: Exception) {
-        updateState { copy(isLoading = false) }
+        updateState { copy(isLoading = false, isRefreshing = false) }
         sendEffect(MealPlanEffect.Error("Something went wrong. Please try again."))
     }
 }

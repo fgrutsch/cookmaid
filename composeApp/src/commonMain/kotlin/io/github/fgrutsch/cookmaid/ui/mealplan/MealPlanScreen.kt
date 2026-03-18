@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Today
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -89,6 +90,8 @@ fun MealPlanScreen(
             when (effect) {
                 is MealPlanEffect.IngredientsAdded ->
                     snackbarHostState.showSnackbar("Added to shopping list")
+                is MealPlanEffect.ShowIngredientPicker ->
+                    ingredientPickerState = IngredientPickerState(effect.recipeName, effect.ingredients)
                 is MealPlanEffect.Error ->
                     snackbarHostState.showSnackbar(effect.message)
             }
@@ -112,8 +115,13 @@ fun MealPlanScreen(
             )
         },
     ) { padding ->
-        Column(
+        PullToRefreshBox(
+            isRefreshing = state.isRefreshing,
+            onRefresh = { onEvent(MealPlanEvent.Refresh) },
             modifier = Modifier.fillMaxSize().padding(padding),
+        ) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
         ) {
             WeekNavigationBar(
                 weekStart = state.currentWeekStart,
@@ -150,13 +158,7 @@ fun MealPlanScreen(
                             onDeleteItem = { itemId -> onEvent(MealPlanEvent.DeleteItem(itemId, day.date)) },
                             onAddToShoppingList = { item ->
                                 if (item is MealPlanItem.Recipe) {
-                                    val ingredients = viewModel.resolveRecipeIngredients(item.recipeId)
-                                    if (ingredients.isNotEmpty()) {
-                                        ingredientPickerState = IngredientPickerState(
-                                            recipeName = item.recipeName,
-                                            ingredients = ingredients,
-                                        )
-                                    }
+                                    onEvent(MealPlanEvent.AddRecipeToShoppingList(item.recipeId, item.recipeName))
                                 }
                             },
                         )
@@ -164,13 +166,15 @@ fun MealPlanScreen(
                 }
             }
         }
+        }
     }
     }
 
     addItemForDay?.let { day ->
         AddMealPlanItemDialog(
             day = day,
-            recipes = state.recipes,
+            recipeSearchResults = state.recipeSearchResults,
+            onSearchRecipes = { onEvent(MealPlanEvent.SearchRecipes(it)) },
             onAddRecipe = { recipeId ->
                 onEvent(MealPlanEvent.AddRecipeItem(day, recipeId))
                 addItemForDay = null
@@ -199,7 +203,7 @@ fun MealPlanScreen(
             recipeName = pickerState.recipeName,
             ingredients = pickerState.ingredients,
             onAdd = { selectedIngredients ->
-                onEvent(MealPlanEvent.AddIngredientsToShoppingList(selectedIngredients))
+                viewModel.addIngredientsToShoppingList(selectedIngredients)
                 ingredientPickerState = null
             },
             onDismiss = { ingredientPickerState = null },
