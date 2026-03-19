@@ -24,7 +24,6 @@ class ShoppingListViewModel(
 ) : MviViewModel<ShoppingListState, ShoppingListEvent, ShoppingListEffect>(ShoppingListState()) {
 
     private val searchQueryFlow = MutableStateFlow("")
-    private var initialized = false
 
     init {
         searchQueryFlow
@@ -55,13 +54,12 @@ class ShoppingListViewModel(
     }
 
     private fun loadLists() {
-        val firstLoad = !initialized
-        initialized = true
+        val firstLoad = !state.value.initialized
         launch {
             if (firstLoad) updateState { copy(isLoading = true) }
             val loaded = repository.getLists(refresh = true)
             val selectedId = resolveSelectedListId(loaded)
-            updateState { copy(lists = loaded, isLoading = false) }
+            updateState { copy(initialized = true, lists = loaded, isLoading = false) }
             loadItems(selectedId)
         }
     }

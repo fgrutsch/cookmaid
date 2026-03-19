@@ -9,8 +9,8 @@ import kotlin.uuid.Uuid
 data class MealPlanState(
     val currentWeekStart: LocalDate,
     val days: List<MealPlanDay> = emptyList(),
+    val initialized: Boolean = false,
     val isLoading: Boolean = false,
-    val isRefreshing: Boolean = false,
     val recipeSearchResults: List<Recipe> = emptyList(),
 )
 

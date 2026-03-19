@@ -24,8 +24,6 @@ class MealPlanViewModel(
     MealPlanState(currentWeekStart = mondayOfWeek(Clock.System.todayIn(TimeZone.currentSystemDefault()))),
 ) {
 
-    private var initialized = false
-
     override fun handleEvent(event: MealPlanEvent) {
         when (event) {
             is MealPlanEvent.Load -> load()
@@ -43,13 +41,13 @@ class MealPlanViewModel(
     }
 
     private fun load() {
-        val firstLoad = !initialized
-        initialized = true
+        val firstLoad = !state.value.initialized
         launch {
             if (firstLoad) updateState { copy(isLoading = true) }
             val items = fetchWeekItems(state.value.currentWeekStart)
             updateState {
                 copy(
+                    initialized = true,
                     days = groupIntoDays(currentWeekStart, items),
                     isLoading = false,
                 )
@@ -59,12 +57,12 @@ class MealPlanViewModel(
 
     private fun refresh() {
         launch {
-            updateState { copy(isRefreshing = true) }
+            updateState { copy(isLoading = true) }
             val items = fetchWeekItems(state.value.currentWeekStart)
             updateState {
                 copy(
                     days = groupIntoDays(currentWeekStart, items),
-                    isRefreshing = false,
+                    isLoading = false,
                 )
             }
         }
@@ -175,7 +173,7 @@ class MealPlanViewModel(
     }
 
     override fun onError(e: Exception) {
-        updateState { copy(isLoading = false, isRefreshing = false) }
+        updateState { copy(isLoading = false) }
         sendEffect(MealPlanEffect.Error("Something went wrong. Please try again."))
     }
 }

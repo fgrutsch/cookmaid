@@ -116,7 +116,7 @@ fun MealPlanScreen(
         },
     ) { padding ->
         PullToRefreshBox(
-            isRefreshing = state.isRefreshing,
+            isRefreshing = state.isLoading,
             onRefresh = { onEvent(MealPlanEvent.Refresh) },
             modifier = Modifier.fillMaxSize().padding(padding),
         ) {
@@ -129,12 +129,7 @@ fun MealPlanScreen(
                 onNext = { onEvent(MealPlanEvent.NextWeek) },
             )
 
-            if (state.isLoading && state.days.isEmpty()) {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
-            } else {
-                LazyColumn(
+            LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -164,7 +159,6 @@ fun MealPlanScreen(
                         )
                     }
                 }
-            }
         }
         }
     }

@@ -6,6 +6,7 @@ import io.github.fgrutsch.cookmaid.shopping.ShoppingList
 import kotlin.uuid.Uuid
 
 data class ShoppingListState(
+    val initialized: Boolean = false,
     val lists: List<ShoppingList> = emptyList(),
     val selectedListId: Uuid? = null,
     val items: List<ShoppingItem> = emptyList(),

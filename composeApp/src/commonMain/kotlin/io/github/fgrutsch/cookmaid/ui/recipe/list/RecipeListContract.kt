@@ -6,6 +6,7 @@ import kotlinx.datetime.LocalDate
 import kotlin.uuid.Uuid
 
 data class RecipeListState(
+    val initialized: Boolean = false,
     val recipes: List<Recipe> = emptyList(),
     val nextCursor: String? = null,
     val hasMore: Boolean = true,

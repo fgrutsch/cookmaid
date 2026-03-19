@@ -25,7 +25,6 @@ class RecipeListViewModel(
 ) : MviViewModel<RecipeListState, RecipeListEvent, RecipeListEffect>(RecipeListState()) {
 
     private val searchQueryFlow = MutableStateFlow("")
-    private var initialized = false
 
     init {
         searchQueryFlow
@@ -52,8 +51,7 @@ class RecipeListViewModel(
     }
 
     private fun loadRecipes() {
-        val firstLoad = !initialized
-        initialized = true
+        val firstLoad = !state.value.initialized
         launch {
             if (firstLoad) updateState { copy(isLoading = true) }
             val tags = repository.fetchTags()
@@ -62,6 +60,7 @@ class RecipeListViewModel(
             val page = repository.fetchPage(cursor = null, search = search, tag = s.selectedTag)
             updateState {
                 copy(
+                    initialized = true,
                     availableTags = tags,
                     recipes = page.items,
                     nextCursor = page.nextCursor,
