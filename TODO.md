@@ -11,6 +11,5 @@
 - client error handling
 - adt have package name included
 - migration tool from samsung food
-- kover / detekt
-- smaller UI components
 - owner checks return 403 + move to model package
+- add to meal plan (show current items in meal plan)

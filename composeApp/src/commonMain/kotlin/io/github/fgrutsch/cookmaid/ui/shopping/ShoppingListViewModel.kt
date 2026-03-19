@@ -27,7 +27,7 @@ class ShoppingListViewModel(
 
     init {
         searchQueryFlow
-            .debounce(150)
+            .debounce(SEARCH_DEBOUNCE_MILLIS)
             .flatMapLatest { query ->
                 flow { emit(catalogItemRepository.search(query)) }
             }
@@ -37,11 +37,11 @@ class ShoppingListViewModel(
 
     override fun handleEvent(event: ShoppingListEvent) {
         when (event) {
-            is ShoppingListEvent.LoadLists -> loadLists()
-            is ShoppingListEvent.Refresh -> refresh()
-            is ShoppingListEvent.SelectList -> selectList(event.listId)
+            is ShoppingListEvent.LoadLists -> fetchLists(isRefresh = false)
+            is ShoppingListEvent.Refresh -> fetchLists(isRefresh = true)
+            is ShoppingListEvent.SelectList -> loadItems(event.listId)
             is ShoppingListEvent.UpdateSearchQuery -> updateSearchQuery(event.query)
-            is ShoppingListEvent.ClearSearch -> clearSearch()
+            is ShoppingListEvent.ClearSearch -> updateSearchQuery("")
             is ShoppingListEvent.AddItem -> addItem(event.item)
             is ShoppingListEvent.UpdateItem -> updateItem(event.item)
             is ShoppingListEvent.ToggleChecked -> toggleChecked(event.itemId)
@@ -53,29 +53,25 @@ class ShoppingListViewModel(
         }
     }
 
-    private fun loadLists() {
-        val firstLoad = !state.value.initialized
+    private fun fetchLists(isRefresh: Boolean) {
         launch {
-            if (firstLoad) updateState { copy(isLoading = true) }
+            if (isRefresh) {
+                updateState { copy(isRefreshing = true) }
+            } else if (!state.value.initialized) {
+                updateState { copy(isLoading = true) }
+            }
             val loaded = repository.getLists(refresh = true)
             val selectedId = resolveSelectedListId(loaded)
-            updateState { copy(initialized = true, lists = loaded, isLoading = false) }
+            updateState {
+                copy(
+                    initialized = true,
+                    lists = loaded,
+                    isLoading = false,
+                    isRefreshing = false,
+                )
+            }
             loadItems(selectedId)
         }
-    }
-
-    private fun refresh() {
-        launch {
-            updateState { copy(isRefreshing = true) }
-            val loaded = repository.getLists(refresh = true)
-            val selectedId = resolveSelectedListId(loaded)
-            updateState { copy(lists = loaded, isRefreshing = false) }
-            loadItems(selectedId)
-        }
-    }
-
-    private fun selectList(listId: Uuid?) {
-        loadItems(listId)
     }
 
     private fun loadItems(listId: Uuid?) {
@@ -104,15 +100,10 @@ class ShoppingListViewModel(
         searchQueryFlow.update { query }
     }
 
-    private fun clearSearch() {
-        updateState { copy(searchQuery = "", suggestions = emptyList()) }
-        searchQueryFlow.update { "" }
-    }
-
     private fun addItem(item: Item) {
         if (item.name.isBlank()) return
         val listId = state.value.selectedListId ?: return
-        clearSearch()
+        updateSearchQuery("")
         launch {
             val catalogItemId = (item as? Item.CatalogItem)?.id
             val freeTextName = (item as? Item.FreeTextItem)?.name
@@ -194,5 +185,9 @@ class ShoppingListViewModel(
     override fun onError(e: Exception) {
         updateState { copy(isLoading = false, isRefreshing = false) }
         sendEffect(ShoppingListEffect.Error("Something went wrong. Please try again."))
+    }
+
+    companion object {
+        private const val SEARCH_DEBOUNCE_MILLIS = 150L
     }
 }

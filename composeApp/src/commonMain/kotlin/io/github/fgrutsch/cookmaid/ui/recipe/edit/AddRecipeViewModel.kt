@@ -29,7 +29,7 @@ class AddRecipeViewModel(
 
     init {
         ingredientQueryFlow
-            .debounce(150)
+            .debounce(SEARCH_DEBOUNCE_MILLIS)
             .flatMapLatest { query -> flow { emit(catalogItemRepository.search(query)) } }
             .onEach { results -> updateState { copy(ingredientSuggestions = results) } }
             .launchIn(viewModelScope)
@@ -137,7 +137,13 @@ class AddRecipeViewModel(
         val s = state.value
         launch {
             if (s.isEditing) {
-                recipeRepository.update(editRecipeId!!, s.name.trim(), s.ingredients, s.steps, s.selectedTags)
+                recipeRepository.update(
+                    requireNotNull(editRecipeId),
+                    s.name.trim(),
+                    s.ingredients,
+                    s.steps,
+                    s.selectedTags,
+                )
             } else {
                 recipeRepository.create(s.name.trim(), s.ingredients, s.steps, s.selectedTags)
             }
@@ -148,5 +154,9 @@ class AddRecipeViewModel(
     override fun onError(e: Exception) {
         updateState { copy(isLoading = false) }
         sendEffect(AddRecipeEffect.Error("Something went wrong. Please try again."))
+    }
+
+    companion object {
+        private const val SEARCH_DEBOUNCE_MILLIS = 150L
     }
 }

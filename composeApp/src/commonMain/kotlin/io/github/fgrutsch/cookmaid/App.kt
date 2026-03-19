@@ -18,6 +18,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
@@ -96,93 +98,125 @@ fun App(
 }
 
 @Composable
-private fun MainContent(settingsViewModel: SettingsViewModel, authViewModel: AuthViewModel, userProfile: UserProfile) {
+private fun MainContent(
+    settingsViewModel: SettingsViewModel,
+    authViewModel: AuthViewModel,
+    userProfile: UserProfile,
+) {
     val backStack = rememberNavBackStack(navConfig, Route.ShoppingList)
     var selectedTab by remember { mutableStateOf(TopLevelRoute.Shopping) }
 
     Scaffold(
         bottomBar = {
-            NavigationBar {
-                TopLevelRoute.entries.forEach { tab ->
-                    NavigationBarItem(
-                        selected = selectedTab == tab,
-                        onClick = {
-                            if (selectedTab != tab) {
-                                selectedTab = tab
-                                backStack.clear()
-                                backStack.add(tab.startRoute)
-                            }
-                        },
-                        icon = { Icon(tab.icon, contentDescription = tab.label) },
-                        label = { Text(tab.label) },
-                    )
-                }
-            }
+            BottomNavigationBar(
+                selectedTab = selectedTab,
+                onTabSelected = { tab ->
+                    if (selectedTab != tab) {
+                        selectedTab = tab
+                        backStack.clear()
+                        backStack.add(tab.startRoute)
+                    }
+                },
+            )
         },
     ) { innerPadding ->
-        NavDisplay(
+        AppNavDisplay(
             backStack = backStack,
-            onBack = { backStack.removeLastOrNull() },
+            settingsViewModel = settingsViewModel,
+            authViewModel = authViewModel,
+            userProfile = userProfile,
             modifier = Modifier.padding(innerPadding),
-            entryProvider = entryProvider {
-                entry<Route.ShoppingList> {
-                    ShoppingListScreen(viewModel = koinInject<ShoppingListViewModel>())
-                }
-
-                entry<Route.RecipeList> {
-                    RecipeListScreen(
-                        viewModel = koinInject<RecipeListViewModel>(),
-                        onRecipeClick = { id -> backStack.add(Route.RecipeDetail(id)) },
-                        onAddRecipe = { backStack.add(Route.AddRecipe) },
-                    )
-                }
-
-                entry<Route.AddRecipe> {
-                    val koin = getKoin()
-                    AddRecipeScreen(
-                        viewModel = remember {
-                            AddRecipeViewModel(koin.get(), koin.get())
-                        },
-                        onBack = { backStack.removeLastOrNull() },
-                    )
-                }
-
-                entry<Route.RecipeDetail> { key ->
-                    val koin = getKoin()
-                    RecipeDetailScreen(
-                        viewModel = remember(key.id) {
-                            RecipeDetailViewModel(key.id, koin.get(), koin.get(), koin.get())
-                        },
-                        onBack = { backStack.removeLastOrNull() },
-                        onEdit = { backStack.add(Route.EditRecipe(key.id)) },
-                    )
-                }
-
-                entry<Route.EditRecipe> { key ->
-                    val koin = getKoin()
-                    AddRecipeScreen(
-                        viewModel = remember(key.id) {
-                            AddRecipeViewModel(koin.get(), koin.get(), key.id)
-                        },
-                        onBack = { backStack.removeLastOrNull() },
-                    )
-                }
-
-                entry<Route.MealPlan> {
-                    MealPlanScreen(
-                        viewModel = koinInject<MealPlanViewModel>(),
-                        onRecipeClick = { id -> backStack.add(Route.RecipeDetail(id)) },
-                    )
-                }
-
-                entry<Route.Settings> {
-                    SettingsScreen(
-                        viewModel = settingsViewModel,
-                        userProfile = userProfile,
-                        onLogout = { authViewModel.onEvent(AuthEvent.Logout) },
-                    )
-                }
-            },
         )
     }
+}
+
+@Composable
+private fun BottomNavigationBar(
+    selectedTab: TopLevelRoute,
+    onTabSelected: (TopLevelRoute) -> Unit,
+) {
+    NavigationBar {
+        TopLevelRoute.entries.forEach { tab ->
+            NavigationBarItem(
+                selected = selectedTab == tab,
+                onClick = { onTabSelected(tab) },
+                icon = { Icon(tab.icon, contentDescription = tab.label) },
+                label = { Text(tab.label) },
+            )
+        }
+    }
+}
+
+@Composable
+private fun AppNavDisplay(
+    backStack: NavBackStack<NavKey>,
+    settingsViewModel: SettingsViewModel,
+    authViewModel: AuthViewModel,
+    userProfile: UserProfile,
+    modifier: Modifier = Modifier,
+) {
+    NavDisplay(
+        backStack = backStack,
+        onBack = { backStack.removeLastOrNull() },
+        modifier = modifier,
+        entryProvider = entryProvider {
+            entry<Route.ShoppingList> {
+                ShoppingListScreen(viewModel = koinInject<ShoppingListViewModel>())
+            }
+
+            entry<Route.RecipeList> {
+                RecipeListScreen(
+                    viewModel = koinInject<RecipeListViewModel>(),
+                    onRecipeClick = { id -> backStack.add(Route.RecipeDetail(id)) },
+                    onAddRecipe = { backStack.add(Route.AddRecipe) },
+                )
+            }
+
+            entry<Route.AddRecipe> {
+                val koin = getKoin()
+                AddRecipeScreen(
+                    viewModel = remember {
+                        AddRecipeViewModel(koin.get(), koin.get())
+                    },
+                    onBack = { backStack.removeLastOrNull() },
+                )
+            }
+
+            entry<Route.RecipeDetail> { key ->
+                val koin = getKoin()
+                RecipeDetailScreen(
+                    viewModel = remember(key.id) {
+                        RecipeDetailViewModel(key.id, koin.get(), koin.get(), koin.get())
+                    },
+                    onBack = { backStack.removeLastOrNull() },
+                    onEdit = { backStack.add(Route.EditRecipe(key.id)) },
+                )
+            }
+
+            entry<Route.EditRecipe> { key ->
+                val koin = getKoin()
+                AddRecipeScreen(
+                    viewModel = remember(key.id) {
+                        AddRecipeViewModel(koin.get(), koin.get(), key.id)
+                    },
+                    onBack = { backStack.removeLastOrNull() },
+                )
+            }
+
+            entry<Route.MealPlan> {
+                MealPlanScreen(
+                    viewModel = koinInject<MealPlanViewModel>(),
+                    onRecipeClick = { id -> backStack.add(Route.RecipeDetail(id)) },
+                )
+            }
+
+            entry<Route.Settings> {
+                SettingsScreen(
+                    viewModel = settingsViewModel,
+                    userProfile = userProfile,
+                    onLogout = { authViewModel.onEvent(AuthEvent.Logout) },
+                )
+            }
+        },
+    )
 }

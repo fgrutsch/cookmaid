@@ -45,7 +45,9 @@ class AuthViewModel(
                         loginError = null,
                     )
                 }
-            } catch (e: Exception) {
+            } catch (
+                @Suppress("TooGenericExceptionCaught") e: Exception
+            ) {
                 updateState {
                     copy(
                         status = AuthState.Status.Unauthenticated,

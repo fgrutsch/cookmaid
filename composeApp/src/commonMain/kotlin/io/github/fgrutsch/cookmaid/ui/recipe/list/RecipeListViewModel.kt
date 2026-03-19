@@ -29,15 +29,15 @@ class RecipeListViewModel(
     init {
         searchQueryFlow
             .drop(1)
-            .debounce(300)
+            .debounce(SEARCH_DEBOUNCE_MILLIS)
             .onEach { fetchFirstPage() }
             .launchIn(viewModelScope)
     }
 
     override fun handleEvent(event: RecipeListEvent) {
         when (event) {
-            is RecipeListEvent.LoadRecipes -> loadRecipes()
-            is RecipeListEvent.Refresh -> refresh()
+            is RecipeListEvent.LoadRecipes -> loadWithTags(isRefresh = false)
+            is RecipeListEvent.Refresh -> loadWithTags(isRefresh = true)
             is RecipeListEvent.LoadMore -> loadMore()
             is RecipeListEvent.UpdateSearchQuery -> updateSearchQuery(event.query)
             is RecipeListEvent.SetSearchActive -> setSearchActive(event.active)
@@ -50,10 +50,13 @@ class RecipeListViewModel(
         }
     }
 
-    private fun loadRecipes() {
-        val firstLoad = !state.value.initialized
+    private fun loadWithTags(isRefresh: Boolean) {
         launch {
-            if (firstLoad) updateState { copy(isLoading = true) }
+            if (isRefresh) {
+                updateState { copy(isRefreshing = true) }
+            } else if (!state.value.initialized) {
+                updateState { copy(isLoading = true) }
+            }
             val tags = repository.fetchTags()
             val s = state.value
             val search = s.searchQuery.takeIf { it.isNotBlank() }
@@ -66,24 +69,6 @@ class RecipeListViewModel(
                     nextCursor = page.nextCursor,
                     hasMore = page.nextCursor != null,
                     isLoading = false,
-                )
-            }
-        }
-    }
-
-    private fun refresh() {
-        launch {
-            updateState { copy(isRefreshing = true) }
-            val tags = repository.fetchTags()
-            val s = state.value
-            val search = s.searchQuery.takeIf { it.isNotBlank() }
-            val page = repository.fetchPage(cursor = null, search = search, tag = s.selectedTag)
-            updateState {
-                copy(
-                    availableTags = tags,
-                    recipes = page.items,
-                    nextCursor = page.nextCursor,
-                    hasMore = page.nextCursor != null,
                     isRefreshing = false,
                 )
             }
@@ -109,7 +94,8 @@ class RecipeListViewModel(
 
     private fun loadMore() {
         val current = state.value
-        if (current.isLoading || current.isRefreshing || current.isLoadingMore || !current.hasMore) return
+        val canLoadMore = !current.isLoading && !current.isRefreshing && !current.isLoadingMore && current.hasMore
+        if (!canLoadMore) return
         val search = current.searchQuery.takeIf { it.isNotBlank() }
         launch {
             updateState { copy(isLoadingMore = true) }
@@ -167,7 +153,7 @@ class RecipeListViewModel(
     }
 
     fun resolveRecipeIngredients(recipeId: Uuid): List<RecipeIngredient> {
-        return state.value.recipes.find { it.id == recipeId }?.ingredients ?: emptyList()
+        return state.value.recipes.find { it.id == recipeId }?.ingredients.orEmpty()
     }
 
     fun resolveRecipeName(recipeId: Uuid): String {
@@ -191,5 +177,9 @@ class RecipeListViewModel(
     override fun onError(e: Exception) {
         updateState { copy(isLoading = false, isRefreshing = false, isLoadingMore = false) }
         sendEffect(RecipeListEffect.Error("Something went wrong. Please try again."))
+    }
+
+    companion object {
+        private const val SEARCH_DEBOUNCE_MILLIS = 300L
     }
 }

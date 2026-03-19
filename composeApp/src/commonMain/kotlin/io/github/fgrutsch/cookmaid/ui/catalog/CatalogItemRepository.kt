@@ -24,6 +24,10 @@ class ApiCatalogItemRepository(
         }
         return items
             .filter { it.name.lowercase().contains(q) }
-            .take(5)
+            .take(MAX_SEARCH_RESULTS)
+    }
+
+    companion object {
+        private const val MAX_SEARCH_RESULTS = 5
     }
 }
