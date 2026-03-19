@@ -25,19 +25,15 @@ fun Route.shoppingRoutes() {
     val service by inject<ShoppingListService>()
 
     route("/shopping-lists") {
-
         get {
             call.respond(service.findListsByUser(call.userId()))
         }
-
         post {
             val body = call.receive<CreateListRequest>()
             val list = service.createList(call.userId(), body.name)
             call.respond(HttpStatusCode.Created, list)
         }
-
         route("/{listId}") {
-
             put {
                 val listId = call.parameters.uuid("listId")
                 val body = call.receive<UpdateListRequest>()
@@ -47,7 +43,6 @@ fun Route.shoppingRoutes() {
                     call.respond(HttpStatusCode.NoContent)
                 }
             }
-
             delete {
                 val listId = call.parameters.uuid("listId")
                 when (service.deleteList(call.userId(), listId)) {
@@ -56,70 +51,66 @@ fun Route.shoppingRoutes() {
                     ShoppingListService.DeleteListResult.CannotDeleteDefault -> call.respond(HttpStatusCode.Conflict)
                 }
             }
+            shoppingItemRoutes(service)
+        }
+    }
+}
 
-            route("/items") {
-
-                get {
-                    val listId = call.parameters.uuid("listId")
-                    call.respond(service.findItemsByListId(call.userId(), listId))
+private fun Route.shoppingItemRoutes(service: ShoppingListService) {
+    route("/items") {
+        get {
+            val listId = call.parameters.uuid("listId")
+            call.respond(service.findItemsByListId(call.userId(), listId))
+        }
+        post {
+            val listId = call.parameters.uuid("listId")
+            val body = call.receive<CreateShoppingItemRequest>()
+            val created = service.addItem(call.userId(), listId, body.catalogItemId, body.freeTextName, body.quantity)
+            if (created == null) {
+                call.respond(HttpStatusCode.NotFound)
+            } else {
+                call.respond(HttpStatusCode.Created, created)
+            }
+        }
+        post("/batch") {
+            val listId = call.parameters.uuid("listId")
+            val body = call.receive<BatchAddItemsRequest>()
+            val created = service.addItems(call.userId(), listId, body.items)
+            if (created == null) {
+                call.respond(HttpStatusCode.NotFound)
+            } else {
+                call.respond(HttpStatusCode.Created, created)
+            }
+        }
+        delete {
+            val listId = call.parameters.uuid("listId")
+            val checked = call.request.queryParameters["checked"]?.toBooleanStrictOrNull()
+            if (checked == true) {
+                if (!service.deleteCheckedItems(call.userId(), listId)) {
+                    call.respond(HttpStatusCode.NotFound)
+                } else {
+                    call.respond(HttpStatusCode.NoContent)
                 }
-
-                post {
-                    val listId = call.parameters.uuid("listId")
-                    val body = call.receive<CreateShoppingItemRequest>()
-                    val created = service.addItem(call.userId(), listId, body.catalogItemId, body.freeTextName, body.quantity)
-                    if (created == null) {
-                        call.respond(HttpStatusCode.NotFound)
-                    } else {
-                        call.respond(HttpStatusCode.Created, created)
-                    }
+            } else {
+                call.respond(HttpStatusCode.BadRequest)
+            }
+        }
+        route("/{itemId}") {
+            put {
+                val itemId = call.parameters.uuid("itemId")
+                val body = call.receive<UpdateItemRequest>()
+                if (!service.updateItem(call.userId(), itemId, body.quantity, body.checked)) {
+                    call.respond(HttpStatusCode.NotFound)
+                } else {
+                    call.respond(HttpStatusCode.NoContent)
                 }
-
-                post("/batch") {
-                    val listId = call.parameters.uuid("listId")
-                    val body = call.receive<BatchAddItemsRequest>()
-                    val created = service.addItems(call.userId(), listId, body.items)
-                    if (created == null) {
-                        call.respond(HttpStatusCode.NotFound)
-                    } else {
-                        call.respond(HttpStatusCode.Created, created)
-                    }
-                }
-
-                delete {
-                    val listId = call.parameters.uuid("listId")
-                    val checked = call.request.queryParameters["checked"]?.toBooleanStrictOrNull()
-                    if (checked == true) {
-                        if (!service.deleteCheckedItems(call.userId(), listId)) {
-                            call.respond(HttpStatusCode.NotFound)
-                        } else {
-                            call.respond(HttpStatusCode.NoContent)
-                        }
-                    } else {
-                        call.respond(HttpStatusCode.BadRequest)
-                    }
-                }
-
-                route("/{itemId}") {
-
-                    put {
-                        val itemId = call.parameters.uuid("itemId")
-                        val body = call.receive<UpdateItemRequest>()
-                        if (!service.updateItem(call.userId(), itemId, body.quantity, body.checked)) {
-                            call.respond(HttpStatusCode.NotFound)
-                        } else {
-                            call.respond(HttpStatusCode.NoContent)
-                        }
-                    }
-
-                    delete {
-                        val itemId = call.parameters.uuid("itemId")
-                        if (!service.deleteItem(call.userId(), itemId)) {
-                            call.respond(HttpStatusCode.NotFound)
-                        } else {
-                            call.respond(HttpStatusCode.NoContent)
-                        }
-                    }
+            }
+            delete {
+                val itemId = call.parameters.uuid("itemId")
+                if (!service.deleteItem(call.userId(), itemId)) {
+                    call.respond(HttpStatusCode.NotFound)
+                } else {
+                    call.respond(HttpStatusCode.NoContent)
                 }
             }
         }

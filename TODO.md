@@ -1,6 +1,5 @@
 # TODO
 
-- inline env vars from config.js
 - vector image logo/icons
 - add a favicon
 - add create/updated timestamps to db tables
@@ -12,4 +11,5 @@
 - client error handling
 - adt have package name included
 - migration tool from samsung food
-- kover / detekt
+- owner checks return 403 + move to model package
+- add to meal plan (show current items in meal plan)

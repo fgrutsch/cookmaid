@@ -19,7 +19,7 @@ internal fun EditItemDialog(
     onDismiss: () -> Unit,
     onSave: (ShoppingItem) -> Unit,
 ) {
-    var quantity by remember { mutableStateOf(item.quantity?.let { formatQuantity(it) } ?: "") }
+    var quantity by remember { mutableStateOf(item.quantity?.let { formatQuantity(it) }.orEmpty()) }
 
     AlertDialog(
         onDismissRequest = onDismiss,

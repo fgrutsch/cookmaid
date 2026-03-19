@@ -54,7 +54,12 @@ class ApiShoppingListRepository(
         return client.fetchItems(listId)
     }
 
-    override suspend fun addItem(listId: Uuid, catalogItemId: Uuid?, freeTextName: String?, quantity: Float?): ShoppingItem {
+    override suspend fun addItem(
+        listId: Uuid,
+        catalogItemId: Uuid?,
+        freeTextName: String?,
+        quantity: Float?,
+    ): ShoppingItem {
         return client.addItem(listId, catalogItemId, freeTextName, quantity)
     }
 

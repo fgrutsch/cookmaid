@@ -9,4 +9,18 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform) apply false
     alias(libs.plugins.kotlinx.serialization) apply false
     alias(libs.plugins.ktor) apply false
+    alias(libs.plugins.detekt) apply false
+    alias(libs.plugins.kover) apply false
+}
+
+tasks.register("detektAll") {
+    description = "Runs detekt with type resolution on all modules"
+    group = "verification"
+    dependsOn(
+        ":server:detektMain",
+        ":server:detektTest",
+        ":shared:detektMainJvm",
+        ":shared:detektTestJvm",
+        ":composeApp:detektDevDebugAndroid",
+    )
 }

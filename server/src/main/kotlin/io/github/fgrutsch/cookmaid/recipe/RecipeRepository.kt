@@ -31,8 +31,9 @@ interface RecipeRepository {
     suspend fun findByUserId(userId: Uuid, cursor: Instant?, limit: Int, search: String?, tag: String?): RecipePage
     suspend fun findById(id: Uuid): Recipe?
     suspend fun findTagsByUserId(userId: Uuid): List<String>
-    suspend fun create(userId: Uuid, name: String, ingredients: List<RecipeIngredient>, steps: List<String>, tags: List<String>): Recipe
-    suspend fun update(id: Uuid, name: String, ingredients: List<RecipeIngredient>, steps: List<String>, tags: List<String>)
+    suspend fun create(userId: Uuid, data: RecipeData): Recipe
+    suspend fun update(id: Uuid, data: RecipeData)
+
     suspend fun delete(id: Uuid)
     suspend fun isOwnedByUser(userId: Uuid, recipeId: Uuid): Boolean
 }
@@ -46,62 +47,61 @@ class PostgresRecipeRepository : RecipeRepository {
         search: String?,
         tag: String?,
     ): RecipePage = suspendTransaction {
-            var condition: Op<Boolean> = RecipesTable.userId eq userId
+        var condition: Op<Boolean> = RecipesTable.userId eq userId
 
-            if (cursor != null) {
-                @Suppress("UNCHECKED_CAST")
-                val cursorCondition = LessOp(
-                    RecipesTable.createdAt,
-                    QueryParameter(cursor, RecipesTable.createdAt.columnType as IColumnType<Instant>),
-                )
-                condition = condition and cursorCondition
-            }
+        if (cursor != null) {
+            val cursorCondition = LessOp(
+                RecipesTable.createdAt,
+                QueryParameter(cursor, RecipesTable.createdAt.columnType),
+            )
+            condition = condition and cursorCondition
+        }
 
-            if (!search.isNullOrBlank()) {
-                val escaped = search.trim().lowercase()
-                    .replace("\\", "\\\\")
-                    .replace("%", "\\%")
-                    .replace("_", "\\_")
-                condition = condition and (RecipesTable.name.lowerCase() like "%$escaped%")
-            }
+        if (!search.isNullOrBlank()) {
+            val escaped = search.trim().lowercase()
+                .replace("\\", "\\\\")
+                .replace("%", "\\%")
+                .replace("_", "\\_")
+            condition = condition and (RecipesTable.name.lowerCase() like "%$escaped%")
+        }
 
-            if (!tag.isNullOrBlank()) {
-                condition = condition and object : Op<Boolean>() {
-                    override fun toQueryBuilder(queryBuilder: QueryBuilder) {
-                        queryBuilder {
-                            append(RecipesTable.tags)
-                            append(" @> ARRAY[")
-                            registerArgument(TextColumnType(), tag.trim())
-                            append("]::text[]")
-                        }
+        if (!tag.isNullOrBlank()) {
+            condition = condition and object : Op<Boolean>() {
+                override fun toQueryBuilder(queryBuilder: QueryBuilder) {
+                    queryBuilder {
+                        append(RecipesTable.tags)
+                        append(" @> ARRAY[")
+                        registerArgument(TextColumnType(), tag.trim())
+                        append("]::text[]")
                     }
                 }
             }
-
-            val query = RecipesTable.selectAll().where(condition)
-
-            val rows = query
-                .orderBy(RecipesTable.createdAt, SortOrder.DESC)
-                .limit(limit + 1)
-                .toList()
-
-            val hasMore = rows.size > limit
-            val pageRows = rows.take(limit)
-
-            val items = pageRows.map { row ->
-                val id = row[RecipesTable.id]
-                Recipe(
-                    id = id,
-                    name = row[RecipesTable.name],
-                    ingredients = loadIngredients(id),
-                    steps = row[RecipesTable.steps],
-                    tags = row[RecipesTable.tags],
-                )
-            }
-
-            val nextCursor = if (hasMore) pageRows.last()[RecipesTable.createdAt].toEpochMilliseconds().toString() else null
-            RecipePage(items = items, nextCursor = nextCursor)
         }
+
+        val query = RecipesTable.selectAll().where(condition)
+
+        val rows = query
+            .orderBy(RecipesTable.createdAt, SortOrder.DESC)
+            .limit(limit + 1)
+            .toList()
+
+        val hasMore = rows.size > limit
+        val pageRows = rows.take(limit)
+
+        val items = pageRows.map { row ->
+            val id = row[RecipesTable.id]
+            Recipe(
+                id = id,
+                name = row[RecipesTable.name],
+                ingredients = loadIngredients(id),
+                steps = row[RecipesTable.steps],
+                tags = row[RecipesTable.tags],
+            )
+        }
+
+        val nextCursor = if (hasMore) pageRows.last()[RecipesTable.createdAt].toEpochMilliseconds().toString() else null
+        RecipePage(items = items, nextCursor = nextCursor)
+    }
 
     override suspend fun findById(id: Uuid): Recipe? = suspendTransaction {
         val row = RecipesTable.selectAll()
@@ -125,22 +125,16 @@ class PostgresRecipeRepository : RecipeRepository {
             .sorted()
     }
 
-    override suspend fun create(
-        userId: Uuid,
-        name: String,
-        ingredients: List<RecipeIngredient>,
-        steps: List<String>,
-        tags: List<String>,
-    ): Recipe = suspendTransaction {
+    override suspend fun create(userId: Uuid, data: RecipeData): Recipe = suspendTransaction {
         val row = RecipesTable.insertReturning {
             it[RecipesTable.userId] = userId
-            it[RecipesTable.name] = name.trim()
-            it[RecipesTable.steps] = steps.map(String::trim)
-            it[RecipesTable.tags] = tags.map(String::trim)
+            it[RecipesTable.name] = data.name.trim()
+            it[RecipesTable.steps] = data.steps.map(String::trim)
+            it[RecipesTable.tags] = data.tags.map(String::trim)
         }.single()
 
         val recipeId = row[RecipesTable.id]
-        insertIngredients(recipeId, ingredients)
+        insertIngredients(recipeId, data.ingredients)
 
         Recipe(
             id = recipeId,
@@ -151,21 +145,15 @@ class PostgresRecipeRepository : RecipeRepository {
         )
     }
 
-    override suspend fun update(
-        id: Uuid,
-        name: String,
-        ingredients: List<RecipeIngredient>,
-        steps: List<String>,
-        tags: List<String>,
-    ): Unit = suspendTransaction {
+    override suspend fun update(id: Uuid, data: RecipeData): Unit = suspendTransaction {
         RecipesTable.update({ RecipesTable.id eq id }) {
-            it[RecipesTable.name] = name.trim()
-            it[RecipesTable.steps] = steps.map(String::trim)
-            it[RecipesTable.tags] = tags.map(String::trim)
+            it[RecipesTable.name] = data.name.trim()
+            it[RecipesTable.steps] = data.steps.map(String::trim)
+            it[RecipesTable.tags] = data.tags.map(String::trim)
         }
 
         RecipeIngredientsTable.deleteWhere { RecipeIngredientsTable.recipeId eq id }
-        insertIngredients(id, ingredients)
+        insertIngredients(id, data.ingredients)
     }
 
     override suspend fun delete(id: Uuid): Unit = suspendTransaction {
@@ -216,6 +204,7 @@ class PostgresRecipeRepository : RecipeRepository {
                         it[RecipeIngredientsTable.catalogItemId] = item.id
                         it[RecipeIngredientsTable.freeTextName] = null
                     }
+
                     is Item.FreeTextItem -> {
                         it[RecipeIngredientsTable.catalogItemId] = null
                         it[RecipeIngredientsTable.freeTextName] = item.name

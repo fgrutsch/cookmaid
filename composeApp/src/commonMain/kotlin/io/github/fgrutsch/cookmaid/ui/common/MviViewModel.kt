@@ -47,7 +47,9 @@ abstract class MviViewModel<S, E, F>(initialState: S) : ViewModel() {
                 block()
             } catch (e: CancellationException) {
                 throw e
-            } catch (e: Exception) {
+            } catch (
+                @Suppress("TooGenericExceptionCaught") e: Exception
+            ) {
                 onError(e)
             }
         }
@@ -65,7 +67,9 @@ abstract class MviViewModel<S, E, F>(initialState: S) : ViewModel() {
                 block()
             } catch (e: CancellationException) {
                 throw e
-            } catch (e: Exception) {
+            } catch (
+                @Suppress("TooGenericExceptionCaught") e: Exception
+            ) {
                 state.update { snapshot }
                 onError(e)
             }

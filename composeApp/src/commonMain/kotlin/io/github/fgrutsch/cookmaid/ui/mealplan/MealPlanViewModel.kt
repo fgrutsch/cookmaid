@@ -1,7 +1,9 @@
 package io.github.fgrutsch.cookmaid.ui.mealplan
 
+import io.github.fgrutsch.cookmaid.mealplan.DAYS_IN_WEEK
 import io.github.fgrutsch.cookmaid.mealplan.MealPlanDay
 import io.github.fgrutsch.cookmaid.mealplan.MealPlanItem
+import io.github.fgrutsch.cookmaid.mealplan.WEEK_END_OFFSET
 import io.github.fgrutsch.cookmaid.mealplan.mondayOfWeek
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
 import io.github.fgrutsch.cookmaid.ui.common.MviViewModel
@@ -26,10 +28,10 @@ class MealPlanViewModel(
 
     override fun handleEvent(event: MealPlanEvent) {
         when (event) {
-            is MealPlanEvent.Load -> load()
-            is MealPlanEvent.Refresh -> refresh()
-            is MealPlanEvent.PreviousWeek -> navigateWeek(-7)
-            is MealPlanEvent.NextWeek -> navigateWeek(7)
+            is MealPlanEvent.Load -> loadWeek(showLoading = !state.value.initialized)
+            is MealPlanEvent.Refresh -> loadWeek(showLoading = true)
+            is MealPlanEvent.PreviousWeek -> navigateWeek(-DAYS_IN_WEEK)
+            is MealPlanEvent.NextWeek -> navigateWeek(DAYS_IN_WEEK)
             is MealPlanEvent.GoToCurrentWeek -> goToCurrentWeek()
             is MealPlanEvent.SearchRecipes -> searchRecipes(event.query)
             is MealPlanEvent.AddRecipeItem -> addRecipeItem(event.day, event.recipeId)
@@ -40,27 +42,13 @@ class MealPlanViewModel(
         }
     }
 
-    private fun load() {
-        val firstLoad = !state.value.initialized
+    private fun loadWeek(showLoading: Boolean) {
         launch {
-            if (firstLoad) updateState { copy(isLoading = true) }
+            if (showLoading) updateState { copy(isLoading = true) }
             val items = fetchWeekItems(state.value.currentWeekStart)
             updateState {
                 copy(
                     initialized = true,
-                    days = groupIntoDays(currentWeekStart, items),
-                    isLoading = false,
-                )
-            }
-        }
-    }
-
-    private fun refresh() {
-        launch {
-            updateState { copy(isLoading = true) }
-            val items = fetchWeekItems(state.value.currentWeekStart)
-            updateState {
-                copy(
                     days = groupIntoDays(currentWeekStart, items),
                     isLoading = false,
                 )
@@ -90,7 +78,11 @@ class MealPlanViewModel(
     private fun searchRecipes(query: String) {
         launch {
             val search = query.takeIf { it.isNotBlank() }
-            val page = recipeRepository.fetchPage(cursor = null, limit = 20, search = search)
+            val page = recipeRepository.fetchPage(
+                cursor = null,
+                limit = RECIPE_SEARCH_LIMIT,
+                search = search,
+            )
             updateState { copy(recipeSearchResults = page.items) }
         }
     }
@@ -144,7 +136,7 @@ class MealPlanViewModel(
     private fun addRecipeToShoppingList(recipeId: Uuid, recipeName: String) {
         launch {
             val recipe = recipeRepository.getById(recipeId)
-            val ingredients = recipe?.ingredients ?: emptyList()
+            val ingredients = recipe?.ingredients.orEmpty()
             if (ingredients.isNotEmpty()) {
                 sendEffect(MealPlanEffect.ShowIngredientPicker(recipeName, ingredients))
             }
@@ -159,7 +151,7 @@ class MealPlanViewModel(
     }
 
     private suspend fun fetchWeekItems(weekStart: LocalDate): List<MealPlanItem> {
-        val weekEnd = weekStart.plus(6, DateTimeUnit.DAY)
+        val weekEnd = weekStart.plus(WEEK_END_OFFSET, DateTimeUnit.DAY)
         return mealPlanRepository.fetchItems(weekStart, weekEnd)
     }
 
@@ -176,12 +168,16 @@ class MealPlanViewModel(
         updateState { copy(isLoading = false) }
         sendEffect(MealPlanEffect.Error("Something went wrong. Please try again."))
     }
+
+    companion object {
+        private const val RECIPE_SEARCH_LIMIT = 20
+    }
 }
 
 private fun groupIntoDays(weekStart: LocalDate, items: List<MealPlanItem>): List<MealPlanDay> {
     val itemsByDate = items.groupBy { it.day }
-    return (0..6).map { offset ->
+    return (0..WEEK_END_OFFSET).map { offset ->
         val date = weekStart.plus(offset, DateTimeUnit.DAY)
-        MealPlanDay(date, itemsByDate[date] ?: emptyList())
+        MealPlanDay(date, itemsByDate[date].orEmpty())
     }
 }

@@ -28,6 +28,7 @@ class RecipeRoutesTest : BaseIntegrationTest() {
     }
 
     @Test
+    @Suppress("LongMethod")
     fun `full recipe lifecycle`() = integrationTest {
         val token = TestJwt.generateToken("recipe-test-user")
         val client = jsonClient()

@@ -20,17 +20,23 @@ class PostgresRecipeRepositoryTest : BaseTest() {
         return userRepo.create(subject).id
     }
 
+    private fun data(
+        name: String = "Pasta",
+        ingredients: List<RecipeIngredient> = emptyList(),
+        steps: List<String> = emptyList(),
+        tags: List<String> = emptyList(),
+    ) = RecipeData(name, ingredients, steps, tags)
+
     @Test
     fun `create creates a new recipe with all fields`() = runTest {
         val repo = getKoin().get<RecipeRepository>()
         val userId = createUser()
 
-        val recipe = repo.create(
-            userId, "Pasta",
+        val recipe = repo.create(userId, data(
             ingredients = listOf(RecipeIngredient(Item.FreeTextItem("Spaghetti"), 500f)),
             steps = listOf("Boil water", "Cook pasta"),
             tags = listOf("Noodles"),
-        )
+        ))
 
         assertNotNull(recipe.id)
         assertEquals("Pasta", recipe.name)
@@ -47,7 +53,7 @@ class PostgresRecipeRepositoryTest : BaseTest() {
         val repo = getKoin().get<RecipeRepository>()
         val userId = createUser()
 
-        val recipe = repo.create(userId, "  Pasta  ", emptyList(), emptyList(), emptyList())
+        val recipe = repo.create(userId, data(name = "  Pasta  "))
 
         assertEquals("Pasta", recipe.name)
     }
@@ -59,12 +65,9 @@ class PostgresRecipeRepositoryTest : BaseTest() {
         val userId = createUser()
         val catalogItem = catalogRepo.findAll().first()
 
-        val recipe = repo.create(
-            userId, "Pasta",
+        val recipe = repo.create(userId, data(
             ingredients = listOf(RecipeIngredient(catalogItem, 400f)),
-            steps = emptyList(),
-            tags = emptyList(),
-        )
+        ))
 
         val ingredient = recipe.ingredients.first()
         val item = ingredient.item as Item.CatalogItem
@@ -76,8 +79,8 @@ class PostgresRecipeRepositoryTest : BaseTest() {
     fun `findByUserId returns recipes for user`() = runTest {
         val repo = getKoin().get<RecipeRepository>()
         val userId = createUser()
-        repo.create(userId, "Pasta", emptyList(), emptyList(), emptyList())
-        repo.create(userId, "Salad", emptyList(), emptyList(), emptyList())
+        repo.create(userId, data())
+        repo.create(userId, data(name = "Salad"))
 
         val page = repo.findByUserId(userId, cursor = null, limit = 20, search = null, tag = null)
 
@@ -96,12 +99,11 @@ class PostgresRecipeRepositoryTest : BaseTest() {
     fun `findById returns recipe with all children`() = runTest {
         val repo = getKoin().get<RecipeRepository>()
         val userId = createUser()
-        val recipe = repo.create(
-            userId, "Pasta",
+        val recipe = repo.create(userId, data(
             ingredients = listOf(RecipeIngredient(Item.FreeTextItem("Noodles"), 500f)),
             steps = listOf("Step 1", "Step 2"),
             tags = listOf("Italian"),
-        )
+        ))
 
         val found = repo.findById(recipe.id)
 
@@ -123,22 +125,22 @@ class PostgresRecipeRepositoryTest : BaseTest() {
     fun `update replaces name, ingredients, steps, and tags`() = runTest {
         val repo = getKoin().get<RecipeRepository>()
         val userId = createUser()
-        val recipe = repo.create(
-            userId, "Old",
+        val recipe = repo.create(userId, data(
+            name = "Old",
             ingredients = listOf(RecipeIngredient(Item.FreeTextItem("Old item"), null)),
             steps = listOf("Old step"),
             tags = listOf("Old tag"),
-        )
+        ))
 
-        repo.update(
-            recipe.id, "New",
+        repo.update(recipe.id, data(
+            name = "New",
             ingredients = listOf(
                 RecipeIngredient(Item.FreeTextItem("New item 1"), 1f),
                 RecipeIngredient(Item.FreeTextItem("New item 2"), 2f),
             ),
             steps = listOf("New step 1", "New step 2", "New step 3"),
             tags = listOf("New tag"),
-        )
+        ))
 
         val updated = repo.findById(recipe.id)
         assertNotNull(updated)
@@ -152,12 +154,11 @@ class PostgresRecipeRepositoryTest : BaseTest() {
     fun `delete removes the recipe and all children`() = runTest {
         val repo = getKoin().get<RecipeRepository>()
         val userId = createUser()
-        val recipe = repo.create(
-            userId, "To Delete",
+        val recipe = repo.create(userId, data(
             ingredients = listOf(RecipeIngredient(Item.FreeTextItem("Item"), null)),
             steps = listOf("Step"),
             tags = listOf("Tag"),
-        )
+        ))
 
         repo.delete(recipe.id)
 
@@ -169,12 +170,7 @@ class PostgresRecipeRepositoryTest : BaseTest() {
         val repo = getKoin().get<RecipeRepository>()
         val userId = createUser()
 
-        val recipe = repo.create(
-            userId, "Pasta",
-            ingredients = emptyList(),
-            steps = listOf("First", "Second", "Third"),
-            tags = emptyList(),
-        )
+        val recipe = repo.create(userId, data(steps = listOf("First", "Second", "Third")))
 
         val found = repo.findById(recipe.id)
         assertNotNull(found)
@@ -185,7 +181,7 @@ class PostgresRecipeRepositoryTest : BaseTest() {
     fun `isOwnedByUser returns true for own recipe`() = runTest {
         val repo = getKoin().get<RecipeRepository>()
         val userId = createUser()
-        val recipe = repo.create(userId, "My Recipe", emptyList(), emptyList(), emptyList())
+        val recipe = repo.create(userId, data())
 
         assertTrue(repo.isOwnedByUser(userId, recipe.id))
     }
@@ -195,7 +191,7 @@ class PostgresRecipeRepositoryTest : BaseTest() {
         val repo = getKoin().get<RecipeRepository>()
         val userId = createUser("user-1")
         val otherUserId = createUser("user-2")
-        val recipe = repo.create(userId, "My Recipe", emptyList(), emptyList(), emptyList())
+        val recipe = repo.create(userId, data())
 
         assertFalse(repo.isOwnedByUser(otherUserId, recipe.id))
     }

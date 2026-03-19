@@ -24,7 +24,7 @@ import org.koin.test.KoinTest
 import org.koin.test.junit5.KoinTestExtension
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-abstract class BaseTest : KoinTest {
+open class BaseTest : KoinTest {
 
     @JvmField
     @RegisterExtension

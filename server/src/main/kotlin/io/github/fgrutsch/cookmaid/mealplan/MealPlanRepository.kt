@@ -96,7 +96,7 @@ class PostgresMealPlanRepository : MealPlanRepository {
             MealPlanItem.Note(
                 id = this[MealPlanItemsTable.id],
                 day = this[MealPlanItemsTable.day],
-                name = this[MealPlanItemsTable.note]!!,
+                name = requireNotNull(this[MealPlanItemsTable.note]),
             )
         }
     }

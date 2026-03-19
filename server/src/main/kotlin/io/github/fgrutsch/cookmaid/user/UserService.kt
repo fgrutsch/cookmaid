@@ -21,9 +21,11 @@ class UserService(
     suspend fun findIdByOidcSubject(oidcSubject: String): Uuid? {
         cache[oidcSubject]?.takeIf { it.expiresAt.hasNotPassedNow() }?.let { return it.userId }
 
-        val userId = repository.findByOidcSubject(oidcSubject)?.id ?: return null
-        cache[oidcSubject] = CacheEntry(userId, TimeSource.Monotonic.markNow() + ttl)
-        evictExpired()
+        val userId = repository.findByOidcSubject(oidcSubject)?.id
+        if (userId != null) {
+            cache[oidcSubject] = CacheEntry(userId, TimeSource.Monotonic.markNow() + ttl)
+            evictExpired()
+        }
         return userId
     }
 

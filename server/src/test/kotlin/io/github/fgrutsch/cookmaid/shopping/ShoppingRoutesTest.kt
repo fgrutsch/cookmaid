@@ -28,6 +28,7 @@ class ShoppingRoutesTest : BaseIntegrationTest() {
     }
 
     @Test
+    @Suppress("LongMethod")
     fun `full shopping list lifecycle`() = integrationTest {
         val token = TestJwt.generateToken("shopping-test-user")
         val client = jsonClient()

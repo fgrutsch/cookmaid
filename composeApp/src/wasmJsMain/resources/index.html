@@ -15,7 +15,13 @@
                           repeatCount="indefinite"/>
     </circle>
 </svg>
-<script type="application/javascript" src="config.js"></script>
+<script>
+    window.__CONFIG__ = {
+        OIDC_DISCOVERY_URI: "${OIDC_DISCOVERY_URI}",
+        OIDC_CLIENT_ID: "${OIDC_CLIENT_ID}",
+        OIDC_SCOPE: "${OIDC_SCOPE}",
+    };
+</script>
 <script type="application/javascript" src="composeApp.js"></script>
 </body>
 </html>

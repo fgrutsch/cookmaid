@@ -47,69 +47,91 @@ fun SettingsScreen(viewModel: SettingsViewModel, userProfile: UserProfile, onLog
             )
         },
     ) { padding ->
-        Column(
+        SettingsContent(
+            userProfile = userProfile,
+            isDarkMode = isDarkMode,
+            onToggleDarkMode = { viewModel.toggleDarkMode() },
+            onLogout = onLogout,
             modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+        )
+    }
+}
+
+@Composable
+private fun SettingsContent(
+    userProfile: UserProfile,
+    isDarkMode: Boolean,
+    onToggleDarkMode: () -> Unit,
+    onLogout: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        UserProfileSection(userProfile)
+
+        HorizontalDivider()
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                if (!userProfile.pictureUrl.isNullOrBlank()) {
-                    AsyncImage(
-                        model = userProfile.pictureUrl,
-                        contentDescription = "Profile picture",
-                        modifier = Modifier.size(80.dp).clip(CircleShape),
-                        contentScale = ContentScale.Crop,
-                    )
-                } else {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = "Profile picture",
-                        modifier = Modifier.size(80.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
+            Text("Dark Mode")
+            Switch(checked = isDarkMode, onCheckedChange = { onToggleDarkMode() })
+        }
 
-                Spacer(modifier = Modifier.height(8.dp))
+        HorizontalDivider()
 
-                if (!userProfile.name.isNullOrBlank()) {
-                    Text(
-                        text = userProfile.name,
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                }
+        Spacer(modifier = Modifier.height(8.dp))
 
-                if (!userProfile.email.isNullOrBlank()) {
-                    Text(
-                        text = userProfile.email,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
+        OutlinedButton(
+            onClick = onLogout,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text("Sign out")
+        }
+    }
+}
 
-            HorizontalDivider()
+@Composable
+private fun UserProfileSection(userProfile: UserProfile) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        if (!userProfile.pictureUrl.isNullOrBlank()) {
+            AsyncImage(
+                model = userProfile.pictureUrl,
+                contentDescription = "Profile picture",
+                modifier = Modifier.size(80.dp).clip(CircleShape),
+                contentScale = ContentScale.Crop,
+            )
+        } else {
+            Icon(
+                imageVector = Icons.Default.Person,
+                contentDescription = "Profile picture",
+                modifier = Modifier.size(80.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text("Dark Mode")
-                Switch(checked = isDarkMode, onCheckedChange = { viewModel.toggleDarkMode() })
-            }
+        Spacer(modifier = Modifier.height(8.dp))
 
-            HorizontalDivider()
+        if (!userProfile.name.isNullOrBlank()) {
+            Text(
+                text = userProfile.name,
+                style = MaterialTheme.typography.titleMedium,
+            )
+        }
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            OutlinedButton(
-                onClick = onLogout,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text("Sign out")
-            }
+        if (!userProfile.email.isNullOrBlank()) {
+            Text(
+                text = userProfile.email,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }
