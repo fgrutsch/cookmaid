@@ -12,3 +12,4 @@
 - client error handling
 - adt have package name included
 - migration tool from samsung food
+- kover / detekt

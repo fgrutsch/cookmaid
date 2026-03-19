@@ -12,5 +12,5 @@ database:
   password: ${DATABASE_PASSWORD:cookmaid}
 
 oidc:
-  issuer: ${OIDC_ISSUER:http://idp.localhost}
+  issuer: ${OIDC_ISSUER:https://idp.localhost}
   jwks-url: ${OIDC_JWKS_URL:http://localhost:1411/.well-known/jwks.json}

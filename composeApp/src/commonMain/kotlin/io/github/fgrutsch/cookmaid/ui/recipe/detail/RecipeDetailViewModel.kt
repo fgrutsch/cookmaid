@@ -2,14 +2,18 @@ package io.github.fgrutsch.cookmaid.ui.recipe.detail
 
 import io.github.fgrutsch.cookmaid.ui.common.MviViewModel
 import io.github.fgrutsch.cookmaid.ui.common.addIngredientsToDefaultShoppingList
+import io.github.fgrutsch.cookmaid.ui.common.addRecipeToMealPlan
+import io.github.fgrutsch.cookmaid.ui.mealplan.MealPlanRepository
 import io.github.fgrutsch.cookmaid.ui.recipe.RecipeRepository
 import io.github.fgrutsch.cookmaid.ui.shopping.ShoppingListRepository
+import kotlinx.datetime.LocalDate
 import kotlin.uuid.Uuid
 
 class RecipeDetailViewModel(
     private val recipeId: Uuid,
     private val recipeRepository: RecipeRepository,
     private val shoppingListRepository: ShoppingListRepository,
+    private val mealPlanRepository: MealPlanRepository,
 ) : MviViewModel<RecipeDetailState, RecipeDetailEvent, RecipeDetailEffect>(RecipeDetailState()) {
 
     override fun handleEvent(event: RecipeDetailEvent) {
@@ -17,6 +21,7 @@ class RecipeDetailViewModel(
             is RecipeDetailEvent.Load -> loadRecipe()
             is RecipeDetailEvent.Delete -> deleteRecipe()
             is RecipeDetailEvent.AddIngredientsToShoppingList -> addToShoppingList(event)
+            is RecipeDetailEvent.AddToMealPlan -> addToMealPlan(event.recipeId, event.day)
         }
     }
 
@@ -39,6 +44,13 @@ class RecipeDetailViewModel(
         launch {
             addIngredientsToDefaultShoppingList(shoppingListRepository, event.ingredients)
             sendEffect(RecipeDetailEffect.AddedToShoppingList)
+        }
+    }
+
+    private fun addToMealPlan(recipeId: Uuid, day: LocalDate) {
+        launch {
+            addRecipeToMealPlan(recipeId, day, mealPlanRepository)
+            sendEffect(RecipeDetailEffect.AddedToMealPlan)
         }
     }
 

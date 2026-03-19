@@ -3,6 +3,7 @@ package io.github.fgrutsch.cookmaid.ui.mealplan
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -19,13 +20,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.automirrored.filled.Notes
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.automirrored.filled.Notes
 import androidx.compose.material.icons.filled.Today
-import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -37,11 +39,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,16 +53,15 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.fgrutsch.cookmaid.mealplan.MealPlanDay
 import io.github.fgrutsch.cookmaid.mealplan.MealPlanItem
-import kotlinx.coroutines.launch
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
-import io.github.fgrutsch.cookmaid.ui.common.formatShortDate
 import io.github.fgrutsch.cookmaid.ui.common.SuccessSnackbarHost
 import io.github.fgrutsch.cookmaid.ui.common.SwipeToDeleteItem
-import kotlin.uuid.Uuid
+import io.github.fgrutsch.cookmaid.ui.common.formatShortDate
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
+import kotlin.uuid.Uuid
 
 private val urlPattern = Regex("^https?://\\S+$", RegexOption.IGNORE_CASE)
 
@@ -71,15 +72,31 @@ fun MealPlanScreen(
     viewModel: MealPlanViewModel,
     onRecipeClick: (Uuid) -> Unit,
 ) {
-    val currentWeek by viewModel.currentWeek.collectAsState()
-    val weekStart by viewModel.currentWeekStart.collectAsState()
+    val state by viewModel.state.collectAsState()
+    val onEvent = viewModel::onEvent
     val uriHandler = LocalUriHandler.current
 
     var addItemForDay by remember { mutableStateOf<LocalDate?>(null) }
     var editingNote by remember { mutableStateOf<EditNoteState?>(null) }
     var ingredientPickerState by remember { mutableStateOf<IngredientPickerState?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(Unit) {
+        onEvent(MealPlanEvent.Load)
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.effects.collect { effect ->
+            when (effect) {
+                is MealPlanEffect.IngredientsAdded ->
+                    snackbarHostState.showSnackbar("Added to shopping list")
+                is MealPlanEffect.ShowIngredientPicker ->
+                    ingredientPickerState = IngredientPickerState(effect.recipeName, effect.ingredients)
+                is MealPlanEffect.Error ->
+                    snackbarHostState.showSnackbar(effect.message)
+            }
+        }
+    }
 
     SuccessSnackbarHost(snackbarHostState) {
     Scaffold(
@@ -91,98 +108,97 @@ fun MealPlanScreen(
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
                 ),
                 actions = {
-                    IconButton(onClick = { viewModel.goToCurrentWeek() }) {
+                    IconButton(onClick = { onEvent(MealPlanEvent.GoToCurrentWeek) }) {
                         Icon(Icons.Default.Today, contentDescription = "Go to current week")
                     }
                 },
             )
         },
     ) { padding ->
-        Column(
+        PullToRefreshBox(
+            isRefreshing = state.isLoading,
+            onRefresh = { onEvent(MealPlanEvent.Refresh) },
             modifier = Modifier.fillMaxSize().padding(padding),
         ) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+        ) {
             WeekNavigationBar(
-                weekStart = weekStart,
-                onPrevious = { viewModel.previousWeek() },
-                onNext = { viewModel.nextWeek() },
+                weekStart = state.currentWeekStart,
+                onPrevious = { onEvent(MealPlanEvent.PreviousWeek) },
+                onNext = { onEvent(MealPlanEvent.NextWeek) },
             )
 
             LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                items(currentWeek.days, key = { it.date.toString() }) { day ->
-                    DayCard(
-                        day = day,
-                        onAddItem = { addItemForDay = day.date },
-                        onItemClick = { item ->
-                            when (item) {
-                                is MealPlanItem.RecipeItem -> onRecipeClick(item.recipeId)
-                                is MealPlanItem.NoteItem -> {
-                                    if (isUrl(item.name)) {
-                                        uriHandler.openUri(item.name.trim())
-                                    } else {
-                                        editingNote = EditNoteState(day.date, item.id, item.name)
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    items(state.days, key = { it.date.toString() }) { day ->
+                        DayCard(
+                            day = day,
+                            onAddItem = { addItemForDay = day.date },
+                            onItemClick = { item ->
+                                when (item) {
+                                    is MealPlanItem.Recipe -> onRecipeClick(item.recipeId)
+                                    is MealPlanItem.Note -> {
+                                        if (isUrl(item.name)) {
+                                            uriHandler.openUri(item.name.trim())
+                                        } else {
+                                            editingNote = EditNoteState(day.date, item.id, item.name)
+                                        }
                                     }
                                 }
-                            }
-                        },
-                        onDeleteItem = { itemId -> viewModel.removeItem(day.date, itemId) },
-                        onAddToShoppingList = { item ->
-                            if (item is MealPlanItem.RecipeItem) {
-                                val ingredients = viewModel.resolveRecipeIngredients(item.recipeId)
-                                if (ingredients.isNotEmpty()) {
-                                    ingredientPickerState = IngredientPickerState(
-                                        recipeName = viewModel.resolveRecipeName(item.recipeId),
-                                        ingredients = ingredients,
-                                    )
+                            },
+                            onDeleteItem = { itemId -> onEvent(MealPlanEvent.DeleteItem(itemId, day.date)) },
+                            onAddToShoppingList = { item ->
+                                if (item is MealPlanItem.Recipe) {
+                                    onEvent(MealPlanEvent.AddRecipeToShoppingList(item.recipeId, item.recipeName))
                                 }
-                            }
-                        },
-                        resolveRecipeName = { recipeId -> viewModel.resolveRecipeName(recipeId) },
-                    )
+                            },
+                        )
+                    }
                 }
-            }
+        }
         }
     }
     }
 
-    addItemForDay?.let { dayDate ->
+    addItemForDay?.let { day ->
         AddMealPlanItemDialog(
-            dayDate = dayDate,
-            recipes = viewModel.recipes.value,
+            day = day,
+            recipeSearchResults = state.recipeSearchResults,
+            onSearchRecipes = { onEvent(MealPlanEvent.SearchRecipes(it)) },
             onAddRecipe = { recipeId ->
-                viewModel.addRecipeItem(dayDate, recipeId)
+                onEvent(MealPlanEvent.AddRecipeItem(day, recipeId))
                 addItemForDay = null
             },
             onAddNote = { name ->
-                viewModel.addNoteItem(dayDate, name)
+                onEvent(MealPlanEvent.AddNoteItem(day, name))
                 addItemForDay = null
             },
             onDismiss = { addItemForDay = null },
         )
     }
 
-    editingNote?.let { state ->
+    editingNote?.let { noteState ->
         EditNoteDialog(
-            currentName = state.currentName,
+            currentName = noteState.currentName,
             onSave = { newName ->
-                viewModel.updateNoteItem(state.dayDate, state.itemId, newName)
+                onEvent(MealPlanEvent.UpdateNote(noteState.itemId, noteState.day, newName))
                 editingNote = null
             },
             onDismiss = { editingNote = null },
         )
     }
 
-    ingredientPickerState?.let { state ->
+    ingredientPickerState?.let { pickerState ->
         IngredientPickerDialog(
-            recipeName = state.recipeName,
-            ingredients = state.ingredients,
+            recipeName = pickerState.recipeName,
+            ingredients = pickerState.ingredients,
             onAdd = { selectedIngredients ->
                 viewModel.addIngredientsToShoppingList(selectedIngredients)
                 ingredientPickerState = null
-                scope.launch { snackbarHostState.showSnackbar("Added to shopping list") }
             },
             onDismiss = { ingredientPickerState = null },
         )
@@ -190,7 +206,7 @@ fun MealPlanScreen(
 }
 
 private data class EditNoteState(
-    val dayDate: LocalDate,
+    val day: LocalDate,
     val itemId: Uuid,
     val currentName: String,
 )
@@ -237,7 +253,6 @@ private fun DayCard(
     onItemClick: (MealPlanItem) -> Unit,
     onDeleteItem: (Uuid) -> Unit,
     onAddToShoppingList: (MealPlanItem) -> Unit,
-    resolveRecipeName: (Uuid) -> String,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -278,7 +293,6 @@ private fun DayCard(
                     SwipeToDeleteItem(onDelete = { onDeleteItem(item.id) }) {
                         MealPlanItemRow(
                             item = item,
-                            resolveRecipeName = resolveRecipeName,
                             onClick = { onItemClick(item) },
                             onAddToShoppingList = { onAddToShoppingList(item) },
                         )
@@ -292,7 +306,6 @@ private fun DayCard(
 @Composable
 private fun MealPlanItemRow(
     item: MealPlanItem,
-    resolveRecipeName: (Uuid) -> String,
     onClick: () -> Unit,
     onAddToShoppingList: () -> Unit,
 ) {
@@ -307,8 +320,8 @@ private fun MealPlanItemRow(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         val icon = when (item) {
-            is MealPlanItem.RecipeItem -> Icons.AutoMirrored.Filled.MenuBook
-            is MealPlanItem.NoteItem -> Icons.AutoMirrored.Filled.Notes
+            is MealPlanItem.Recipe -> Icons.AutoMirrored.Filled.MenuBook
+            is MealPlanItem.Note -> Icons.AutoMirrored.Filled.Notes
         }
         Icon(
             icon,
@@ -319,15 +332,15 @@ private fun MealPlanItemRow(
         Spacer(modifier = Modifier.width(16.dp))
         Text(
             text = when (item) {
-                is MealPlanItem.RecipeItem -> resolveRecipeName(item.recipeId)
-                is MealPlanItem.NoteItem -> item.name
+                is MealPlanItem.Recipe -> item.recipeName
+                is MealPlanItem.Note -> item.name
             },
             modifier = Modifier.weight(1f),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             style = MaterialTheme.typography.bodyLarge,
         )
-        if (item is MealPlanItem.RecipeItem) {
+        if (item is MealPlanItem.Recipe) {
             Box {
                 IconButton(onClick = { showMenu = true }) {
                     Icon(Icons.Default.MoreVert, contentDescription = "Options")

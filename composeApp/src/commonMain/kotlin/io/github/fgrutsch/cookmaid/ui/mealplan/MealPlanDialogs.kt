@@ -29,6 +29,7 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -56,8 +57,9 @@ import kotlin.time.Clock
 
 @Composable
 fun AddMealPlanItemDialog(
-    dayDate: LocalDate,
-    recipes: List<Recipe>,
+    day: LocalDate,
+    recipeSearchResults: List<Recipe>,
+    onSearchRecipes: (String) -> Unit,
     onAddRecipe: (recipeId: Uuid) -> Unit,
     onAddNote: (name: String) -> Unit,
     onDismiss: () -> Unit,
@@ -70,7 +72,7 @@ fun AddMealPlanItemDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Add to ${formatDayNameShort(dayDate)}") },
+        title = { Text("Add to ${formatDayNameShort(day)}") },
         text = {
             Column {
                 SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
@@ -86,7 +88,11 @@ fun AddMealPlanItemDialog(
                 }
                 Spacer(modifier = Modifier.height(12.dp))
                 when (selectedTab) {
-                    0 -> RecipePickerTab(recipes = recipes, onSelect = onAddRecipe)
+                    0 -> RecipePickerTab(
+                        results = recipeSearchResults,
+                        onSearchChanged = onSearchRecipes,
+                        onSelect = onAddRecipe,
+                    )
                     1 -> OutlinedTextField(
                         value = noteName,
                         onValueChange = { noteName = it },
@@ -226,19 +232,22 @@ fun IngredientPickerDialog(
 
 @Composable
 private fun RecipePickerTab(
-    recipes: List<Recipe>,
+    results: List<Recipe>,
+    onSearchChanged: (String) -> Unit,
     onSelect: (Uuid) -> Unit,
 ) {
     var searchQuery by remember { mutableStateOf("") }
     val keyboardController = LocalSoftwareKeyboardController.current
-    val filtered = recipes.filter {
-        searchQuery.isBlank() || it.name.contains(searchQuery, ignoreCase = true)
-    }
+
+    LaunchedEffect(Unit) { onSearchChanged("") }
 
     Column {
         OutlinedTextField(
             value = searchQuery,
-            onValueChange = { searchQuery = it },
+            onValueChange = {
+                searchQuery = it
+                onSearchChanged(it)
+            },
             placeholder = { Text("Search recipes...") },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
@@ -247,7 +256,7 @@ private fun RecipePickerTab(
         )
         Spacer(modifier = Modifier.height(8.dp))
         LazyColumn(modifier = Modifier.heightIn(max = 250.dp)) {
-            items(filtered, key = { it.id }) { recipe ->
+            items(results, key = { it.id }) { recipe ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()

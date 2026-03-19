@@ -2,9 +2,11 @@ package io.github.fgrutsch.cookmaid.ui.recipe.list
 
 import io.github.fgrutsch.cookmaid.recipe.Recipe
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
+import kotlinx.datetime.LocalDate
 import kotlin.uuid.Uuid
 
 data class RecipeListState(
+    val initialized: Boolean = false,
     val recipes: List<Recipe> = emptyList(),
     val nextCursor: String? = null,
     val hasMore: Boolean = true,
@@ -29,9 +31,11 @@ sealed interface RecipeListEvent {
     data object ClearRandomRecipe : RecipeListEvent
     data class DeleteRecipe(val id: Uuid) : RecipeListEvent
     data class AddIngredientsToShoppingList(val ingredients: List<RecipeIngredient>) : RecipeListEvent
+    data class AddToMealPlan(val recipeId: Uuid, val day: LocalDate) : RecipeListEvent
 }
 
 sealed interface RecipeListEffect {
     data object AddedToShoppingList : RecipeListEffect
+    data object AddedToMealPlan : RecipeListEffect
     data class Error(val message: String) : RecipeListEffect
 }

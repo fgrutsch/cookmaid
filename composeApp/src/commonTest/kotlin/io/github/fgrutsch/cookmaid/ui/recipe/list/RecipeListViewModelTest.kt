@@ -3,6 +3,7 @@ package io.github.fgrutsch.cookmaid.ui.recipe.list
 import io.github.fgrutsch.cookmaid.catalog.Item
 import io.github.fgrutsch.cookmaid.recipe.Recipe
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
+import io.github.fgrutsch.cookmaid.ui.mealplan.FakeMealPlanRepository
 import io.github.fgrutsch.cookmaid.ui.recipe.FakeRecipeRepository
 import io.github.fgrutsch.cookmaid.ui.shopping.FakeShoppingListRepository
 import io.github.fgrutsch.cookmaid.shopping.ShoppingList
@@ -24,6 +25,7 @@ class RecipeListViewModelTest : BaseViewModelTest() {
 
     private val fakeRecipeRepo = FakeRecipeRepository()
     private val fakeShoppingRepo = FakeShoppingListRepository()
+    private val fakeMealPlanRepo = FakeMealPlanRepository()
 
     private fun TestScope.createLoadedViewModel(
         recipes: List<Recipe> = emptyList(),
@@ -31,7 +33,7 @@ class RecipeListViewModelTest : BaseViewModelTest() {
     ): RecipeListViewModel {
         fakeRecipeRepo.recipes = recipes.toMutableList()
         fakeRecipeRepo.tags = tags
-        val viewModel = RecipeListViewModel(fakeRecipeRepo, fakeShoppingRepo)
+        val viewModel = RecipeListViewModel(fakeRecipeRepo, fakeShoppingRepo, fakeMealPlanRepo)
         viewModel.onEvent(RecipeListEvent.LoadRecipes)
         advanceUntilIdle()
         return viewModel

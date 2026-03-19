@@ -77,6 +77,8 @@ fun RecipeDetailScreen(
                 is RecipeDetailEffect.Deleted -> onBack()
                 is RecipeDetailEffect.AddedToShoppingList ->
                     snackbarHostState.showSnackbar("Added to shopping list")
+                is RecipeDetailEffect.AddedToMealPlan ->
+                    snackbarHostState.showSnackbar("Added to meal plan")
                 is RecipeDetailEffect.Error ->
                     snackbarHostState.showSnackbar(effect.message)
             }
@@ -270,13 +272,15 @@ fun RecipeDetailScreen(
     }
 
     if (showDayPicker) {
-        DayPickerDialog(
-            resolveDayItems = { emptyList() },
-            onSelect = { dayDate ->
-                showDayPicker = false
-                scope.launch { snackbarHostState.showSnackbar("Added to meal plan") }
-            },
-            onDismiss = { showDayPicker = false },
-        )
+        state.recipe?.let { recipe ->
+            DayPickerDialog(
+                resolveDayItems = { emptyList() },
+                onSelect = { day ->
+                    onEvent(RecipeDetailEvent.AddToMealPlan(recipe.id, day))
+                    showDayPicker = false
+                },
+                onDismiss = { showDayPicker = false },
+            )
+        }
     }
 }

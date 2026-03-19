@@ -8,9 +8,3 @@ data class MealPlanDay(
     val date: LocalDate,
     val items: List<MealPlanItem> = emptyList(),
 )
-
-@Serializable
-data class MealPlanWeek(
-    val startDate: LocalDate,
-    val days: List<MealPlanDay>,
-)

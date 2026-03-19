@@ -151,7 +151,7 @@ private fun MainContent(settingsViewModel: SettingsViewModel, authViewModel: Aut
                     val koin = getKoin()
                     RecipeDetailScreen(
                         viewModel = remember(key.id) {
-                            RecipeDetailViewModel(key.id, koin.get(), koin.get())
+                            RecipeDetailViewModel(key.id, koin.get(), koin.get(), koin.get())
                         },
                         onBack = { backStack.removeLastOrNull() },
                         onEdit = { backStack.add(Route.EditRecipe(key.id)) },

@@ -4,6 +4,7 @@ import io.github.fgrutsch.cookmaid.catalog.Item
 import io.github.fgrutsch.cookmaid.recipe.Recipe
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
 import io.github.fgrutsch.cookmaid.shopping.ShoppingList
+import io.github.fgrutsch.cookmaid.ui.mealplan.FakeMealPlanRepository
 import io.github.fgrutsch.cookmaid.ui.recipe.FakeRecipeRepository
 import io.github.fgrutsch.cookmaid.ui.shopping.FakeShoppingListRepository
 import io.github.fgrutsch.cookmaid.support.BaseViewModelTest
@@ -23,13 +24,14 @@ class RecipeDetailViewModelTest : BaseViewModelTest() {
 
     private val fakeRecipeRepo = FakeRecipeRepository()
     private val fakeShoppingRepo = FakeShoppingListRepository()
+    private val fakeMealPlanRepo = FakeMealPlanRepository()
 
     @Test
     fun `load recipe populates state`() = viewModelTest {
         val recipe = recipe("Pasta")
         fakeRecipeRepo.recipes.add(recipe)
 
-        val viewModel = RecipeDetailViewModel(recipe.id, fakeRecipeRepo, fakeShoppingRepo)
+        val viewModel = RecipeDetailViewModel(recipe.id, fakeRecipeRepo, fakeShoppingRepo, fakeMealPlanRepo)
         viewModel.onEvent(RecipeDetailEvent.Load)
         advanceUntilIdle()
 
@@ -40,7 +42,7 @@ class RecipeDetailViewModelTest : BaseViewModelTest() {
 
     @Test
     fun `load non-existent recipe results in null`() = viewModelTest {
-        val viewModel = RecipeDetailViewModel(Uuid.random(), fakeRecipeRepo, fakeShoppingRepo)
+        val viewModel = RecipeDetailViewModel(Uuid.random(), fakeRecipeRepo, fakeShoppingRepo, fakeMealPlanRepo)
         viewModel.onEvent(RecipeDetailEvent.Load)
         advanceUntilIdle()
 
@@ -53,7 +55,7 @@ class RecipeDetailViewModelTest : BaseViewModelTest() {
         val recipe = recipe("Pasta")
         fakeRecipeRepo.recipes.add(recipe)
 
-        val viewModel = RecipeDetailViewModel(recipe.id, fakeRecipeRepo, fakeShoppingRepo)
+        val viewModel = RecipeDetailViewModel(recipe.id, fakeRecipeRepo, fakeShoppingRepo, fakeMealPlanRepo)
         viewModel.onEvent(RecipeDetailEvent.Load)
         advanceUntilIdle()
 
@@ -78,7 +80,7 @@ class RecipeDetailViewModelTest : BaseViewModelTest() {
         ))
         fakeRecipeRepo.recipes.add(recipe)
 
-        val viewModel = RecipeDetailViewModel(recipe.id, fakeRecipeRepo, fakeShoppingRepo)
+        val viewModel = RecipeDetailViewModel(recipe.id, fakeRecipeRepo, fakeShoppingRepo, fakeMealPlanRepo)
         viewModel.onEvent(RecipeDetailEvent.Load)
         advanceUntilIdle()
 

@@ -3,6 +3,8 @@ package io.github.fgrutsch.cookmaid.ui.recipe.list
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
 import io.github.fgrutsch.cookmaid.ui.common.MviViewModel
 import io.github.fgrutsch.cookmaid.ui.common.addIngredientsToDefaultShoppingList
+import io.github.fgrutsch.cookmaid.ui.common.addRecipeToMealPlan
+import io.github.fgrutsch.cookmaid.ui.mealplan.MealPlanRepository
 import io.github.fgrutsch.cookmaid.ui.recipe.RecipeRepository
 import io.github.fgrutsch.cookmaid.ui.shopping.ShoppingListRepository
 import androidx.lifecycle.viewModelScope
@@ -12,16 +14,17 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.datetime.LocalDate
 import kotlin.uuid.Uuid
 
 @OptIn(FlowPreview::class)
 class RecipeListViewModel(
     private val repository: RecipeRepository,
     private val shoppingListRepository: ShoppingListRepository,
+    private val mealPlanRepository: MealPlanRepository,
 ) : MviViewModel<RecipeListState, RecipeListEvent, RecipeListEffect>(RecipeListState()) {
 
     private val searchQueryFlow = MutableStateFlow("")
-    private var initialized = false
 
     init {
         searchQueryFlow
@@ -43,12 +46,12 @@ class RecipeListViewModel(
             is RecipeListEvent.ClearRandomRecipe -> updateState { copy(randomRecipe = null) }
             is RecipeListEvent.DeleteRecipe -> deleteRecipe(event.id)
             is RecipeListEvent.AddIngredientsToShoppingList -> addToShoppingList(event.ingredients)
+            is RecipeListEvent.AddToMealPlan -> addToMealPlan(event.recipeId, event.day)
         }
     }
 
     private fun loadRecipes() {
-        val firstLoad = !initialized
-        initialized = true
+        val firstLoad = !state.value.initialized
         launch {
             if (firstLoad) updateState { copy(isLoading = true) }
             val tags = repository.fetchTags()
@@ -57,6 +60,7 @@ class RecipeListViewModel(
             val page = repository.fetchPage(cursor = null, search = search, tag = s.selectedTag)
             updateState {
                 copy(
+                    initialized = true,
                     availableTags = tags,
                     recipes = page.items,
                     nextCursor = page.nextCursor,
@@ -174,6 +178,13 @@ class RecipeListViewModel(
         launch {
             addIngredientsToDefaultShoppingList(shoppingListRepository, ingredients)
             sendEffect(RecipeListEffect.AddedToShoppingList)
+        }
+    }
+
+    private fun addToMealPlan(recipeId: Uuid, day: LocalDate) {
+        launch {
+            addRecipeToMealPlan(recipeId, day, mealPlanRepository)
+            sendEffect(RecipeListEffect.AddedToMealPlan)
         }
     }
 
