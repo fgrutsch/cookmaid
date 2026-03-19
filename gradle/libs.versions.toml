@@ -28,6 +28,8 @@ exposed = "1.1.1"
 flyway = "12.1.0"
 oidc = "0.16.5"
 postgresql = "42.7.10"
+detekt = "2.0.0-alpha.2"
+kover = "0.9.1"
 testcontainers = "1.21.1"
 
 [libraries]
@@ -107,3 +109,5 @@ kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+detekt = { id = "dev.detekt", version.ref = "detekt" }
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }

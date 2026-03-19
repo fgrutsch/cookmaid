@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.kotlinJvm)
     alias(libs.plugins.ktor)
     alias(libs.plugins.kotlinx.serialization)
+    alias(libs.plugins.detekt)
+    alias(libs.plugins.kover)
     application
 }
 
@@ -21,6 +23,16 @@ application {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+kover {
+    reports {
+        verify {
+            rule {
+                minBound(50)
+            }
+        }
+    }
 }
 
 dependencies {

@@ -1,5 +1,4 @@
 *.iml
-*.pem
 .kotlin
 .gradle
 **/build/
@@ -18,5 +17,4 @@ captures
 !*.xcworkspace/contents.xcworkspacedata
 **/xcshareddata/WorkspaceSettings.xcsettings
 node_modules/
-composeApp/src/wasmJsMain/resources/config.js
 dev/postgres-data/

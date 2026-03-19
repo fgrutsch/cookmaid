@@ -21,11 +21,12 @@ class ShoppingListService(
     }
 
     suspend fun deleteList(userId: Uuid, id: Uuid): DeleteListResult {
-        if (!repository.isListOwnedByUser(userId, id)) return DeleteListResult.NotFound
-        val list = repository.findById(id) ?: return DeleteListResult.NotFound
-        if (list.default) return DeleteListResult.CannotDeleteDefault
-        repository.deleteList(id)
-        return DeleteListResult.Deleted
+        val list = repository.findById(id)
+        return when {
+            list == null || !repository.isListOwnedByUser(userId, id) -> DeleteListResult.NotFound
+            list.default -> DeleteListResult.CannotDeleteDefault
+            else -> { repository.deleteList(id); DeleteListResult.Deleted }
+        }
     }
 
     enum class DeleteListResult { Deleted, NotFound, CannotDeleteDefault }
@@ -35,7 +36,13 @@ class ShoppingListService(
         return repository.findItemsByListId(listId)
     }
 
-    suspend fun addItem(userId: Uuid, listId: Uuid, catalogItemId: Uuid?, freeTextName: String?, quantity: Float?): ShoppingItem? {
+    suspend fun addItem(
+        userId: Uuid,
+        listId: Uuid,
+        catalogItemId: Uuid?,
+        freeTextName: String?,
+        quantity: Float?,
+    ): ShoppingItem? {
         if (!repository.isListOwnedByUser(userId, listId)) return null
         return repository.addItem(listId, catalogItemId, freeTextName, quantity)
     }

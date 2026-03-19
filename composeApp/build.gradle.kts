@@ -1,5 +1,6 @@
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -7,6 +8,7 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinx.serialization)
+    alias(libs.plugins.detekt)
 }
 
 kotlin {
@@ -61,6 +63,19 @@ kotlin {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
         }
+    }
+}
+
+tasks.named<Copy>("wasmJsProcessResources") {
+    val localProps = Properties().apply {
+        rootProject.file("local.properties").takeIf { it.exists() }?.reader()?.use { load(it) }
+    }
+    filesMatching("index.html") {
+        expand(
+            "OIDC_DISCOVERY_URI" to localProps.getProperty("oidc.discoveryUri"),
+            "OIDC_CLIENT_ID" to localProps.getProperty("oidc.clientId"),
+            "OIDC_SCOPE" to localProps.getProperty("oidc.scope"),
+        )
     }
 }
 

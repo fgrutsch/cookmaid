@@ -144,7 +144,7 @@ class MealPlanViewModel(
     private fun addRecipeToShoppingList(recipeId: Uuid, recipeName: String) {
         launch {
             val recipe = recipeRepository.getById(recipeId)
-            val ingredients = recipe?.ingredients ?: emptyList()
+            val ingredients = recipe?.ingredients.orEmpty()
             if (ingredients.isNotEmpty()) {
                 sendEffect(MealPlanEffect.ShowIngredientPicker(recipeName, ingredients))
             }
@@ -182,6 +182,6 @@ private fun groupIntoDays(weekStart: LocalDate, items: List<MealPlanItem>): List
     val itemsByDate = items.groupBy { it.day }
     return (0..6).map { offset ->
         val date = weekStart.plus(offset, DateTimeUnit.DAY)
-        MealPlanDay(date, itemsByDate[date] ?: emptyList())
+        MealPlanDay(date, itemsByDate[date].orEmpty())
     }
 }

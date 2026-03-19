@@ -1,26 +1,27 @@
 package io.github.fgrutsch.cookmaid.recipe
 
+import io.github.fgrutsch.cookmaid.common.ktor.instant
+import io.github.fgrutsch.cookmaid.common.ktor.int
 import io.github.fgrutsch.cookmaid.common.ktor.userId
 import io.github.fgrutsch.cookmaid.common.ktor.uuid
-import io.ktor.http.HttpStatusCode
-import io.ktor.server.request.receive
-import io.ktor.server.response.respond
-import io.ktor.server.routing.Route
-import io.ktor.server.routing.delete
-import io.ktor.server.routing.get
-import io.ktor.server.routing.post
-import io.ktor.server.routing.put
-import io.ktor.server.routing.route
-import kotlin.time.Instant
+import io.ktor.http.*
+import io.ktor.server.request.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
 import org.koin.ktor.ext.inject
+import kotlin.time.Instant
 
 val recipeModule = module {
     singleOf(::PostgresRecipeRepository) bind RecipeRepository::class
     singleOf(::RecipeService)
 }
+
+private const val DEFAULT_LIMIT = 20
+private const val MIN_LIMIT = 1
+private const val MAX_LIMIT = 100
 
 fun Route.recipeRoutes() {
     val service by inject<RecipeService>()
@@ -28,11 +29,11 @@ fun Route.recipeRoutes() {
     route("/recipes") {
 
         get {
-            val cursor = call.request.queryParameters["cursor"]?.let { Instant.fromEpochMilliseconds(it.toLong()) }
-            val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 20
+            val cursor = call.request.queryParameters.instant("cursor")
+            val limit = call.request.queryParameters.int("limit") ?: DEFAULT_LIMIT
             val search = call.request.queryParameters["search"]
             val tag = call.request.queryParameters["tag"]
-            call.respond(service.findByUser(call.userId(), cursor, limit.coerceIn(1, 100), search, tag))
+            call.respond(service.findByUser(call.userId(), cursor, limit.coerceIn(MIN_LIMIT, MAX_LIMIT), search, tag))
         }
 
         get("/tags") {
@@ -41,7 +42,7 @@ fun Route.recipeRoutes() {
 
         post {
             val body = call.receive<CreateRecipeRequest>()
-            val recipe = service.create(call.userId(), body.name, body.ingredients, body.steps, body.tags)
+            val recipe = service.create(call.userId(), body.toData())
             call.respond(HttpStatusCode.Created, recipe)
         }
 
@@ -60,7 +61,7 @@ fun Route.recipeRoutes() {
             put {
                 val recipeId = call.parameters.uuid("recipeId")
                 val body = call.receive<UpdateRecipeRequest>()
-                if (!service.update(call.userId(), recipeId, body.name, body.ingredients, body.steps, body.tags)) {
+                if (!service.update(call.userId(), recipeId, body.toData())) {
                     call.respond(HttpStatusCode.NotFound)
                 } else {
                     call.respond(HttpStatusCode.NoContent)

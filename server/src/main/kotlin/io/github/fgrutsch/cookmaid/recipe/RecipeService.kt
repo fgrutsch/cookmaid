@@ -20,26 +20,13 @@ class RecipeService(
         return repository.findTagsByUserId(userId)
     }
 
-    suspend fun create(
-        userId: Uuid,
-        name: String,
-        ingredients: List<RecipeIngredient>,
-        steps: List<String>,
-        tags: List<String>,
-    ): Recipe {
-        return repository.create(userId, name, ingredients, steps, tags)
+    suspend fun create(userId: Uuid, data: RecipeData): Recipe {
+        return repository.create(userId, data)
     }
 
-    suspend fun update(
-        userId: Uuid,
-        recipeId: Uuid,
-        name: String,
-        ingredients: List<RecipeIngredient>,
-        steps: List<String>,
-        tags: List<String>,
-    ): Boolean {
+    suspend fun update(userId: Uuid, recipeId: Uuid, data: RecipeData): Boolean {
         if (!repository.isOwnedByUser(userId, recipeId)) return false
-        repository.update(recipeId, name, ingredients, steps, tags)
+        repository.update(recipeId, data)
         return true
     }
 

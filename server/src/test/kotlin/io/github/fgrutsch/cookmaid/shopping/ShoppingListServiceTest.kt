@@ -124,7 +124,7 @@ class ShoppingListServiceTest : BaseTest() {
     fun `findItemsByListId returns empty for another users list`() = runTest {
         val service = getKoin().get<ShoppingListService>()
         val repo = getKoin().get<ShoppingListRepository>()
-        val (userId, list) = createUserWithList("user-1")
+        val (_, list) = createUserWithList("user-1")
         repo.addItem(list.id, catalogItemId = null, freeTextName = "Eggs", quantity = null)
         val otherUserId = createUser("user-2")
 

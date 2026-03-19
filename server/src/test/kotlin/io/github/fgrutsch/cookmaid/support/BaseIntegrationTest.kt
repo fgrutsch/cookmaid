@@ -9,7 +9,7 @@ import io.ktor.server.testing.testApplication
 import org.junit.jupiter.api.AfterEach
 import org.koin.core.context.stopKoin
 
-abstract class BaseIntegrationTest {
+open class BaseIntegrationTest {
 
     @AfterEach
     fun tearDown() {

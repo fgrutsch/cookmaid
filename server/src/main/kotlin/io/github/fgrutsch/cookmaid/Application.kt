@@ -13,7 +13,7 @@ import io.github.fgrutsch.cookmaid.shopping.shoppingModule
 import io.github.fgrutsch.cookmaid.shopping.shoppingRoutes
 import io.github.fgrutsch.cookmaid.user.userModule
 import io.github.fgrutsch.cookmaid.user.userRoutes
-import io.ktor.serialization.kotlinx.json.*
+import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.config.*

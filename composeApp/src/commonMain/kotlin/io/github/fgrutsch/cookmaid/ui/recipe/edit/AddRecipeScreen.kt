@@ -230,7 +230,7 @@ private fun IngredientRow(
     onRemove: () -> Unit,
 ) {
     var qtyText by remember(quantity) {
-        mutableStateOf(quantity?.let { formatQuantity(it) } ?: "")
+        mutableStateOf(quantity?.let { formatQuantity(it) }.orEmpty())
     }
 
     Row(

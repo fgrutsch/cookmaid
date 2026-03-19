@@ -16,8 +16,7 @@ suspend fun ApplicationCall.userId(): Uuid {
 
     val subject = requireNotNull(principal<JWTPrincipal>()) { "JWT principal missing" }.payload.subject
     val userService = application.get<UserService>()
-    val userId = userService.findIdByOidcSubject(subject)
-        ?: throw IllegalStateException("User not found for subject: $subject")
+    val userId = userService.findIdByOidcSubject(subject) ?: error("User not found for subject: $subject")
     attributes.put(UserIdKey, userId)
     return userId
 }

@@ -8,4 +8,5 @@ import io.github.fgrutsch.cookmaid.ui.settings.settingsModule
 import io.github.fgrutsch.cookmaid.ui.shopping.shoppingModule
 import io.github.fgrutsch.cookmaid.ui.user.userModule
 
-val allModules = listOf(authModule, userModule, catalogModule, settingsModule, shoppingModule, recipeModule, mealPlanModule)
+val allModules =
+    listOf(authModule, userModule, catalogModule, settingsModule, shoppingModule, recipeModule, mealPlanModule)

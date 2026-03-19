@@ -81,7 +81,6 @@ fun RecipeListScreen(
     var ingredientPickerRecipeId by remember { mutableStateOf<Uuid?>(null) }
     var dayPickerRecipeId by remember { mutableStateOf<Uuid?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
 
     val listState = rememberLazyListState()
     val shouldLoadMore by remember {
