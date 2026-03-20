@@ -45,7 +45,7 @@ class RecipeRoutesTest : BaseIntegrationTest() {
         // Fetch a catalog item for use in ingredients
         val catalogItems = client.get("/api/catalog-items") {
             bearerAuth(token)
-        }.body<List<Item.CatalogItem>>()
+        }.body<List<Item.Catalog>>()
         val catalogItem = catalogItems.first()
 
         // Create a recipe with ingredients, steps, and tags
@@ -57,7 +57,7 @@ class RecipeRoutesTest : BaseIntegrationTest() {
                     name = "Spaghetti Bolognese",
                     ingredients = listOf(
                         RecipeIngredient(catalogItem, 400f),
-                        RecipeIngredient(Item.FreeTextItem("Spaghetti"), 500f),
+                        RecipeIngredient(Item.FreeText("Spaghetti"), 500f),
                     ),
                     steps = listOf("Cook pasta", "Make sauce", "Combine"),
                     tags = listOf("Noodles", "Meat"),
@@ -73,7 +73,7 @@ class RecipeRoutesTest : BaseIntegrationTest() {
         assertEquals(listOf("Noodles", "Meat"), recipe.tags)
 
         // Verify catalog item is hydrated
-        val returnedCatalogItem = recipe.ingredients.map { it.item }.filterIsInstance<Item.CatalogItem>().first()
+        val returnedCatalogItem = recipe.ingredients.map { it.item }.filterIsInstance<Item.Catalog>().first()
         assertEquals(catalogItem.name, returnedCatalogItem.name)
         assertEquals(catalogItem.category.name, returnedCatalogItem.category.name)
 
@@ -94,7 +94,7 @@ class RecipeRoutesTest : BaseIntegrationTest() {
             setBody(
                 UpdateRecipeRequest(
                     name = "Bolognese Pasta",
-                    ingredients = listOf(RecipeIngredient(Item.FreeTextItem("Penne"), 400f)),
+                    ingredients = listOf(RecipeIngredient(Item.FreeText("Penne"), 400f)),
                     steps = listOf("Cook penne", "Make sauce", "Mix together", "Serve"),
                     tags = listOf("Noodles"),
                 ),

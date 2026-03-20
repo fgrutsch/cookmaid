@@ -33,7 +33,7 @@ class PostgresRecipeRepositoryTest : BaseTest() {
         val userId = createUser()
 
         val recipe = repo.create(userId, data(
-            ingredients = listOf(RecipeIngredient(Item.FreeTextItem("Spaghetti"), 500f)),
+            ingredients = listOf(RecipeIngredient(Item.FreeText("Spaghetti"), 500f)),
             steps = listOf("Boil water", "Cook pasta"),
             tags = listOf("Noodles"),
         ))
@@ -70,7 +70,7 @@ class PostgresRecipeRepositoryTest : BaseTest() {
         ))
 
         val ingredient = recipe.ingredients.first()
-        val item = ingredient.item as Item.CatalogItem
+        val item = ingredient.item as Item.Catalog
         assertEquals(catalogItem.name, item.name)
         assertEquals(catalogItem.category.name, item.category.name)
     }
@@ -100,7 +100,7 @@ class PostgresRecipeRepositoryTest : BaseTest() {
         val repo = getKoin().get<RecipeRepository>()
         val userId = createUser()
         val recipe = repo.create(userId, data(
-            ingredients = listOf(RecipeIngredient(Item.FreeTextItem("Noodles"), 500f)),
+            ingredients = listOf(RecipeIngredient(Item.FreeText("Noodles"), 500f)),
             steps = listOf("Step 1", "Step 2"),
             tags = listOf("Italian"),
         ))
@@ -127,7 +127,7 @@ class PostgresRecipeRepositoryTest : BaseTest() {
         val userId = createUser()
         val recipe = repo.create(userId, data(
             name = "Old",
-            ingredients = listOf(RecipeIngredient(Item.FreeTextItem("Old item"), null)),
+            ingredients = listOf(RecipeIngredient(Item.FreeText("Old item"), null)),
             steps = listOf("Old step"),
             tags = listOf("Old tag"),
         ))
@@ -135,8 +135,8 @@ class PostgresRecipeRepositoryTest : BaseTest() {
         repo.update(recipe.id, data(
             name = "New",
             ingredients = listOf(
-                RecipeIngredient(Item.FreeTextItem("New item 1"), 1f),
-                RecipeIngredient(Item.FreeTextItem("New item 2"), 2f),
+                RecipeIngredient(Item.FreeText("New item 1"), 1f),
+                RecipeIngredient(Item.FreeText("New item 2"), 2f),
             ),
             steps = listOf("New step 1", "New step 2", "New step 3"),
             tags = listOf("New tag"),
@@ -155,7 +155,7 @@ class PostgresRecipeRepositoryTest : BaseTest() {
         val repo = getKoin().get<RecipeRepository>()
         val userId = createUser()
         val recipe = repo.create(userId, data(
-            ingredients = listOf(RecipeIngredient(Item.FreeTextItem("Item"), null)),
+            ingredients = listOf(RecipeIngredient(Item.FreeText("Item"), null)),
             steps = listOf("Step"),
             tags = listOf("Tag"),
         ))

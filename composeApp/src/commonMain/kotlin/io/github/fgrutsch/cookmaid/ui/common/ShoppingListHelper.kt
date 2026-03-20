@@ -14,8 +14,8 @@ suspend fun addIngredientsToDefaultShoppingList(
     val targetListId = lists.find { it.default }?.id ?: lists.firstOrNull()?.id ?: return
     val items = ingredients.map { ingredient ->
         CreateShoppingItemRequest(
-            catalogItemId = (ingredient.item as? Item.CatalogItem)?.id,
-            freeTextName = (ingredient.item as? Item.FreeTextItem)?.name,
+            catalogItemId = (ingredient.item as? Item.Catalog)?.id,
+            freeTextName = (ingredient.item as? Item.FreeText)?.name,
             quantity = ingredient.quantity,
         )
     }

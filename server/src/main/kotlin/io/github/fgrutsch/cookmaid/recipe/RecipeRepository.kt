@@ -176,7 +176,7 @@ class PostgresRecipeRepository : RecipeRepository {
             .map { row ->
                 val catalogItemId = row[RecipeIngredientsTable.catalogItemId]
                 val item: Item = if (catalogItemId != null) {
-                    Item.CatalogItem(
+                    Item.Catalog(
                         id = catalogItemId,
                         name = row[CatalogItemsTable.name],
                         category = ItemCategory(
@@ -185,7 +185,7 @@ class PostgresRecipeRepository : RecipeRepository {
                         ),
                     )
                 } else {
-                    Item.FreeTextItem(name = requireNotNull(row[RecipeIngredientsTable.freeTextName]))
+                    Item.FreeText(name = requireNotNull(row[RecipeIngredientsTable.freeTextName]))
                 }
                 RecipeIngredient(
                     item = item,
@@ -200,12 +200,12 @@ class PostgresRecipeRepository : RecipeRepository {
                 it[RecipeIngredientsTable.recipeId] = recipeId
                 it[RecipeIngredientsTable.quantity] = ingredient.quantity
                 when (val item = ingredient.item) {
-                    is Item.CatalogItem -> {
+                    is Item.Catalog -> {
                         it[RecipeIngredientsTable.catalogItemId] = item.id
                         it[RecipeIngredientsTable.freeTextName] = null
                     }
 
-                    is Item.FreeTextItem -> {
+                    is Item.FreeText -> {
                         it[RecipeIngredientsTable.catalogItemId] = null
                         it[RecipeIngredientsTable.freeTextName] = item.name
                     }

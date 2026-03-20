@@ -94,7 +94,7 @@ class PostgresShoppingListRepository : ShoppingListRepository {
             .map { row ->
                 val catalogItemId = row[ShoppingItemsTable.catalogItemId]
                 val item: Item = if (catalogItemId != null) {
-                    Item.CatalogItem(
+                    Item.Catalog(
                         id = catalogItemId,
                         name = row[CatalogItemsTable.name],
                         category = ItemCategory(
@@ -103,7 +103,7 @@ class PostgresShoppingListRepository : ShoppingListRepository {
                         ),
                     )
                 } else {
-                    Item.FreeTextItem(name = requireNotNull(row[ShoppingItemsTable.freeTextName]))
+                    Item.FreeText(name = requireNotNull(row[ShoppingItemsTable.freeTextName]))
                 }
                 ShoppingItem(
                     id = row[ShoppingItemsTable.id],
@@ -148,7 +148,7 @@ class PostgresShoppingListRepository : ShoppingListRepository {
             .single()
 
         val item: Item = if (catalogItemId != null) {
-            Item.CatalogItem(
+            Item.Catalog(
                 id = catalogItemId,
                 name = fetched[CatalogItemsTable.name],
                 category = ItemCategory(
@@ -157,7 +157,7 @@ class PostgresShoppingListRepository : ShoppingListRepository {
                 ),
             )
         } else {
-            Item.FreeTextItem(name = requireNotNull(freeTextName))
+            Item.FreeText(name = requireNotNull(freeTextName))
         }
 
         return ShoppingItem(

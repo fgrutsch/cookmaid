@@ -8,28 +8,28 @@ import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
 import kotlin.uuid.Uuid
 
 interface CatalogItemRepository {
-    suspend fun findAll(): List<Item.CatalogItem>
-    suspend fun findById(id: Uuid): Item.CatalogItem?
+    suspend fun findAll(): List<Item.Catalog>
+    suspend fun findById(id: Uuid): Item.Catalog?
 }
 
 class PostgresCatalogItemRepository : CatalogItemRepository {
 
     private val joined = CatalogItemsTable.innerJoin(ItemCategoriesTable)
 
-    override suspend fun findAll(): List<Item.CatalogItem> = suspendTransaction {
+    override suspend fun findAll(): List<Item.Catalog> = suspendTransaction {
         joined.selectAll()
             .orderBy(CatalogItemsTable.name)
             .map { it.toCatalogItem() }
     }
 
-    override suspend fun findById(id: Uuid): Item.CatalogItem? = suspendTransaction {
+    override suspend fun findById(id: Uuid): Item.Catalog? = suspendTransaction {
         joined.selectAll()
             .where(CatalogItemsTable.id eq id)
             .singleOrNull()
             ?.toCatalogItem()
     }
 
-    private fun ResultRow.toCatalogItem() = Item.CatalogItem(
+    private fun ResultRow.toCatalogItem() = Item.Catalog(
         id = this[CatalogItemsTable.id],
         name = this[CatalogItemsTable.name],
         category = ItemCategory(

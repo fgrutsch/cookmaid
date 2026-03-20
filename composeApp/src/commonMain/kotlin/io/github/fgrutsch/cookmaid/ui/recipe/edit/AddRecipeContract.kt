@@ -13,7 +13,7 @@ data class AddRecipeState(
     val selectedTags: List<String> = emptyList(),
     val availableTags: List<String> = emptyList(),
     val ingredientQuery: String = "",
-    val ingredientSuggestions: List<Item.CatalogItem> = emptyList(),
+    val ingredientSuggestions: List<Item.Catalog> = emptyList(),
 )
 
 sealed interface AddRecipeEvent {

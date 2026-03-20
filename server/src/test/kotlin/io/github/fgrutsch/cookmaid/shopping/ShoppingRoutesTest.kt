@@ -74,7 +74,7 @@ class ShoppingRoutesTest : BaseIntegrationTest() {
         // Add a catalog item (fetch one via API first)
         val catalogItems = client.get("/api/catalog-items") {
             bearerAuth(token)
-        }.body<List<Item.CatalogItem>>()
+        }.body<List<Item.Catalog>>()
         val catalogItem = catalogItems.first()
         val addCatalogResponse = client.post("/api/shopping-lists/${defaultList.id}/items") {
             bearerAuth(token)
@@ -83,7 +83,7 @@ class ShoppingRoutesTest : BaseIntegrationTest() {
         }
         assertEquals(HttpStatusCode.Created, addCatalogResponse.status)
         val addedCatalogItem = addCatalogResponse.body<ShoppingItem>()
-        val returnedItem = addedCatalogItem.item as Item.CatalogItem
+        val returnedItem = addedCatalogItem.item as Item.Catalog
         assertEquals(catalogItem.name, returnedItem.name)
         assertEquals(catalogItem.category.name, returnedItem.category.name)
 

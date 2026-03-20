@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun SwipeItem(
     onDelete: () -> Unit,
-    onEdit: () -> Unit,
+    onEdit: (() -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
     @Suppress("DEPRECATION")
@@ -30,7 +30,7 @@ fun SwipeItem(
         confirmValueChange = { value ->
             when (value) {
                 SwipeToDismissBoxValue.EndToStart -> onDelete()
-                SwipeToDismissBoxValue.StartToEnd -> onEdit()
+                SwipeToDismissBoxValue.StartToEnd -> onEdit?.invoke()
                 SwipeToDismissBoxValue.Settled -> {}
             }
             false
@@ -57,24 +57,26 @@ fun SwipeItem(
                     }
                 }
                 SwipeToDismissBoxValue.StartToEnd -> {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(MaterialTheme.colorScheme.primaryContainer)
-                            .padding(horizontal = 20.dp),
-                        contentAlignment = Alignment.CenterStart,
-                    ) {
-                        Icon(
-                            Icons.Default.Edit,
-                            contentDescription = "Edit",
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        )
+                    if (onEdit != null) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(MaterialTheme.colorScheme.primaryContainer)
+                                .padding(horizontal = 20.dp),
+                            contentAlignment = Alignment.CenterStart,
+                        ) {
+                            Icon(
+                                Icons.Default.Edit,
+                                contentDescription = "Edit",
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                            )
+                        }
                     }
                 }
                 else -> {}
             }
         },
-        enableDismissFromStartToEnd = true,
+        enableDismissFromStartToEnd = onEdit != null,
         enableDismissFromEndToStart = true,
     ) {
         content()

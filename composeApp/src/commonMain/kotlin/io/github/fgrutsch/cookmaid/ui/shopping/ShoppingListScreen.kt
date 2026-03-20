@@ -108,7 +108,7 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
                 onQueryChange = { onEvent(ShoppingListEvent.UpdateSearchQuery(it)) },
                 onAddFreeText = {
                     if (state.searchQuery.isNotBlank()) {
-                        onEvent(ShoppingListEvent.AddItem(Item.FreeTextItem(name = state.searchQuery.trim())))
+                        onEvent(ShoppingListEvent.AddItem(Item.FreeText(name = state.searchQuery.trim())))
                     }
                 },
                 onAddCatalogItem = { onEvent(ShoppingListEvent.AddItem(it)) },
@@ -273,7 +273,7 @@ private fun LazyListScope.uncheckedItemsSection(
     onEditItem: (ShoppingItem) -> Unit,
 ) {
     val grouped = uncheckedItems.groupBy { item ->
-        (item.item as? Item.CatalogItem)?.category?.name ?: "Uncategorized"
+        (item.item as? Item.Catalog)?.category?.name ?: "Uncategorized"
     }.entries.sortedBy { it.key }
     grouped.forEach { (categoryName, categoryItems) ->
         item(key = "header-$categoryName") {

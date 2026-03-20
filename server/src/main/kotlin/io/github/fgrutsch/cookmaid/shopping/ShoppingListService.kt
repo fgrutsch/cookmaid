@@ -29,8 +29,6 @@ class ShoppingListService(
         }
     }
 
-    enum class DeleteListResult { Deleted, NotFound, CannotDeleteDefault }
-
     suspend fun findItemsByListId(userId: Uuid, listId: Uuid): List<ShoppingItem> {
         if (!repository.isListOwnedByUser(userId, listId)) return emptyList()
         return repository.findItemsByListId(listId)

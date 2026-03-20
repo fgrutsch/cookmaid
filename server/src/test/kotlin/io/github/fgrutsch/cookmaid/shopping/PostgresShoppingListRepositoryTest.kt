@@ -98,7 +98,7 @@ class PostgresShoppingListRepositoryTest : BaseTest() {
 
         assertEquals("Paper towels", created.item.name)
         assertEquals(2f, created.quantity)
-        assertTrue(created.item is Item.FreeTextItem)
+        assertTrue(created.item is Item.FreeText)
     }
 
     @Test
@@ -111,7 +111,7 @@ class PostgresShoppingListRepositoryTest : BaseTest() {
 
         val created = repo.addItem(list.id, catalogItemId = catalogItem.id, freeTextName = null, quantity = 3f)
 
-        val addedItem = created.item as Item.CatalogItem
+        val addedItem = created.item as Item.Catalog
         assertEquals(catalogItem.name, addedItem.name)
         assertEquals(catalogItem.category.name, addedItem.category.name)
         assertEquals(catalogItem.category.id, addedItem.category.id)

@@ -18,6 +18,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -30,6 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -42,9 +44,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import io.github.fgrutsch.cookmaid.mealplan.DAYS_IN_WEEK
 import io.github.fgrutsch.cookmaid.mealplan.WEEK_END_OFFSET
-import io.github.fgrutsch.cookmaid.mealplan.mondayOfWeek
 import io.github.fgrutsch.cookmaid.recipe.Recipe
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
 import io.github.fgrutsch.cookmaid.ui.common.formatShortDate
@@ -297,14 +297,16 @@ private fun RecipePickerTab(
 
 @Composable
 fun DayPickerDialog(
-    resolveDayItems: (LocalDate) -> List<String>,
+    viewModel: DayPickerViewModel,
     onSelect: (LocalDate) -> Unit,
     onDismiss: () -> Unit,
 ) {
+    val state by viewModel.state.collectAsState()
     val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
-    var weekStart by remember { mutableStateOf(mondayOfWeek(today)) }
-    val weekEnd = weekStart.plus(WEEK_END_OFFSET, DateTimeUnit.DAY)
-    val days = (0..WEEK_END_OFFSET).map { weekStart.plus(it, DateTimeUnit.DAY) }
+    val weekEnd = state.weekStart.plus(WEEK_END_OFFSET, DateTimeUnit.DAY)
+    val days = (0..WEEK_END_OFFSET).map { state.weekStart.plus(it, DateTimeUnit.DAY) }
+
+    LaunchedEffect(Unit) { viewModel.onEvent(DayPickerEvent.Load) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -312,18 +314,24 @@ fun DayPickerDialog(
         text = {
             Column {
                 DayPickerWeekNavigation(
-                    weekStart = weekStart,
+                    weekStart = state.weekStart,
                     weekEnd = weekEnd,
-                    onPrevious = { weekStart = weekStart.plus(-DAYS_IN_WEEK, DateTimeUnit.DAY) },
-                    onNext = { weekStart = weekStart.plus(DAYS_IN_WEEK, DateTimeUnit.DAY) },
+                    onPrevious = { viewModel.onEvent(DayPickerEvent.PreviousWeek) },
+                    onNext = { viewModel.onEvent(DayPickerEvent.NextWeek) },
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                DayPickerDayList(
-                    days = days,
-                    today = today,
-                    resolveDayItems = resolveDayItems,
-                    onSelect = onSelect,
-                )
+                if (state.isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.CenterHorizontally).padding(16.dp),
+                    )
+                } else {
+                    DayPickerDayList(
+                        days = days,
+                        today = today,
+                        resolveDayItems = { date -> state.itemsByDay[date].orEmpty() },
+                        onSelect = onSelect,
+                    )
+                }
             }
         },
         confirmButton = {},

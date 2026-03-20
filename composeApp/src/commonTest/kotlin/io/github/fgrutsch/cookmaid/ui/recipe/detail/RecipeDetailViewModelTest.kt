@@ -76,7 +76,7 @@ class RecipeDetailViewModelTest : BaseViewModelTest() {
     fun `add ingredients to shopping list sends effect`() = viewModelTest {
         fakeShoppingRepo.lists = mutableListOf(ShoppingList(id = Uuid.random(), name = "Groceries", default = true))
         val recipe = recipe("Pasta", ingredients = listOf(
-            RecipeIngredient(item = Item.FreeTextItem("Tomatoes"), quantity = 3f),
+            RecipeIngredient(item = Item.FreeText("Tomatoes"), quantity = 3f),
         ))
         fakeRecipeRepo.recipes.add(recipe)
 

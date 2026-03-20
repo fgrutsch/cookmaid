@@ -11,7 +11,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import io.github.fgrutsch.cookmaid.ui.common.SuccessSnackbarHost
 import io.github.fgrutsch.cookmaid.ui.mealplan.DayPickerDialog
+import io.github.fgrutsch.cookmaid.ui.mealplan.DayPickerViewModel
 import io.github.fgrutsch.cookmaid.ui.mealplan.IngredientPickerDialog
+import org.koin.compose.koinInject
 
 @Composable
 @Suppress("LongMethod")
@@ -85,7 +87,7 @@ fun RecipeDetailScreen(
     if (showDayPicker) {
         state.recipe?.let { recipe ->
             DayPickerDialog(
-                resolveDayItems = { emptyList() },
+                viewModel = koinInject<DayPickerViewModel>(),
                 onSelect = { day ->
                     onEvent(RecipeDetailEvent.AddToMealPlan(recipe.id, day))
                     showDayPicker = false

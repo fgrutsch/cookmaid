@@ -5,7 +5,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 interface CatalogItemRepository {
-    suspend fun search(query: String): List<Item.CatalogItem>
+    suspend fun search(query: String): List<Item.Catalog>
 }
 
 class ApiCatalogItemRepository(
@@ -13,9 +13,9 @@ class ApiCatalogItemRepository(
 ) : CatalogItemRepository {
 
     private val mutex = Mutex()
-    private var cachedItems: List<Item.CatalogItem> = emptyList()
+    private var cachedItems: List<Item.Catalog> = emptyList()
 
-    override suspend fun search(query: String): List<Item.CatalogItem> {
+    override suspend fun search(query: String): List<Item.Catalog> {
         val q = query.trim().lowercase()
         if (q.isEmpty()) return emptyList()
         val items = mutex.withLock {

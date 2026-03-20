@@ -30,10 +30,10 @@ import io.github.fgrutsch.cookmaid.shopping.ShoppingItem
 @Composable
 internal fun AddItemField(
     query: String,
-    suggestions: List<Item.CatalogItem>,
+    suggestions: List<Item.Catalog>,
     onQueryChange: (String) -> Unit,
     onAddFreeText: () -> Unit,
-    onAddCatalogItem: (Item.CatalogItem) -> Unit,
+    onAddCatalogItem: (Item.Catalog) -> Unit,
 ) {
     val showSuggestions = suggestions.isNotEmpty() && query.isNotEmpty()
 

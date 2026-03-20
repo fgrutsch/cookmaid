@@ -24,7 +24,7 @@ class RecipeServiceTest : BaseTest() {
         val service = getKoin().get<RecipeService>()
         val data = RecipeData(
             name = "Test Recipe",
-            ingredients = listOf(RecipeIngredient(Item.FreeTextItem("Flour"), 200f)),
+            ingredients = listOf(RecipeIngredient(Item.FreeText("Flour"), 200f)),
             steps = listOf("Mix", "Bake"),
             tags = listOf("Baking"),
         )

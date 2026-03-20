@@ -74,7 +74,7 @@ class ShoppingListServiceTest : BaseTest() {
 
         val result = service.deleteList(userId, list.id)
 
-        assertEquals(ShoppingListService.DeleteListResult.Deleted, result)
+        assertEquals(DeleteListResult.Deleted, result)
     }
 
     @Test
@@ -84,7 +84,7 @@ class ShoppingListServiceTest : BaseTest() {
 
         val result = service.deleteList(userId, defaultList.id)
 
-        assertEquals(ShoppingListService.DeleteListResult.CannotDeleteDefault, result)
+        assertEquals(DeleteListResult.CannotDeleteDefault, result)
     }
 
     @Test
@@ -95,7 +95,7 @@ class ShoppingListServiceTest : BaseTest() {
 
         val result = service.deleteList(otherUserId, list.id)
 
-        assertEquals(ShoppingListService.DeleteListResult.NotFound, result)
+        assertEquals(DeleteListResult.NotFound, result)
     }
 
     @Test
@@ -105,7 +105,7 @@ class ShoppingListServiceTest : BaseTest() {
 
         val result = service.deleteList(userId, Uuid.random())
 
-        assertEquals(ShoppingListService.DeleteListResult.NotFound, result)
+        assertEquals(DeleteListResult.NotFound, result)
     }
 
     @Test

@@ -23,8 +23,10 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import io.github.fgrutsch.cookmaid.ui.common.SuccessSnackbarHost
 import io.github.fgrutsch.cookmaid.ui.mealplan.DayPickerDialog
+import io.github.fgrutsch.cookmaid.ui.mealplan.DayPickerViewModel
 import io.github.fgrutsch.cookmaid.ui.mealplan.IngredientPickerDialog
 import kotlin.uuid.Uuid
+import org.koin.compose.koinInject
 
 @Composable
 @Suppress("LongMethod")
@@ -140,7 +142,7 @@ fun RecipeListScreen(
 
     dayPickerRecipeId?.let { recipeId ->
         DayPickerDialog(
-            resolveDayItems = { emptyList() },
+            viewModel = koinInject<DayPickerViewModel>(),
             onSelect = { day ->
                 onEvent(RecipeListEvent.AddToMealPlan(recipeId, day))
                 dayPickerRecipeId = null

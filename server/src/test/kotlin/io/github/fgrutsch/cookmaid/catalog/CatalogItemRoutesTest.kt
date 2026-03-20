@@ -28,7 +28,7 @@ class CatalogItemRoutesTest : BaseIntegrationTest() {
         }
 
         assertEquals(HttpStatusCode.OK, response.status)
-        val items = response.body<List<Item.CatalogItem>>()
+        val items = response.body<List<Item.Catalog>>()
         assertTrue(items.size > 100)
         assertTrue(items.all { it.category.name.isNotBlank() })
     }

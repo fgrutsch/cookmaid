@@ -58,7 +58,7 @@ class ShoppingListViewModelTest : BaseViewModelTest() {
             ShoppingList(id = LIST_ID, name = "Groceries", default = true),
             ShoppingList(id = secondListId, name = "Hardware"),
         )
-        val item = ShoppingItem(id = Uuid.random(), item = Item.FreeTextItem("Nails"), quantity = null)
+        val item = ShoppingItem(id = Uuid.random(), item = Item.FreeText("Nails"), quantity = null)
         fakeRepo.itemsByList[secondListId] = mutableListOf(item)
         val viewModel = createLoadedViewModel(lists = lists)
 
@@ -73,7 +73,7 @@ class ShoppingListViewModelTest : BaseViewModelTest() {
     fun `add free text item appends to list`() = viewModelTest {
         val viewModel = createLoadedViewModel()
 
-        viewModel.onEvent(ShoppingListEvent.AddItem(Item.FreeTextItem("Milk")))
+        viewModel.onEvent(ShoppingListEvent.AddItem(Item.FreeText("Milk")))
         advanceUntilIdle()
 
         assertEquals(1, viewModel.state.value.items.size)
@@ -84,7 +84,7 @@ class ShoppingListViewModelTest : BaseViewModelTest() {
     fun `add blank item is ignored`() = viewModelTest {
         val viewModel = createLoadedViewModel()
 
-        viewModel.onEvent(ShoppingListEvent.AddItem(Item.FreeTextItem("  ")))
+        viewModel.onEvent(ShoppingListEvent.AddItem(Item.FreeText("  ")))
         advanceUntilIdle()
 
         assertTrue(viewModel.state.value.items.isEmpty())
@@ -93,7 +93,7 @@ class ShoppingListViewModelTest : BaseViewModelTest() {
     @Test
     fun `toggle checked flips item state`() = viewModelTest {
         val itemId = Uuid.random()
-        val item = ShoppingItem(id = itemId, item = Item.FreeTextItem("Eggs"), quantity = null, checked = false)
+        val item = ShoppingItem(id = itemId, item = Item.FreeText("Eggs"), quantity = null, checked = false)
         val viewModel = createLoadedViewModel(items = listOf(item))
 
         viewModel.onEvent(ShoppingListEvent.ToggleChecked(itemId))
@@ -105,7 +105,7 @@ class ShoppingListViewModelTest : BaseViewModelTest() {
     @Test
     fun `toggle checked twice restores original state`() = viewModelTest {
         val itemId = Uuid.random()
-        val item = ShoppingItem(id = itemId, item = Item.FreeTextItem("Eggs"), quantity = null, checked = false)
+        val item = ShoppingItem(id = itemId, item = Item.FreeText("Eggs"), quantity = null, checked = false)
         val viewModel = createLoadedViewModel(items = listOf(item))
 
         viewModel.onEvent(ShoppingListEvent.ToggleChecked(itemId))
@@ -118,7 +118,7 @@ class ShoppingListViewModelTest : BaseViewModelTest() {
     @Test
     fun `delete item removes from list`() = viewModelTest {
         val itemId = Uuid.random()
-        val item = ShoppingItem(id = itemId, item = Item.FreeTextItem("Bread"), quantity = null)
+        val item = ShoppingItem(id = itemId, item = Item.FreeText("Bread"), quantity = null)
         val viewModel = createLoadedViewModel(items = listOf(item))
 
         viewModel.onEvent(ShoppingListEvent.DeleteItem(itemId))
@@ -129,8 +129,8 @@ class ShoppingListViewModelTest : BaseViewModelTest() {
 
     @Test
     fun `delete checked removes only checked items`() = viewModelTest {
-        val unchecked = ShoppingItem(id = Uuid.random(), item = Item.FreeTextItem("Milk"), quantity = null, checked = false)
-        val checked = ShoppingItem(id = Uuid.random(), item = Item.FreeTextItem("Eggs"), quantity = null, checked = true)
+        val unchecked = ShoppingItem(id = Uuid.random(), item = Item.FreeText("Milk"), quantity = null, checked = false)
+        val checked = ShoppingItem(id = Uuid.random(), item = Item.FreeText("Eggs"), quantity = null, checked = true)
         val viewModel = createLoadedViewModel(items = listOf(unchecked, checked))
 
         viewModel.onEvent(ShoppingListEvent.DeleteChecked)
@@ -143,7 +143,7 @@ class ShoppingListViewModelTest : BaseViewModelTest() {
     @Test
     fun `update item replaces in list`() = viewModelTest {
         val itemId = Uuid.random()
-        val item = ShoppingItem(id = itemId, item = Item.FreeTextItem("Milk"), quantity = null)
+        val item = ShoppingItem(id = itemId, item = Item.FreeText("Milk"), quantity = null)
         val viewModel = createLoadedViewModel(items = listOf(item))
 
         val updated = item.copy(quantity = 2f)
@@ -204,9 +204,9 @@ class ShoppingListViewModelTest : BaseViewModelTest() {
     @Test
     fun `unchecked and checked items are partitioned correctly`() = viewModelTest {
         val items = listOf(
-            ShoppingItem(id = Uuid.random(), item = Item.FreeTextItem("Milk"), quantity = null, checked = false),
-            ShoppingItem(id = Uuid.random(), item = Item.FreeTextItem("Eggs"), quantity = null, checked = true),
-            ShoppingItem(id = Uuid.random(), item = Item.FreeTextItem("Bread"), quantity = null, checked = false),
+            ShoppingItem(id = Uuid.random(), item = Item.FreeText("Milk"), quantity = null, checked = false),
+            ShoppingItem(id = Uuid.random(), item = Item.FreeText("Eggs"), quantity = null, checked = true),
+            ShoppingItem(id = Uuid.random(), item = Item.FreeText("Bread"), quantity = null, checked = false),
         )
         val viewModel = createLoadedViewModel(items = items)
 

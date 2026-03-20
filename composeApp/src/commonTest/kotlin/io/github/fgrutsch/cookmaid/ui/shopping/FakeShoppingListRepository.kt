@@ -39,7 +39,7 @@ class FakeShoppingListRepository : ShoppingListRepository {
     ): ShoppingItem {
         val item = ShoppingItem(
             id = Uuid.random(),
-            item = Item.FreeTextItem(name = freeTextName ?: "item"),
+            item = Item.FreeText(name = freeTextName ?: "item"),
             quantity = quantity,
             checked = false,
         )
