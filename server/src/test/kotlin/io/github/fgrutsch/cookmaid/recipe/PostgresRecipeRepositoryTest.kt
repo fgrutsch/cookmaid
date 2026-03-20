@@ -22,10 +22,11 @@ class PostgresRecipeRepositoryTest : BaseTest() {
 
     private fun data(
         name: String = "Pasta",
+        description: String? = null,
         ingredients: List<RecipeIngredient> = emptyList(),
         steps: List<String> = emptyList(),
         tags: List<String> = emptyList(),
-    ) = RecipeData(name, ingredients, steps, tags)
+    ) = RecipeData(name, description, ingredients, steps, tags)
 
     @Test
     fun `create creates a new recipe with all fields`() = runTest {

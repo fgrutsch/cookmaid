@@ -93,6 +93,7 @@ class PostgresRecipeRepository : RecipeRepository {
             Recipe(
                 id = id,
                 name = row[RecipesTable.name],
+                description = row[RecipesTable.description],
                 ingredients = loadIngredients(id),
                 steps = row[RecipesTable.steps],
                 tags = row[RecipesTable.tags],
@@ -111,6 +112,7 @@ class PostgresRecipeRepository : RecipeRepository {
         Recipe(
             id = row[RecipesTable.id],
             name = row[RecipesTable.name],
+            description = row[RecipesTable.description],
             ingredients = loadIngredients(id),
             steps = row[RecipesTable.steps],
             tags = row[RecipesTable.tags],
@@ -129,6 +131,7 @@ class PostgresRecipeRepository : RecipeRepository {
         val row = RecipesTable.insertReturning {
             it[RecipesTable.userId] = userId
             it[RecipesTable.name] = data.name.trim()
+            it[RecipesTable.description] = data.description?.trim()?.ifBlank { null }
             it[RecipesTable.steps] = data.steps.map(String::trim)
             it[RecipesTable.tags] = data.tags.map(String::trim)
         }.single()
@@ -139,6 +142,7 @@ class PostgresRecipeRepository : RecipeRepository {
         Recipe(
             id = recipeId,
             name = row[RecipesTable.name],
+            description = row[RecipesTable.description],
             ingredients = loadIngredients(recipeId),
             steps = row[RecipesTable.steps],
             tags = row[RecipesTable.tags],
@@ -148,6 +152,7 @@ class PostgresRecipeRepository : RecipeRepository {
     override suspend fun update(id: Uuid, data: RecipeData): Unit = suspendTransaction {
         RecipesTable.update({ RecipesTable.id eq id }) {
             it[RecipesTable.name] = data.name.trim()
+            it[RecipesTable.description] = data.description?.trim()?.ifBlank { null }
             it[RecipesTable.steps] = data.steps.map(String::trim)
             it[RecipesTable.tags] = data.tags.map(String::trim)
         }
@@ -219,9 +224,11 @@ object RecipesTable : Table("recipes") {
     val id = uuid("id").autoGenerate()
     val userId = uuid("user_id")
     val name = text("name")
+    val description = text("description").nullable()
     val steps = array("steps", TextColumnType())
     val tags = array("tags", TextColumnType())
     val createdAt = timestamp("created_at")
+    val updatedAt = timestamp("updated_at")
 
     override val primaryKey = PrimaryKey(id)
 }
@@ -232,6 +239,8 @@ object RecipeIngredientsTable : Table("recipe_ingredients") {
     val catalogItemId = uuid("catalog_item_id").references(CatalogItemsTable.id).nullable()
     val freeTextName = text("free_text_name").nullable()
     val quantity = float("quantity").nullable()
+    val createdAt = timestamp("created_at")
+    val updatedAt = timestamp("updated_at")
 
     override val primaryKey = PrimaryKey(id)
 }

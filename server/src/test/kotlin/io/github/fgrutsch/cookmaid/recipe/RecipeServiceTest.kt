@@ -24,6 +24,7 @@ class RecipeServiceTest : BaseTest() {
         val service = getKoin().get<RecipeService>()
         val data = RecipeData(
             name = "Test Recipe",
+            description = null,
             ingredients = listOf(RecipeIngredient(Item.FreeText("Flour"), 200f)),
             steps = listOf("Mix", "Bake"),
             tags = listOf("Baking"),
@@ -65,7 +66,7 @@ class RecipeServiceTest : BaseTest() {
         val service = getKoin().get<RecipeService>()
         val userId = createUser()
 
-        val recipe = service.create(userId, RecipeData("Pasta", emptyList(), emptyList(), emptyList()))
+        val recipe = service.create(userId, RecipeData("Pasta", null, emptyList(), emptyList(), emptyList()))
 
         assertEquals("Pasta", recipe.name)
     }
@@ -75,7 +76,7 @@ class RecipeServiceTest : BaseTest() {
         val service = getKoin().get<RecipeService>()
         val (userId, recipe) = createUserWithRecipe()
 
-        val request = RecipeData("New Name", emptyList(), emptyList(), emptyList())
+        val request = RecipeData("New Name", null, emptyList(), emptyList(), emptyList())
         val result = service.update(userId, recipe.id, request)
 
         assertTrue(result)
@@ -87,7 +88,7 @@ class RecipeServiceTest : BaseTest() {
         val (_, recipe) = createUserWithRecipe("user-1")
         val otherUserId = createUser("user-2")
 
-        val request = RecipeData("Hacked", emptyList(), emptyList(), emptyList())
+        val request = RecipeData("Hacked", null, emptyList(), emptyList(), emptyList())
         assertFalse(service.update(otherUserId, recipe.id, request))
     }
 

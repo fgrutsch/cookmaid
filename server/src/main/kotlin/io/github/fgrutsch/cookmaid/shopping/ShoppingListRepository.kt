@@ -7,6 +7,7 @@ import io.github.fgrutsch.cookmaid.catalog.ItemCategory
 import org.jetbrains.exposed.v1.core.JoinType
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.Table
+import org.jetbrains.exposed.v1.datetime.timestamp
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
@@ -212,6 +213,8 @@ object ShoppingListsTable : Table("shopping_lists") {
     val userId = uuid("user_id")
     val name = text("name")
     val isDefault = bool("is_default").default(false)
+    val createdAt = timestamp("created_at")
+    val updatedAt = timestamp("updated_at")
 
     override val primaryKey = PrimaryKey(id)
 }
@@ -223,6 +226,8 @@ object ShoppingItemsTable : Table("shopping_items") {
     val freeTextName = text("free_text_name").nullable()
     val quantity = float("quantity").nullable()
     val checked = bool("checked")
+    val createdAt = timestamp("created_at")
+    val updatedAt = timestamp("updated_at")
 
     override val primaryKey = PrimaryKey(id)
 }

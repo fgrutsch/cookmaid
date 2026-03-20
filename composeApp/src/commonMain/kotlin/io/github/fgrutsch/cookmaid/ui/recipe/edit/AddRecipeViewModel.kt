@@ -39,6 +39,7 @@ class AddRecipeViewModel(
         when (event) {
             is AddRecipeEvent.Load -> load()
             is AddRecipeEvent.SetName -> setName(event.value)
+            is AddRecipeEvent.SetDescription -> updateState { copy(description = event.value) }
             is AddRecipeEvent.UpdateIngredientQuery -> updateIngredientQuery(event.query)
             is AddRecipeEvent.AddIngredient -> addIngredient(event.item, event.quantity)
             is AddRecipeEvent.UpdateIngredientQuantity -> updateIngredientQuantity(event.index, event.quantity)
@@ -66,6 +67,7 @@ class AddRecipeViewModel(
                     updateState {
                         copy(
                             name = recipe.name,
+                            description = recipe.description.orEmpty(),
                             ingredients = recipe.ingredients,
                             steps = recipe.steps,
                             selectedTags = recipe.tags,
@@ -135,17 +137,19 @@ class AddRecipeViewModel(
             return
         }
         val s = state.value
+        val description = s.description.trim().ifBlank { null }
         launch {
             if (s.isEditing) {
                 recipeRepository.update(
                     requireNotNull(editRecipeId),
                     s.name.trim(),
+                    description,
                     s.ingredients,
                     s.steps,
                     s.selectedTags,
                 )
             } else {
-                recipeRepository.create(s.name.trim(), s.ingredients, s.steps, s.selectedTags)
+                recipeRepository.create(s.name.trim(), description, s.ingredients, s.steps, s.selectedTags)
             }
             sendEffect(AddRecipeEffect.Saved)
         }

@@ -38,6 +38,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextDecoration
 import io.github.fgrutsch.cookmaid.recipe.Recipe
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
 import io.github.fgrutsch.cookmaid.ui.shopping.formatQuantity
@@ -88,6 +93,8 @@ internal data class RecipeMenuActions(
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun RecipeContent(recipe: Recipe, padding: PaddingValues) {
+    val uriHandler = LocalUriHandler.current
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -96,6 +103,13 @@ internal fun RecipeContent(recipe: Recipe, padding: PaddingValues) {
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
+        val description = recipe.description
+        if (!description.isNullOrBlank()) {
+            DescriptionSection(
+                description = description,
+                onLinkClick = { uriHandler.openUri(it) },
+            )
+        }
         if (recipe.tags.isNotEmpty()) {
             TagsSection(tags = recipe.tags)
         }
@@ -105,6 +119,40 @@ internal fun RecipeContent(recipe: Recipe, padding: PaddingValues) {
         if (recipe.steps.isNotEmpty()) {
             StepsSection(steps = recipe.steps)
         }
+    }
+}
+
+private val urlPattern = Regex("https?://\\S+", RegexOption.IGNORE_CASE)
+
+@Composable
+internal fun DescriptionSection(description: String, onLinkClick: (String) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(
+            "Description",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary,
+        )
+        val linkColor = MaterialTheme.colorScheme.primary
+        val annotated = buildAnnotatedString {
+            append(description)
+            urlPattern.findAll(description).forEach { match ->
+                addStyle(
+                    SpanStyle(color = linkColor, textDecoration = TextDecoration.Underline),
+                    match.range.first,
+                    match.range.last + 1,
+                )
+                addLink(
+                    LinkAnnotation.Clickable("URL") { onLinkClick(match.value) },
+                    match.range.first,
+                    match.range.last + 1,
+                )
+            }
+        }
+        Text(
+            text = annotated,
+            style = MaterialTheme.typography.bodyLarge,
+        )
     }
 }
 

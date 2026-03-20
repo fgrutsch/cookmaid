@@ -15,6 +15,7 @@ interface RecipeRepository {
     suspend fun getById(id: Uuid): Recipe?
     suspend fun create(
         name: String,
+        description: String?,
         ingredients: List<RecipeIngredient>,
         steps: List<String>,
         tags: List<String>,
@@ -22,6 +23,7 @@ interface RecipeRepository {
     suspend fun update(
         id: Uuid,
         name: String,
+        description: String?,
         ingredients: List<RecipeIngredient>,
         steps: List<String>,
         tags: List<String>,
@@ -51,21 +53,23 @@ class ApiRecipeRepository(
 
     override suspend fun create(
         name: String,
+        description: String?,
         ingredients: List<RecipeIngredient>,
         steps: List<String>,
         tags: List<String>,
     ): Recipe {
-        return client.create(CreateRecipeRequest(name, ingredients, steps, tags))
+        return client.create(CreateRecipeRequest(name, description, ingredients, steps, tags))
     }
 
     override suspend fun update(
         id: Uuid,
         name: String,
+        description: String?,
         ingredients: List<RecipeIngredient>,
         steps: List<String>,
         tags: List<String>,
     ) {
-        client.update(id, UpdateRecipeRequest(name, ingredients, steps, tags))
+        client.update(id, UpdateRecipeRequest(name, description, ingredients, steps, tags))
     }
 
     override suspend fun delete(id: Uuid) {

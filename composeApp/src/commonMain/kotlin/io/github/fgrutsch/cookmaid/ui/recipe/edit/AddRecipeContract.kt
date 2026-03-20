@@ -8,6 +8,7 @@ data class AddRecipeState(
     val isLoading: Boolean = false,
     val name: String = "",
     val nameError: Boolean = false,
+    val description: String = "",
     val ingredients: List<RecipeIngredient> = emptyList(),
     val steps: List<String> = emptyList(),
     val selectedTags: List<String> = emptyList(),
@@ -19,6 +20,7 @@ data class AddRecipeState(
 sealed interface AddRecipeEvent {
     data object Load : AddRecipeEvent
     data class SetName(val value: String) : AddRecipeEvent
+    data class SetDescription(val value: String) : AddRecipeEvent
     data class UpdateIngredientQuery(val query: String) : AddRecipeEvent
     data class AddIngredient(val item: Item, val quantity: Float?) : AddRecipeEvent
     data class UpdateIngredientQuantity(val index: Int, val quantity: Float?) : AddRecipeEvent

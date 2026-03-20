@@ -74,6 +74,15 @@ internal fun AddRecipeContent(
             supportingText = if (state.nameError) {{ Text("Name is required") }} else null,
             modifier = Modifier.fillMaxWidth(),
         )
+        OutlinedTextField(
+            value = state.description,
+            onValueChange = { onEvent(AddRecipeEvent.SetDescription(it)) },
+            label = { Text("Description (optional)") },
+            singleLine = false,
+            minLines = 2,
+            maxLines = 4,
+            modifier = Modifier.fillMaxWidth(),
+        )
         IngredientsSection(
             ingredients = state.ingredients,
             ingredientQuery = state.ingredientQuery,

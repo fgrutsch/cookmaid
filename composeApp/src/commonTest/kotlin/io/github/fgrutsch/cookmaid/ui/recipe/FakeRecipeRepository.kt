@@ -36,11 +36,19 @@ class FakeRecipeRepository : RecipeRepository {
 
     override suspend fun create(
         name: String,
+        description: String?,
         ingredients: List<RecipeIngredient>,
         steps: List<String>,
         tags: List<String>,
     ): Recipe {
-        val recipe = Recipe(id = Uuid.random(), name = name, ingredients = ingredients, steps = steps, tags = tags)
+        val recipe = Recipe(
+            id = Uuid.random(),
+            name = name,
+            description = description,
+            ingredients = ingredients,
+            steps = steps,
+            tags = tags,
+        )
         recipes.add(recipe)
         return recipe
     }
@@ -48,12 +56,15 @@ class FakeRecipeRepository : RecipeRepository {
     override suspend fun update(
         id: Uuid,
         name: String,
+        description: String?,
         ingredients: List<RecipeIngredient>,
         steps: List<String>,
         tags: List<String>,
     ) {
         recipes = recipes.map {
-            if (it.id == id) it.copy(name = name, ingredients = ingredients, steps = steps, tags = tags) else it
+            if (it.id == id) {
+                it.copy(name = name, description = description, ingredients = ingredients, steps = steps, tags = tags)
+            } else it
         }.toMutableList()
     }
 
