@@ -5,6 +5,9 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.uuid.Uuid
 
+/**
+ * An entry in a meal plan, either a reference to a recipe or a free-text note.
+ */
 @Serializable
 sealed interface MealPlanItem {
     val id: Uuid

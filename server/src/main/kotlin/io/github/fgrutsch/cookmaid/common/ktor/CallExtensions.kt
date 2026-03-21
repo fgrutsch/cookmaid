@@ -10,6 +10,12 @@ import org.koin.ktor.ext.get
 
 private val UserIdKey = AttributeKey<UserId>("userId")
 
+/**
+ * Extracts the authenticated [UserId] from the JWT principal, caching it on the call attributes.
+ *
+ * @return the authenticated user's id.
+ * @throws IllegalStateException if the JWT principal is missing or the user is not found.
+ */
 suspend fun ApplicationCall.userId(): UserId {
     val cached = attributes.getOrNull(UserIdKey)
     if (cached != null) return cached

@@ -4,6 +4,9 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.uuid.Uuid
 
+/**
+ * A shopping or recipe item, either picked from the catalog or entered as free text.
+ */
 @Serializable
 sealed interface Item {
     val name: String

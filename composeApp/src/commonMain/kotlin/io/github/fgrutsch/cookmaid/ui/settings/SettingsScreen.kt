@@ -32,6 +32,13 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import io.github.fgrutsch.cookmaid.ui.auth.UserProfile
 
+/**
+ * Settings screen displaying user profile info, theme toggle, and logout.
+ *
+ * @param viewModel the settings view model.
+ * @param userProfile the authenticated user's profile.
+ * @param onLogout called when the user logs out.
+ */
 @Composable
 fun SettingsScreen(viewModel: SettingsViewModel, userProfile: UserProfile, onLogout: () -> Unit) {
     val isDarkMode by viewModel.isDarkMode.collectAsState()

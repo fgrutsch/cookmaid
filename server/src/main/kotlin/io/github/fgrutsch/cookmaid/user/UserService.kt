@@ -8,6 +8,9 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.TimeMark
 import kotlin.time.TimeSource
 
+/**
+ * Manages user lookup and auto-provisioning with a short-lived in-memory cache.
+ */
 class UserService(
     private val repository: UserRepository,
     private val shoppingListRepository: ShoppingListRepository,
@@ -17,6 +20,12 @@ class UserService(
     private val cache = ConcurrentHashMap<String, CacheEntry>()
     private val ttl = 1.minutes
 
+    /**
+     * Returns the cached or persisted [UserId] for the given [oidcSubject], or null if unknown.
+     *
+     * @param oidcSubject the OIDC subject claim identifying the user.
+     * @return the user's id, or null if no matching user exists.
+     */
     suspend fun findIdByOidcSubject(oidcSubject: String): UserId? {
         cache[oidcSubject]?.takeIf { it.expiresAt.hasNotPassedNow() }?.let { return it.userId }
 
@@ -28,6 +37,13 @@ class UserService(
         return userId
     }
 
+    /**
+     * Returns the existing user or creates a new one (with a default shopping list)
+     * for the given [oidcSubject].
+     *
+     * @param oidcSubject the OIDC subject claim identifying the user.
+     * @return the existing or newly created user.
+     */
     suspend fun getOrCreate(oidcSubject: String): User {
         val existing = repository.findByOidcSubject(oidcSubject)
         if (existing != null) {

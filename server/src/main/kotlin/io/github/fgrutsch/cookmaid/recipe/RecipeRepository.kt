@@ -28,14 +28,69 @@ import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
 import org.jetbrains.exposed.v1.jdbc.update
 import kotlin.uuid.Uuid
 
+/**
+ * Persistence layer for recipes and their ingredients.
+ */
 interface RecipeRepository {
+    /**
+     * Returns a cursor-paginated page of recipes for [userId], optionally filtered by [search] and [tag].
+     *
+     * @param userId the owner of the recipes.
+     * @param cursor pagination cursor (creation timestamp) for fetching the next page.
+     * @param limit maximum number of recipes to return.
+     * @param search optional case-insensitive text filter on recipe name.
+     * @param tag optional tag filter.
+     * @return a page of matching recipes with an optional next-page cursor.
+     */
     suspend fun find(userId: UserId, cursor: Instant?, limit: Int, search: String?, tag: String?): RecipePage
+
+    /**
+     * Returns a single recipe by [id], or null if it does not exist.
+     *
+     * @param id the recipe identifier.
+     * @return the matching recipe, or null if not found.
+     */
     suspend fun findById(id: Uuid): Recipe?
+
+    /**
+     * Returns all distinct tags across the user's recipes.
+     *
+     * @param userId the owner of the recipes.
+     * @return a sorted list of unique tag strings.
+     */
     suspend fun findTags(userId: UserId): List<String>
+
+    /**
+     * Persists a new recipe with its ingredients for [userId].
+     *
+     * @param userId the owner of the new recipe.
+     * @param data the recipe content including ingredients.
+     * @return the persisted recipe.
+     */
     suspend fun create(userId: UserId, data: RecipeData): Recipe
+
+    /**
+     * Replaces the recipe data (including ingredients) for the given [id].
+     *
+     * @param id the recipe to update.
+     * @param data the new recipe content.
+     */
     suspend fun update(id: Uuid, data: RecipeData)
 
+    /**
+     * Deletes a recipe and its associated ingredients by [id].
+     *
+     * @param id the recipe to delete.
+     */
     suspend fun delete(id: Uuid)
+
+    /**
+     * Returns true if [userId] owns the recipe identified by [recipeId].
+     *
+     * @param userId the user to check ownership for.
+     * @param recipeId the recipe to check.
+     * @return true if the user owns the recipe.
+     */
     suspend fun isOwner(userId: UserId, recipeId: Uuid): Boolean
 }
 

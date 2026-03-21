@@ -15,6 +15,14 @@ import io.github.fgrutsch.cookmaid.ui.mealplan.DayPickerViewModel
 import io.github.fgrutsch.cookmaid.ui.mealplan.IngredientPickerDialog
 import org.koin.compose.koinInject
 
+/**
+ * Recipe detail screen showing description, tags, ingredients, and steps
+ * with actions for edit, delete, add to shopping list / meal plan.
+ *
+ * @param viewModel the recipe detail view model.
+ * @param onBack called when navigating back.
+ * @param onEdit called when the edit action is selected.
+ */
 @Composable
 @Suppress("LongMethod")
 fun RecipeDetailScreen(

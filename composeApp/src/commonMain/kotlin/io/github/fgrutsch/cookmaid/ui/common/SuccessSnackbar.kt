@@ -12,6 +12,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
+/**
+ * Wraps [content] with a snackbar host styled for success messages.
+ *
+ * @param snackbarHostState the state controlling snackbar visibility.
+ * @param content the composable content to display beneath the snackbar.
+ */
 @Composable
 fun SuccessSnackbarHost(
     snackbarHostState: SnackbarHostState,

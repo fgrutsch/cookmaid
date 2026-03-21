@@ -18,6 +18,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
+/**
+ * A swipe-to-dismiss container supporting delete (end-to-start)
+ * and optional edit (start-to-end) gestures.
+ *
+ * @param onDelete called when the user swipes to delete.
+ * @param onEdit called when the user swipes to edit; disables
+ *   start-to-end swipe when null.
+ * @param content the composable content to display.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SwipeItem(

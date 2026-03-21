@@ -31,16 +31,31 @@ abstract class MviViewModel<S, E, F>(initialState: S) : ViewModel() {
 
     protected abstract fun handleEvent(event: E)
 
+    /**
+     * Applies [reducer] to the current state and emits the result.
+     *
+     * @param reducer function applied to the current state to produce the new state.
+     */
     protected fun updateState(reducer: S.() -> S) {
         state.update(reducer)
     }
 
+    /**
+     * Sends a one-shot [effect] to the UI layer.
+     *
+     * @param effect the side-effect to deliver to the UI (e.g. navigation, snackbar).
+     */
     protected fun sendEffect(effect: F) {
         viewModelScope.launch {
             _effects.send(effect)
         }
     }
 
+    /**
+     * Launches a coroutine in viewModelScope, routing exceptions to [onError].
+     *
+     * @param block the suspend function to execute.
+     */
     protected fun launch(block: suspend () -> Unit) {
         viewModelScope.launch {
             try {
@@ -56,8 +71,11 @@ abstract class MviViewModel<S, E, F>(initialState: S) : ViewModel() {
     }
 
     /**
-     * Apply an optimistic state change, then run a suspend block.
+     * Applies an optimistic state change, then runs a suspend block.
      * If the block throws, the state is rolled back to the snapshot taken before the change.
+     *
+     * @param optimisticUpdate reducer applied immediately before the async operation.
+     * @param block the suspend function to execute after the optimistic update.
      */
     protected fun launchOptimistic(optimisticUpdate: S.() -> S, block: suspend () -> Unit) {
         val snapshot = state.value
@@ -76,5 +94,10 @@ abstract class MviViewModel<S, E, F>(initialState: S) : ViewModel() {
         }
     }
 
+    /**
+     * Called when [launch] or [launchOptimistic] catches a non-cancellation exception.
+     *
+     * @param e the exception that was caught.
+     */
     protected open fun onError(e: Exception) {}
 }

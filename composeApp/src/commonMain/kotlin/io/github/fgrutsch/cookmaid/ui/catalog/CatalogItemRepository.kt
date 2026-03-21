@@ -4,7 +4,16 @@ import io.github.fgrutsch.cookmaid.catalog.Item
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
+/**
+ * Repository for searching catalog items.
+ */
 interface CatalogItemRepository {
+    /**
+     * Searches for catalog items matching the given [query].
+     *
+     * @param query the search text to match against item names.
+     * @return list of matching [Item.Catalog] entries.
+     */
     suspend fun search(query: String): List<Item.Catalog>
 }
 

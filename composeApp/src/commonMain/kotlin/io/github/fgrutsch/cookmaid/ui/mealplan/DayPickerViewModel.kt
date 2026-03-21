@@ -12,6 +12,9 @@ import kotlinx.datetime.plus
 import kotlinx.datetime.todayIn
 import kotlin.time.Clock
 
+/**
+ * ViewModel for the day picker component that manages weekly meal plan navigation.
+ */
 class DayPickerViewModel(
     private val mealPlanRepository: MealPlanRepository,
 ) : MviViewModel<DayPickerState, DayPickerEvent, Nothing>(

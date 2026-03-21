@@ -47,6 +47,12 @@ import io.github.fgrutsch.cookmaid.shopping.ShoppingList
 import io.github.fgrutsch.cookmaid.ui.common.SwipeItem
 import kotlin.uuid.Uuid
 
+/**
+ * Shopping list screen with categorized items, search, add, check/uncheck,
+ * and swipe-to-delete/edit.
+ *
+ * @param viewModel the shopping list view model.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 @Suppress("LongMethod")

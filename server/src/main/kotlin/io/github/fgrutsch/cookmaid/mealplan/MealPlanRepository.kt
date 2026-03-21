@@ -20,11 +20,54 @@ import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
 import org.jetbrains.exposed.v1.jdbc.update
 import kotlin.uuid.Uuid
 
+/**
+ * Persistence layer for meal plan items.
+ */
 interface MealPlanRepository {
+    /**
+     * Returns meal plan items for [userId] within the given date range.
+     *
+     * @param userId the owner of the meal plan.
+     * @param from start date (inclusive).
+     * @param to end date (inclusive).
+     * @return the meal plan items in the range.
+     */
     suspend fun find(userId: UserId, from: LocalDate, to: LocalDate): List<MealPlanItem>
+
+    /**
+     * Creates a new meal plan item for [userId].
+     *
+     * @param userId the owner of the meal plan.
+     * @param day the date for the item.
+     * @param recipeId optional recipe reference.
+     * @param note optional free-text note.
+     * @return the created meal plan item.
+     */
     suspend fun create(userId: UserId, day: LocalDate, recipeId: Uuid?, note: String?): MealPlanItem
+
+    /**
+     * Updates an existing meal plan item.
+     *
+     * @param id the item to update.
+     * @param day optional new date.
+     * @param note optional new note.
+     */
     suspend fun update(id: Uuid, day: LocalDate?, note: String?)
+
+    /**
+     * Deletes a meal plan item.
+     *
+     * @param id the item to delete.
+     */
     suspend fun delete(id: Uuid)
+
+    /**
+     * Returns true if [userId] owns the meal plan item identified by [itemId].
+     *
+     * @param userId the user to check ownership for.
+     * @param itemId the meal plan item to check.
+     * @return true if the user owns the item.
+     */
     suspend fun isOwner(userId: UserId, itemId: Uuid): Boolean
 }
 

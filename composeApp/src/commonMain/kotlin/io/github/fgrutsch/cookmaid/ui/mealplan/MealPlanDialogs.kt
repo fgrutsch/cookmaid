@@ -57,6 +57,16 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import kotlinx.datetime.todayIn
 
+/**
+ * Dialog for adding a recipe or note to a specific meal plan day.
+ *
+ * @param day the date to add the item to.
+ * @param recipeSearchResults current recipe search results to display.
+ * @param onSearchRecipes called when the search query changes.
+ * @param onAddRecipe called when a recipe is selected.
+ * @param onAddNote called when a note is submitted.
+ * @param onDismiss called when the dialog is dismissed.
+ */
 @Composable
 fun AddMealPlanItemDialog(
     day: LocalDate,
@@ -121,6 +131,13 @@ fun AddMealPlanItemDialog(
     )
 }
 
+/**
+ * Dialog for editing an existing meal plan note.
+ *
+ * @param currentName the current note text.
+ * @param onSave called with the updated note text.
+ * @param onDismiss called when the dialog is dismissed.
+ */
 @Composable
 fun EditNoteDialog(
     currentName: String,
@@ -158,6 +175,14 @@ fun EditNoteDialog(
     )
 }
 
+/**
+ * Dialog for selecting recipe ingredients to add to the shopping list.
+ *
+ * @param recipeName the recipe name shown as the dialog title.
+ * @param ingredients the available ingredients to pick from.
+ * @param onAdd called with the selected ingredients.
+ * @param onDismiss called when the dialog is dismissed.
+ */
 @Composable
 fun IngredientPickerDialog(
     recipeName: String,
@@ -295,6 +320,14 @@ private fun RecipePickerTab(
     }
 }
 
+/**
+ * Dialog for selecting a meal plan day, showing existing items per day
+ * with week navigation.
+ *
+ * @param viewModel the day picker view model that loads meal plan data.
+ * @param onSelect called when a day is selected.
+ * @param onDismiss called when the dialog is dismissed.
+ */
 @Composable
 fun DayPickerDialog(
     viewModel: DayPickerViewModel,

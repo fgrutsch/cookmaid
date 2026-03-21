@@ -7,8 +7,23 @@ import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
 import kotlin.uuid.Uuid
 
+/**
+ * Persistence layer for the shared catalog of grocery items.
+ */
 interface CatalogItemRepository {
+    /**
+     * Returns all catalog items, ordered by name.
+     *
+     * @return the full list of catalog items.
+     */
     suspend fun findAll(): List<Item.Catalog>
+
+    /**
+     * Returns a catalog item by [id], or null if it does not exist.
+     *
+     * @param id the catalog item identifier.
+     * @return the matching catalog item, or null.
+     */
     suspend fun findById(id: Uuid): Item.Catalog?
 }
 

@@ -28,6 +28,13 @@ import io.github.fgrutsch.cookmaid.ui.mealplan.IngredientPickerDialog
 import kotlin.uuid.Uuid
 import org.koin.compose.koinInject
 
+/**
+ * Paginated recipe list with search, tag filtering, and pull-to-refresh.
+ *
+ * @param viewModel the recipe list view model.
+ * @param onRecipeClick called when a recipe is tapped.
+ * @param onAddRecipe called when the add FAB is tapped.
+ */
 @Composable
 @Suppress("LongMethod")
 fun RecipeListScreen(
