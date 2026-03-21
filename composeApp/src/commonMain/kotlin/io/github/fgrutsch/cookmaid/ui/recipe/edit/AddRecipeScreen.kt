@@ -20,6 +20,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 
+/**
+ * Form screen for creating or editing a recipe.
+ *
+ * @param viewModel the add/edit recipe view model.
+ * @param onBack called when navigating back after save or cancel.
+ */
 @Composable
 fun AddRecipeScreen(
     viewModel: AddRecipeViewModel,

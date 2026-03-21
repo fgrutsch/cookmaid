@@ -1,16 +1,22 @@
 package io.github.fgrutsch.cookmaid.common.ktor
 
+import io.github.fgrutsch.cookmaid.user.UserId
 import io.github.fgrutsch.cookmaid.user.UserService
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.principal
 import io.ktor.util.AttributeKey
 import org.koin.ktor.ext.get
-import kotlin.uuid.Uuid
 
-private val UserIdKey = AttributeKey<Uuid>("userId")
+private val UserIdKey = AttributeKey<UserId>("userId")
 
-suspend fun ApplicationCall.userId(): Uuid {
+/**
+ * Extracts the authenticated [UserId] from the JWT principal, caching it on the call attributes.
+ *
+ * @return the authenticated user's id.
+ * @throws IllegalStateException if the JWT principal is missing or the user is not found.
+ */
+suspend fun ApplicationCall.userId(): UserId {
     val cached = attributes.getOrNull(UserIdKey)
     if (cached != null) return cached
 

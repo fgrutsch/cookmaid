@@ -4,6 +4,7 @@ import io.github.fgrutsch.cookmaid.catalog.CatalogItemsTable
 import io.github.fgrutsch.cookmaid.catalog.Item
 import io.github.fgrutsch.cookmaid.catalog.ItemCategoriesTable
 import io.github.fgrutsch.cookmaid.catalog.ItemCategory
+import io.github.fgrutsch.cookmaid.user.UserId
 import kotlin.time.Instant
 import org.jetbrains.exposed.v1.core.JoinType
 import org.jetbrains.exposed.v1.core.SortOrder
@@ -27,27 +28,82 @@ import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
 import org.jetbrains.exposed.v1.jdbc.update
 import kotlin.uuid.Uuid
 
+/**
+ * Persistence layer for recipes and their ingredients.
+ */
 interface RecipeRepository {
-    suspend fun findByUserId(userId: Uuid, cursor: Instant?, limit: Int, search: String?, tag: String?): RecipePage
+    /**
+     * Returns a cursor-paginated page of recipes for [userId], optionally filtered by [search] and [tag].
+     *
+     * @param userId the owner of the recipes.
+     * @param cursor pagination cursor (creation timestamp) for fetching the next page.
+     * @param limit maximum number of recipes to return.
+     * @param search optional case-insensitive text filter on recipe name.
+     * @param tag optional tag filter.
+     * @return a page of matching recipes with an optional next-page cursor.
+     */
+    suspend fun find(userId: UserId, cursor: Instant?, limit: Int, search: String?, tag: String?): RecipePage
+
+    /**
+     * Returns a single recipe by [id], or null if it does not exist.
+     *
+     * @param id the recipe identifier.
+     * @return the matching recipe, or null if not found.
+     */
     suspend fun findById(id: Uuid): Recipe?
-    suspend fun findTagsByUserId(userId: Uuid): List<String>
-    suspend fun create(userId: Uuid, data: RecipeData): Recipe
+
+    /**
+     * Returns all distinct tags across the user's recipes.
+     *
+     * @param userId the owner of the recipes.
+     * @return a sorted list of unique tag strings.
+     */
+    suspend fun findTags(userId: UserId): List<String>
+
+    /**
+     * Persists a new recipe with its ingredients for [userId].
+     *
+     * @param userId the owner of the new recipe.
+     * @param data the recipe content including ingredients.
+     * @return the persisted recipe.
+     */
+    suspend fun create(userId: UserId, data: RecipeData): Recipe
+
+    /**
+     * Replaces the recipe data (including ingredients) for the given [id].
+     *
+     * @param id the recipe to update.
+     * @param data the new recipe content.
+     */
     suspend fun update(id: Uuid, data: RecipeData)
 
+    /**
+     * Deletes a recipe and its associated ingredients by [id].
+     *
+     * @param id the recipe to delete.
+     */
     suspend fun delete(id: Uuid)
-    suspend fun isOwnedByUser(userId: Uuid, recipeId: Uuid): Boolean
+
+    /**
+     * Returns true if [userId] owns the recipe identified by [recipeId].
+     *
+     * @param userId the user to check ownership for.
+     * @param recipeId the recipe to check.
+     * @return true if the user owns the recipe.
+     */
+    suspend fun isOwner(userId: UserId, recipeId: Uuid): Boolean
 }
 
 class PostgresRecipeRepository : RecipeRepository {
 
-    override suspend fun findByUserId(
-        userId: Uuid,
+    override suspend fun find(
+        userId: UserId,
         cursor: Instant?,
         limit: Int,
         search: String?,
         tag: String?,
     ): RecipePage = suspendTransaction {
-        var condition: Op<Boolean> = RecipesTable.userId eq userId
+        var condition: Op<Boolean> = RecipesTable.userId eq userId.value
 
         if (cursor != null) {
             val cursorCondition = LessOp(
@@ -93,6 +149,7 @@ class PostgresRecipeRepository : RecipeRepository {
             Recipe(
                 id = id,
                 name = row[RecipesTable.name],
+                description = row[RecipesTable.description],
                 ingredients = loadIngredients(id),
                 steps = row[RecipesTable.steps],
                 tags = row[RecipesTable.tags],
@@ -111,24 +168,26 @@ class PostgresRecipeRepository : RecipeRepository {
         Recipe(
             id = row[RecipesTable.id],
             name = row[RecipesTable.name],
+            description = row[RecipesTable.description],
             ingredients = loadIngredients(id),
             steps = row[RecipesTable.steps],
             tags = row[RecipesTable.tags],
         )
     }
 
-    override suspend fun findTagsByUserId(userId: Uuid): List<String> = suspendTransaction {
+    override suspend fun findTags(userId: UserId): List<String> = suspendTransaction {
         RecipesTable.selectAll()
-            .where(RecipesTable.userId eq userId)
+            .where(RecipesTable.userId eq userId.value)
             .flatMap { it[RecipesTable.tags] }
             .distinct()
             .sorted()
     }
 
-    override suspend fun create(userId: Uuid, data: RecipeData): Recipe = suspendTransaction {
+    override suspend fun create(userId: UserId, data: RecipeData): Recipe = suspendTransaction {
         val row = RecipesTable.insertReturning {
-            it[RecipesTable.userId] = userId
+            it[RecipesTable.userId] = userId.value
             it[RecipesTable.name] = data.name.trim()
+            it[RecipesTable.description] = data.description?.trim()?.ifBlank { null }
             it[RecipesTable.steps] = data.steps.map(String::trim)
             it[RecipesTable.tags] = data.tags.map(String::trim)
         }.single()
@@ -139,6 +198,7 @@ class PostgresRecipeRepository : RecipeRepository {
         Recipe(
             id = recipeId,
             name = row[RecipesTable.name],
+            description = row[RecipesTable.description],
             ingredients = loadIngredients(recipeId),
             steps = row[RecipesTable.steps],
             tags = row[RecipesTable.tags],
@@ -148,6 +208,7 @@ class PostgresRecipeRepository : RecipeRepository {
     override suspend fun update(id: Uuid, data: RecipeData): Unit = suspendTransaction {
         RecipesTable.update({ RecipesTable.id eq id }) {
             it[RecipesTable.name] = data.name.trim()
+            it[RecipesTable.description] = data.description?.trim()?.ifBlank { null }
             it[RecipesTable.steps] = data.steps.map(String::trim)
             it[RecipesTable.tags] = data.tags.map(String::trim)
         }
@@ -160,9 +221,9 @@ class PostgresRecipeRepository : RecipeRepository {
         RecipesTable.deleteWhere { RecipesTable.id eq id }
     }
 
-    override suspend fun isOwnedByUser(userId: Uuid, recipeId: Uuid): Boolean = suspendTransaction {
+    override suspend fun isOwner(userId: UserId, recipeId: Uuid): Boolean = suspendTransaction {
         RecipesTable.selectAll()
-            .where { (RecipesTable.id eq recipeId) and (RecipesTable.userId eq userId) }
+            .where { (RecipesTable.id eq recipeId) and (RecipesTable.userId eq userId.value) }
             .count() > 0
     }
 
@@ -176,7 +237,7 @@ class PostgresRecipeRepository : RecipeRepository {
             .map { row ->
                 val catalogItemId = row[RecipeIngredientsTable.catalogItemId]
                 val item: Item = if (catalogItemId != null) {
-                    Item.CatalogItem(
+                    Item.Catalog(
                         id = catalogItemId,
                         name = row[CatalogItemsTable.name],
                         category = ItemCategory(
@@ -185,7 +246,7 @@ class PostgresRecipeRepository : RecipeRepository {
                         ),
                     )
                 } else {
-                    Item.FreeTextItem(name = requireNotNull(row[RecipeIngredientsTable.freeTextName]))
+                    Item.FreeText(name = requireNotNull(row[RecipeIngredientsTable.freeTextName]))
                 }
                 RecipeIngredient(
                     item = item,
@@ -200,12 +261,12 @@ class PostgresRecipeRepository : RecipeRepository {
                 it[RecipeIngredientsTable.recipeId] = recipeId
                 it[RecipeIngredientsTable.quantity] = ingredient.quantity
                 when (val item = ingredient.item) {
-                    is Item.CatalogItem -> {
+                    is Item.Catalog -> {
                         it[RecipeIngredientsTable.catalogItemId] = item.id
                         it[RecipeIngredientsTable.freeTextName] = null
                     }
 
-                    is Item.FreeTextItem -> {
+                    is Item.FreeText -> {
                         it[RecipeIngredientsTable.catalogItemId] = null
                         it[RecipeIngredientsTable.freeTextName] = item.name
                     }
@@ -219,9 +280,11 @@ object RecipesTable : Table("recipes") {
     val id = uuid("id").autoGenerate()
     val userId = uuid("user_id")
     val name = text("name")
+    val description = text("description").nullable()
     val steps = array("steps", TextColumnType())
     val tags = array("tags", TextColumnType())
     val createdAt = timestamp("created_at")
+    val updatedAt = timestamp("updated_at")
 
     override val primaryKey = PrimaryKey(id)
 }
@@ -232,6 +295,8 @@ object RecipeIngredientsTable : Table("recipe_ingredients") {
     val catalogItemId = uuid("catalog_item_id").references(CatalogItemsTable.id).nullable()
     val freeTextName = text("free_text_name").nullable()
     val quantity = float("quantity").nullable()
+    val createdAt = timestamp("created_at")
+    val updatedAt = timestamp("updated_at")
 
     override val primaryKey = PrimaryKey(id)
 }

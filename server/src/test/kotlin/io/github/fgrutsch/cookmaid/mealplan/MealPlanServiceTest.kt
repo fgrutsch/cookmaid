@@ -3,6 +3,7 @@ package io.github.fgrutsch.cookmaid.mealplan
 import io.github.fgrutsch.cookmaid.recipe.RecipeData
 import io.github.fgrutsch.cookmaid.recipe.RecipeRepository
 import io.github.fgrutsch.cookmaid.support.BaseTest
+import io.github.fgrutsch.cookmaid.user.UserId
 import io.github.fgrutsch.cookmaid.user.UserRepository
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDate
@@ -19,14 +20,14 @@ class MealPlanServiceTest : BaseTest() {
     private val tuesday = LocalDate(2026, 3, 17)
     private val sunday = LocalDate(2026, 3, 22)
 
-    private suspend fun createUser(subject: String = "test-subject"): Uuid {
+    private suspend fun createUser(subject: String = "test-subject"): UserId {
         val userRepo = getKoin().get<UserRepository>()
-        return userRepo.create(subject).id
+        return UserId(userRepo.create(subject).id)
     }
 
-    private suspend fun createRecipe(userId: Uuid): Uuid {
+    private suspend fun createRecipe(userId: UserId): Uuid {
         val recipeRepo = getKoin().get<RecipeRepository>()
-        return recipeRepo.create(userId, RecipeData("Test Recipe", emptyList(), emptyList(), emptyList())).id
+        return recipeRepo.create(userId, RecipeData("Test Recipe", null, emptyList(), emptyList(), emptyList())).id
     }
 
     @Test
@@ -57,7 +58,7 @@ class MealPlanServiceTest : BaseTest() {
     }
 
     @Test
-    fun `findByUser returns items in date range`() = runTest {
+    fun `find returns items in date range`() = runTest {
         val service = getKoin().get<MealPlanService>()
         val userId = createUser()
 
@@ -65,24 +66,24 @@ class MealPlanServiceTest : BaseTest() {
         service.create(userId, tuesday, recipeId = null, note = "Tuesday meal")
         service.create(userId, sunday, recipeId = null, note = "Sunday meal")
 
-        val items = service.findByUser(userId, monday, sunday)
+        val items = service.find(userId, monday, sunday)
         assertEquals(3, items.size)
     }
 
     @Test
-    fun `findByUser excludes items outside range`() = runTest {
+    fun `find excludes items outside range`() = runTest {
         val service = getKoin().get<MealPlanService>()
         val userId = createUser()
 
         service.create(userId, monday, recipeId = null, note = "Monday meal")
         service.create(userId, sunday, recipeId = null, note = "Sunday meal")
 
-        val items = service.findByUser(userId, tuesday, LocalDate(2026, 3, 21))
+        val items = service.find(userId, tuesday, LocalDate(2026, 3, 21))
         assertEquals(0, items.size)
     }
 
     @Test
-    fun `findByUser does not return other users items`() = runTest {
+    fun `find does not return other users items`() = runTest {
         val service = getKoin().get<MealPlanService>()
         val userId1 = createUser("user-1")
         val userId2 = createUser("user-2")
@@ -90,7 +91,7 @@ class MealPlanServiceTest : BaseTest() {
         service.create(userId1, monday, recipeId = null, note = "User 1 meal")
         service.create(userId2, monday, recipeId = null, note = "User 2 meal")
 
-        val items = service.findByUser(userId1, monday, sunday)
+        val items = service.find(userId1, monday, sunday)
         assertEquals(1, items.size)
         assertEquals("User 1 meal", (items.first() as MealPlanItem.Note).name)
     }
@@ -104,7 +105,7 @@ class MealPlanServiceTest : BaseTest() {
         val result = service.update(userId, item.id, day = null, note = "New note")
 
         assertTrue(result)
-        val items = service.findByUser(userId, monday, monday)
+        val items = service.find(userId, monday, monday)
         assertEquals("New note", (items.first() as MealPlanItem.Note).name)
     }
 
@@ -125,7 +126,7 @@ class MealPlanServiceTest : BaseTest() {
         val item = service.create(userId, monday, recipeId = null, note = "To delete")
 
         assertTrue(service.delete(userId, item.id))
-        assertTrue(service.findByUser(userId, monday, monday).isEmpty())
+        assertTrue(service.find(userId, monday, monday).isEmpty())
     }
 
     @Test

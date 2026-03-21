@@ -1,6 +1,7 @@
 package io.github.fgrutsch.cookmaid.ui.mealplan
 
 import io.github.fgrutsch.cookmaid.mealplan.DAYS_IN_WEEK
+import io.github.fgrutsch.cookmaid.recipe.DEFAULT_RECIPE_PAGE_SIZE
 import io.github.fgrutsch.cookmaid.mealplan.MealPlanDay
 import io.github.fgrutsch.cookmaid.mealplan.MealPlanItem
 import io.github.fgrutsch.cookmaid.mealplan.WEEK_END_OFFSET
@@ -80,7 +81,7 @@ class MealPlanViewModel(
             val search = query.takeIf { it.isNotBlank() }
             val page = recipeRepository.fetchPage(
                 cursor = null,
-                limit = RECIPE_SEARCH_LIMIT,
+                limit = DEFAULT_RECIPE_PAGE_SIZE,
                 search = search,
             )
             updateState { copy(recipeSearchResults = page.items) }
@@ -167,10 +168,6 @@ class MealPlanViewModel(
     override fun onError(e: Exception) {
         updateState { copy(isLoading = false) }
         sendEffect(MealPlanEffect.Error("Something went wrong. Please try again."))
-    }
-
-    companion object {
-        private const val RECIPE_SEARCH_LIMIT = 20
     }
 }
 

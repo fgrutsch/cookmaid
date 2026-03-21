@@ -13,7 +13,7 @@ data class ShoppingListState(
     val isLoading: Boolean = false,
     val isRefreshing: Boolean = false,
     val searchQuery: String = "",
-    val suggestions: List<Item.CatalogItem> = emptyList(),
+    val suggestions: List<Item.Catalog> = emptyList(),
 ) {
     val selectedList: ShoppingList?
         get() = lists.find { it.id == selectedListId }

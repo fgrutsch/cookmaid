@@ -1,6 +1,7 @@
 package io.github.fgrutsch.cookmaid.mealplan
 
 import io.github.fgrutsch.cookmaid.recipe.RecipesTable
+import io.github.fgrutsch.cookmaid.user.UserId
 import kotlinx.datetime.LocalDate
 import org.jetbrains.exposed.v1.core.JoinType
 import org.jetbrains.exposed.v1.core.ResultRow
@@ -11,6 +12,7 @@ import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.greaterEq
 import org.jetbrains.exposed.v1.core.lessEq
 import org.jetbrains.exposed.v1.datetime.date
+import org.jetbrains.exposed.v1.datetime.timestamp
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insertReturning
 import org.jetbrains.exposed.v1.jdbc.selectAll
@@ -18,12 +20,55 @@ import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
 import org.jetbrains.exposed.v1.jdbc.update
 import kotlin.uuid.Uuid
 
+/**
+ * Persistence layer for meal plan items.
+ */
 interface MealPlanRepository {
-    suspend fun findByUserAndDateRange(userId: Uuid, from: LocalDate, to: LocalDate): List<MealPlanItem>
-    suspend fun create(userId: Uuid, day: LocalDate, recipeId: Uuid?, note: String?): MealPlanItem
+    /**
+     * Returns meal plan items for [userId] within the given date range.
+     *
+     * @param userId the owner of the meal plan.
+     * @param from start date (inclusive).
+     * @param to end date (inclusive).
+     * @return the meal plan items in the range.
+     */
+    suspend fun find(userId: UserId, from: LocalDate, to: LocalDate): List<MealPlanItem>
+
+    /**
+     * Creates a new meal plan item for [userId].
+     *
+     * @param userId the owner of the meal plan.
+     * @param day the date for the item.
+     * @param recipeId optional recipe reference.
+     * @param note optional free-text note.
+     * @return the created meal plan item.
+     */
+    suspend fun create(userId: UserId, day: LocalDate, recipeId: Uuid?, note: String?): MealPlanItem
+
+    /**
+     * Updates an existing meal plan item.
+     *
+     * @param id the item to update.
+     * @param day optional new date.
+     * @param note optional new note.
+     */
     suspend fun update(id: Uuid, day: LocalDate?, note: String?)
+
+    /**
+     * Deletes a meal plan item.
+     *
+     * @param id the item to delete.
+     */
     suspend fun delete(id: Uuid)
-    suspend fun isOwnedByUser(userId: Uuid, itemId: Uuid): Boolean
+
+    /**
+     * Returns true if [userId] owns the meal plan item identified by [itemId].
+     *
+     * @param userId the user to check ownership for.
+     * @param itemId the meal plan item to check.
+     * @return true if the user owns the item.
+     */
+    suspend fun isOwner(userId: UserId, itemId: Uuid): Boolean
 }
 
 class PostgresMealPlanRepository : MealPlanRepository {
@@ -31,14 +76,14 @@ class PostgresMealPlanRepository : MealPlanRepository {
     private val joined = MealPlanItemsTable
         .join(RecipesTable, JoinType.LEFT, MealPlanItemsTable.recipeId, RecipesTable.id)
 
-    override suspend fun findByUserAndDateRange(
-        userId: Uuid,
+    override suspend fun find(
+        userId: UserId,
         from: LocalDate,
         to: LocalDate,
     ): List<MealPlanItem> = suspendTransaction {
         joined.selectAll()
             .where {
-                (MealPlanItemsTable.userId eq userId) and
+                (MealPlanItemsTable.userId eq userId.value) and
                     (MealPlanItemsTable.day greaterEq from) and
                     (MealPlanItemsTable.day lessEq to)
             }
@@ -47,13 +92,13 @@ class PostgresMealPlanRepository : MealPlanRepository {
     }
 
     override suspend fun create(
-        userId: Uuid,
+        userId: UserId,
         day: LocalDate,
         recipeId: Uuid?,
         note: String?,
     ): MealPlanItem = suspendTransaction {
         val row = MealPlanItemsTable.insertReturning {
-            it[MealPlanItemsTable.userId] = userId
+            it[MealPlanItemsTable.userId] = userId.value
             it[MealPlanItemsTable.day] = day
             it[MealPlanItemsTable.recipeId] = recipeId
             it[MealPlanItemsTable.note] = note?.trim()
@@ -77,9 +122,9 @@ class PostgresMealPlanRepository : MealPlanRepository {
         MealPlanItemsTable.deleteWhere { MealPlanItemsTable.id eq id }
     }
 
-    override suspend fun isOwnedByUser(userId: Uuid, itemId: Uuid): Boolean = suspendTransaction {
+    override suspend fun isOwner(userId: UserId, itemId: Uuid): Boolean = suspendTransaction {
         MealPlanItemsTable.selectAll()
-            .where { (MealPlanItemsTable.id eq itemId) and (MealPlanItemsTable.userId eq userId) }
+            .where { (MealPlanItemsTable.id eq itemId) and (MealPlanItemsTable.userId eq userId.value) }
             .count() > 0
     }
 
@@ -108,6 +153,8 @@ object MealPlanItemsTable : Table("meal_plan_items") {
     val day = date("day")
     val recipeId = uuid("recipe_id").references(RecipesTable.id).nullable()
     val note = text("note").nullable()
+    val createdAt = timestamp("created_at")
+    val updatedAt = timestamp("updated_at")
 
     override val primaryKey = PrimaryKey(id)
 }

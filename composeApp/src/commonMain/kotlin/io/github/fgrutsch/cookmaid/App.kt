@@ -52,6 +52,13 @@ import org.koin.dsl.module
 import org.publicvalue.multiplatform.oidc.flows.CodeAuthFlowFactory
 import org.publicvalue.multiplatform.oidc.tokenstore.TokenStore
 
+/**
+ * Root composable that sets up Koin DI, authentication, and navigation.
+ *
+ * @param apiBaseUrl the base URL for the backend API.
+ * @param oidcConfig the OpenID Connect configuration.
+ * @param codeAuthFlowFactory factory for the OIDC authorization code flow.
+ */
 @Composable
 fun App(
     apiBaseUrl: ApiBaseUrl,

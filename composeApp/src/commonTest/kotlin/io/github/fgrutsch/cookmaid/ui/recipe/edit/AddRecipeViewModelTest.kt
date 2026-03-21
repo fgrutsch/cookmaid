@@ -43,7 +43,7 @@ class AddRecipeViewModelTest : BaseViewModelTest() {
         val recipe = Recipe(
             id = Uuid.random(),
             name = "Pasta",
-            ingredients = listOf(RecipeIngredient(item = Item.FreeTextItem("Tomato"), quantity = 2f)),
+            ingredients = listOf(RecipeIngredient(item = Item.FreeText("Tomato"), quantity = 2f)),
             steps = listOf("Boil water", "Cook pasta"),
             tags = listOf("Italian"),
         )
@@ -78,7 +78,7 @@ class AddRecipeViewModelTest : BaseViewModelTest() {
     fun `add ingredient appends to list`() = viewModelTest {
         val viewModel = createViewModel()
 
-        viewModel.onEvent(AddRecipeEvent.AddIngredient(Item.FreeTextItem("Tomato"), 3f))
+        viewModel.onEvent(AddRecipeEvent.AddIngredient(Item.FreeText("Tomato"), 3f))
         advanceUntilIdle()
 
         assertEquals(1, viewModel.state.value.ingredients.size)
@@ -90,7 +90,7 @@ class AddRecipeViewModelTest : BaseViewModelTest() {
     fun `add blank ingredient is ignored`() = viewModelTest {
         val viewModel = createViewModel()
 
-        viewModel.onEvent(AddRecipeEvent.AddIngredient(Item.FreeTextItem("  "), null))
+        viewModel.onEvent(AddRecipeEvent.AddIngredient(Item.FreeText("  "), null))
         advanceUntilIdle()
 
         assertTrue(viewModel.state.value.ingredients.isEmpty())
@@ -100,8 +100,8 @@ class AddRecipeViewModelTest : BaseViewModelTest() {
     fun `remove ingredient by index`() = viewModelTest {
         val viewModel = createViewModel()
 
-        viewModel.onEvent(AddRecipeEvent.AddIngredient(Item.FreeTextItem("Tomato"), null))
-        viewModel.onEvent(AddRecipeEvent.AddIngredient(Item.FreeTextItem("Onion"), null))
+        viewModel.onEvent(AddRecipeEvent.AddIngredient(Item.FreeText("Tomato"), null))
+        viewModel.onEvent(AddRecipeEvent.AddIngredient(Item.FreeText("Onion"), null))
         advanceUntilIdle()
 
         viewModel.onEvent(AddRecipeEvent.RemoveIngredient(0))
@@ -115,7 +115,7 @@ class AddRecipeViewModelTest : BaseViewModelTest() {
     fun `update ingredient quantity`() = viewModelTest {
         val viewModel = createViewModel()
 
-        viewModel.onEvent(AddRecipeEvent.AddIngredient(Item.FreeTextItem("Tomato"), null))
+        viewModel.onEvent(AddRecipeEvent.AddIngredient(Item.FreeText("Tomato"), null))
         advanceUntilIdle()
 
         viewModel.onEvent(AddRecipeEvent.UpdateIngredientQuantity(0, 5f))

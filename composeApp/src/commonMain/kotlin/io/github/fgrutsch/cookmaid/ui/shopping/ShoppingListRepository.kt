@@ -7,16 +7,92 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlin.uuid.Uuid
 
+/**
+ * Repository for managing shopping lists and their items.
+ */
 interface ShoppingListRepository {
+    /**
+     * Returns all shopping lists, optionally forcing a refresh from the server.
+     *
+     * @param refresh when true, bypasses the cache and fetches from the server.
+     * @return list of [ShoppingList] entries.
+     */
     suspend fun getLists(refresh: Boolean = false): List<ShoppingList>
+
+    /**
+     * Creates a new shopping list with the given [name].
+     *
+     * @param name the name for the new list.
+     * @return the newly created [ShoppingList].
+     */
     suspend fun createList(name: String): ShoppingList
+
+    /**
+     * Renames an existing shopping list.
+     *
+     * @param id the unique list identifier.
+     * @param name the new name.
+     */
     suspend fun updateList(id: Uuid, name: String)
+
+    /**
+     * Deletes the shopping list with the given [id].
+     *
+     * @param id the unique list identifier.
+     */
     suspend fun deleteList(id: Uuid)
+
+    /**
+     * Loads all items for the given shopping list.
+     *
+     * @param listId the unique list identifier.
+     * @return list of [ShoppingItem] entries.
+     */
     suspend fun loadItems(listId: Uuid): List<ShoppingItem>
+
+    /**
+     * Adds a single item to a shopping list.
+     *
+     * @param listId the target list identifier.
+     * @param catalogItemId optional catalog item to link.
+     * @param freeTextName optional free-text name for non-catalog items.
+     * @param quantity optional quantity.
+     * @return the newly created [ShoppingItem].
+     */
     suspend fun addItem(listId: Uuid, catalogItemId: Uuid?, freeTextName: String?, quantity: Float?): ShoppingItem
+
+    /**
+     * Adds multiple items to a shopping list in a single operation.
+     *
+     * @param listId the target list identifier.
+     * @param items the items to add.
+     * @return the newly created [ShoppingItem] entries.
+     */
     suspend fun addItems(listId: Uuid, items: List<CreateShoppingItemRequest>): List<ShoppingItem>
+
+    /**
+     * Updates an existing shopping item.
+     *
+     * @param listId the list containing the item.
+     * @param itemId the unique item identifier.
+     * @param quantity the updated quantity.
+     * @param checked whether the item is checked off.
+     */
     suspend fun updateItem(listId: Uuid, itemId: Uuid, quantity: Float?, checked: Boolean)
+
+    /**
+     * Deletes a single item from a shopping list.
+     *
+     * @param listId the list containing the item.
+     * @param itemId the unique item identifier.
+     */
     suspend fun deleteItem(listId: Uuid, itemId: Uuid)
+
+    /**
+     * Deletes all checked items from the given shopping list.
+     *
+     * @param listId the list to clean up.
+     */
     suspend fun deleteCheckedItems(listId: Uuid)
 }
 

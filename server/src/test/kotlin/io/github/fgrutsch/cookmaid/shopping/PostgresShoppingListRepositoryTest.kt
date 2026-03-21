@@ -3,6 +3,7 @@ package io.github.fgrutsch.cookmaid.shopping
 import io.github.fgrutsch.cookmaid.catalog.CatalogItemRepository
 import io.github.fgrutsch.cookmaid.catalog.Item
 import io.github.fgrutsch.cookmaid.support.BaseTest
+import io.github.fgrutsch.cookmaid.user.UserId
 import io.github.fgrutsch.cookmaid.user.UserRepository
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
@@ -15,9 +16,9 @@ import kotlin.uuid.Uuid
 
 class PostgresShoppingListRepositoryTest : BaseTest() {
 
-    private suspend fun createUser(subject: String = "test-subject"): Uuid {
+    private suspend fun createUser(subject: String = "test-subject"): UserId {
         val userRepo = getKoin().get<UserRepository>()
-        return userRepo.create(subject).id
+        return UserId(userRepo.create(subject).id)
     }
 
     @Test
@@ -43,23 +44,23 @@ class PostgresShoppingListRepositoryTest : BaseTest() {
     }
 
     @Test
-    fun `findByUserId returns lists for user`() = runTest {
+    fun `find returns lists for user`() = runTest {
         val repo = getKoin().get<ShoppingListRepository>()
         val userId = createUser()
         repo.createList(userId, "Groceries")
         repo.createList(userId, "BBQ Party")
 
-        val lists = repo.findByUserId(userId)
+        val lists = repo.find(userId)
 
         assertEquals(2, lists.size)
     }
 
     @Test
-    fun `findByUserId returns empty for user with no lists`() = runTest {
+    fun `find returns empty for user with no lists`() = runTest {
         val repo = getKoin().get<ShoppingListRepository>()
         val userId = createUser()
 
-        val lists = repo.findByUserId(userId)
+        val lists = repo.find(userId)
 
         assertTrue(lists.isEmpty())
     }
@@ -72,7 +73,7 @@ class PostgresShoppingListRepositoryTest : BaseTest() {
 
         repo.updateList(list.id, "New Name")
 
-        val updated = repo.findByUserId(userId).first()
+        val updated = repo.find(userId).first()
         assertEquals("New Name", updated.name)
     }
 
@@ -85,7 +86,7 @@ class PostgresShoppingListRepositoryTest : BaseTest() {
 
         repo.deleteList(list.id)
 
-        assertTrue(repo.findByUserId(userId).isEmpty())
+        assertTrue(repo.find(userId).isEmpty())
     }
 
     @Test
@@ -98,7 +99,7 @@ class PostgresShoppingListRepositoryTest : BaseTest() {
 
         assertEquals("Paper towels", created.item.name)
         assertEquals(2f, created.quantity)
-        assertTrue(created.item is Item.FreeTextItem)
+        assertTrue(created.item is Item.FreeText)
     }
 
     @Test
@@ -111,7 +112,7 @@ class PostgresShoppingListRepositoryTest : BaseTest() {
 
         val created = repo.addItem(list.id, catalogItemId = catalogItem.id, freeTextName = null, quantity = 3f)
 
-        val addedItem = created.item as Item.CatalogItem
+        val addedItem = created.item as Item.Catalog
         assertEquals(catalogItem.name, addedItem.name)
         assertEquals(catalogItem.category.name, addedItem.category.name)
         assertEquals(catalogItem.category.id, addedItem.category.id)
@@ -178,7 +179,7 @@ class PostgresShoppingListRepositoryTest : BaseTest() {
 
         repo.updateList(list.id, "  New Name  ")
 
-        val updated = repo.findByUserId(userId).first()
+        val updated = repo.find(userId).first()
         assertEquals("New Name", updated.name)
     }
 
@@ -204,42 +205,42 @@ class PostgresShoppingListRepositoryTest : BaseTest() {
     }
 
     @Test
-    fun `isListOwnedByUser returns true for own list`() = runTest {
+    fun `isListOwner returns true for own list`() = runTest {
         val repo = getKoin().get<ShoppingListRepository>()
         val userId = createUser()
         val list = repo.createList(userId, "My List")
 
-        assertTrue(repo.isListOwnedByUser(userId, list.id))
+        assertTrue(repo.isListOwner(userId, list.id))
     }
 
     @Test
-    fun `isListOwnedByUser returns false for another users list`() = runTest {
+    fun `isListOwner returns false for another users list`() = runTest {
         val repo = getKoin().get<ShoppingListRepository>()
         val userId = createUser("user-1")
         val otherUserId = createUser("user-2")
         val list = repo.createList(userId, "My List")
 
-        assertFalse(repo.isListOwnedByUser(otherUserId, list.id))
+        assertFalse(repo.isListOwner(otherUserId, list.id))
     }
 
     @Test
-    fun `isItemOwnedByUser returns true for own item`() = runTest {
+    fun `isItemOwner returns true for own item`() = runTest {
         val repo = getKoin().get<ShoppingListRepository>()
         val userId = createUser()
         val list = repo.createList(userId, "Groceries")
         val item = repo.addItem(list.id, catalogItemId = null, freeTextName = "My item", quantity = null)
 
-        assertTrue(repo.isItemOwnedByUser(userId, item.id))
+        assertTrue(repo.isItemOwner(userId, item.id))
     }
 
     @Test
-    fun `isItemOwnedByUser returns false for another users item`() = runTest {
+    fun `isItemOwner returns false for another users item`() = runTest {
         val repo = getKoin().get<ShoppingListRepository>()
         val userId = createUser("user-1")
         val otherUserId = createUser("user-2")
         val list = repo.createList(userId, "Groceries")
         val item = repo.addItem(list.id, catalogItemId = null, freeTextName = "My item", quantity = null)
 
-        assertFalse(repo.isItemOwnedByUser(otherUserId, item.id))
+        assertFalse(repo.isItemOwner(otherUserId, item.id))
     }
 }

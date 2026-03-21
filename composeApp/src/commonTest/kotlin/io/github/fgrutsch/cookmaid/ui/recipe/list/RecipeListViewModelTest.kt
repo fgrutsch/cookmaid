@@ -169,7 +169,7 @@ class RecipeListViewModelTest : BaseViewModelTest() {
             viewModel.effects.collect { effect = it }
         }
 
-        val ingredients = listOf(RecipeIngredient(item = Item.FreeTextItem("Tomatoes"), quantity = 3f))
+        val ingredients = listOf(RecipeIngredient(item = Item.FreeText("Tomatoes"), quantity = 3f))
         viewModel.onEvent(RecipeListEvent.AddIngredientsToShoppingList(ingredients))
         advanceUntilIdle()
 

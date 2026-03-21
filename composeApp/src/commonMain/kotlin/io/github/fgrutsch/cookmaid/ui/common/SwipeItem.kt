@@ -18,11 +18,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
+/**
+ * A swipe-to-dismiss container supporting delete (end-to-start)
+ * and optional edit (start-to-end) gestures.
+ *
+ * @param onDelete called when the user swipes to delete.
+ * @param onEdit called when the user swipes to edit; disables
+ *   start-to-end swipe when null.
+ * @param content the composable content to display.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SwipeItem(
     onDelete: () -> Unit,
-    onEdit: () -> Unit,
+    onEdit: (() -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
     @Suppress("DEPRECATION")
@@ -30,7 +39,7 @@ fun SwipeItem(
         confirmValueChange = { value ->
             when (value) {
                 SwipeToDismissBoxValue.EndToStart -> onDelete()
-                SwipeToDismissBoxValue.StartToEnd -> onEdit()
+                SwipeToDismissBoxValue.StartToEnd -> onEdit?.invoke()
                 SwipeToDismissBoxValue.Settled -> {}
             }
             false
@@ -57,24 +66,26 @@ fun SwipeItem(
                     }
                 }
                 SwipeToDismissBoxValue.StartToEnd -> {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(MaterialTheme.colorScheme.primaryContainer)
-                            .padding(horizontal = 20.dp),
-                        contentAlignment = Alignment.CenterStart,
-                    ) {
-                        Icon(
-                            Icons.Default.Edit,
-                            contentDescription = "Edit",
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        )
+                    if (onEdit != null) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(MaterialTheme.colorScheme.primaryContainer)
+                                .padding(horizontal = 20.dp),
+                            contentAlignment = Alignment.CenterStart,
+                        ) {
+                            Icon(
+                                Icons.Default.Edit,
+                                contentDescription = "Edit",
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                            )
+                        }
                     }
                 }
                 else -> {}
             }
         },
-        enableDismissFromStartToEnd = true,
+        enableDismissFromStartToEnd = onEdit != null,
         enableDismissFromEndToStart = true,
     ) {
         content()

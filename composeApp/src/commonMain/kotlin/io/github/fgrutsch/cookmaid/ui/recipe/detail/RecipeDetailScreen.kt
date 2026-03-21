@@ -11,8 +11,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import io.github.fgrutsch.cookmaid.ui.common.SuccessSnackbarHost
 import io.github.fgrutsch.cookmaid.ui.mealplan.DayPickerDialog
+import io.github.fgrutsch.cookmaid.ui.mealplan.DayPickerViewModel
 import io.github.fgrutsch.cookmaid.ui.mealplan.IngredientPickerDialog
+import org.koin.compose.koinInject
 
+/**
+ * Recipe detail screen showing description, tags, ingredients, and steps
+ * with actions for edit, delete, add to shopping list / meal plan.
+ *
+ * @param viewModel the recipe detail view model.
+ * @param onBack called when navigating back.
+ * @param onEdit called when the edit action is selected.
+ */
 @Composable
 @Suppress("LongMethod")
 fun RecipeDetailScreen(
@@ -85,7 +95,7 @@ fun RecipeDetailScreen(
     if (showDayPicker) {
         state.recipe?.let { recipe ->
             DayPickerDialog(
-                resolveDayItems = { emptyList() },
+                viewModel = koinInject<DayPickerViewModel>(),
                 onSelect = { day ->
                     onEvent(RecipeDetailEvent.AddToMealPlan(recipe.id, day))
                     showDayPicker = false

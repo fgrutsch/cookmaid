@@ -27,6 +27,13 @@ import io.github.fgrutsch.cookmaid.ui.common.SuccessSnackbarHost
 import kotlinx.datetime.LocalDate
 import kotlin.uuid.Uuid
 
+/**
+ * Weekly meal plan screen with day cards, item management, and
+ * week navigation.
+ *
+ * @param viewModel the meal plan view model.
+ * @param onRecipeClick called when a recipe item is tapped.
+ */
 @Composable
 @Suppress("LongMethod")
 fun MealPlanScreen(

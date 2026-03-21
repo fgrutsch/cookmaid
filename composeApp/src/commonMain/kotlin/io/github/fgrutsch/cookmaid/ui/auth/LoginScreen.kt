@@ -22,6 +22,11 @@ import cookmaid.composeapp.generated.resources.Res
 import cookmaid.composeapp.generated.resources.logo
 import org.jetbrains.compose.resources.painterResource
 
+/**
+ * Login screen that initiates the OIDC authentication flow.
+ *
+ * @param viewModel the authentication view model.
+ */
 @Composable
 fun LoginScreen(viewModel: AuthViewModel) {
     val state by viewModel.state.collectAsState()

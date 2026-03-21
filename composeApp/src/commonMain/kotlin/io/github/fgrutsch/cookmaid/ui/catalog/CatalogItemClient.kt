@@ -8,6 +8,6 @@ import io.ktor.client.request.get
 class CatalogItemClient(
     private val apiClient: ApiClient,
 ) {
-    suspend fun fetchAll(): List<Item.CatalogItem> =
+    suspend fun fetchAll(): List<Item.Catalog> =
         apiClient.httpClient.get("/api/catalog-items").body()
 }

@@ -7,8 +7,10 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.TimeMark
 import kotlin.time.TimeSource
-import kotlin.uuid.Uuid
 
+/**
+ * Manages user lookup and auto-provisioning with a short-lived in-memory cache.
+ */
 class UserService(
     private val repository: UserRepository,
     private val shoppingListRepository: ShoppingListRepository,
@@ -18,10 +20,16 @@ class UserService(
     private val cache = ConcurrentHashMap<String, CacheEntry>()
     private val ttl = 1.minutes
 
-    suspend fun findIdByOidcSubject(oidcSubject: String): Uuid? {
+    /**
+     * Returns the cached or persisted [UserId] for the given [oidcSubject], or null if unknown.
+     *
+     * @param oidcSubject the OIDC subject claim identifying the user.
+     * @return the user's id, or null if no matching user exists.
+     */
+    suspend fun findIdByOidcSubject(oidcSubject: String): UserId? {
         cache[oidcSubject]?.takeIf { it.expiresAt.hasNotPassedNow() }?.let { return it.userId }
 
-        val userId = repository.findByOidcSubject(oidcSubject)?.id
+        val userId = repository.findByOidcSubject(oidcSubject)?.let { UserId(it.id) }
         if (userId != null) {
             cache[oidcSubject] = CacheEntry(userId, TimeSource.Monotonic.markNow() + ttl)
             evictExpired()
@@ -29,20 +37,27 @@ class UserService(
         return userId
     }
 
+    /**
+     * Returns the existing user or creates a new one (with a default shopping list)
+     * for the given [oidcSubject].
+     *
+     * @param oidcSubject the OIDC subject claim identifying the user.
+     * @return the existing or newly created user.
+     */
     suspend fun getOrCreate(oidcSubject: String): User {
         val existing = repository.findByOidcSubject(oidcSubject)
         if (existing != null) {
-            cache[oidcSubject] = CacheEntry(existing.id, TimeSource.Monotonic.markNow() + ttl)
+            cache[oidcSubject] = CacheEntry(UserId(existing.id), TimeSource.Monotonic.markNow() + ttl)
             return existing
         }
 
         val user = suspendTransaction {
             val created = repository.create(oidcSubject)
-            shoppingListRepository.createList(created.id, "Shopping List", default = true)
+            shoppingListRepository.createList(UserId(created.id), "Shopping List", default = true)
             created
         }
         logger.info { "New user created: id=${user.id}, oidcSubject=$oidcSubject" }
-        cache[oidcSubject] = CacheEntry(user.id, TimeSource.Monotonic.markNow() + ttl)
+        cache[oidcSubject] = CacheEntry(UserId(user.id), TimeSource.Monotonic.markNow() + ttl)
         return user
     }
 
@@ -50,5 +65,5 @@ class UserService(
         cache.entries.removeIf { it.value.expiresAt.hasPassedNow() }
     }
 
-    private data class CacheEntry(val userId: Uuid, val expiresAt: TimeMark)
+    private data class CacheEntry(val userId: UserId, val expiresAt: TimeMark)
 }

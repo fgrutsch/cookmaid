@@ -45,7 +45,7 @@ import io.github.fgrutsch.cookmaid.mealplan.MealPlanDay
 import io.github.fgrutsch.cookmaid.mealplan.MealPlanItem
 import io.github.fgrutsch.cookmaid.mealplan.WEEK_END_OFFSET
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
-import io.github.fgrutsch.cookmaid.ui.common.SwipeToDeleteItem
+import io.github.fgrutsch.cookmaid.ui.common.SwipeItem
 import io.github.fgrutsch.cookmaid.ui.common.formatShortDate
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.DayOfWeek
@@ -177,7 +177,7 @@ internal fun DayCard(
             if (day.items.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(4.dp))
                 day.items.forEach { item ->
-                    SwipeToDeleteItem(onDelete = { onDeleteItem(item.id) }) {
+                    SwipeItem(onDelete = { onDeleteItem(item.id) }) {
                         MealPlanItemRow(
                             item = item,
                             onClick = { onItemClick(item) },

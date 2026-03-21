@@ -2,7 +2,6 @@ package io.github.fgrutsch.cookmaid.ui.recipe.detail
 
 import io.github.fgrutsch.cookmaid.ui.common.MviViewModel
 import io.github.fgrutsch.cookmaid.ui.common.addIngredientsToDefaultShoppingList
-import io.github.fgrutsch.cookmaid.ui.common.addRecipeToMealPlan
 import io.github.fgrutsch.cookmaid.ui.mealplan.MealPlanRepository
 import io.github.fgrutsch.cookmaid.ui.recipe.RecipeRepository
 import io.github.fgrutsch.cookmaid.ui.shopping.ShoppingListRepository
@@ -49,7 +48,7 @@ class RecipeDetailViewModel(
 
     private fun addToMealPlan(recipeId: Uuid, day: LocalDate) {
         launch {
-            addRecipeToMealPlan(recipeId, day, mealPlanRepository)
+            mealPlanRepository.create(day, recipeId = recipeId, note = null)
             sendEffect(RecipeDetailEffect.AddedToMealPlan)
         }
     }

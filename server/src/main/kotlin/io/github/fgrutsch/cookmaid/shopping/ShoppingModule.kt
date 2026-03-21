@@ -26,7 +26,7 @@ fun Route.shoppingRoutes() {
 
     route("/shopping-lists") {
         get {
-            call.respond(service.findListsByUser(call.userId()))
+            call.respond(service.findLists(call.userId()))
         }
         post {
             val body = call.receive<CreateListRequest>()
@@ -46,9 +46,9 @@ fun Route.shoppingRoutes() {
             delete {
                 val listId = call.parameters.uuid("listId")
                 when (service.deleteList(call.userId(), listId)) {
-                    ShoppingListService.DeleteListResult.Deleted -> call.respond(HttpStatusCode.NoContent)
-                    ShoppingListService.DeleteListResult.NotFound -> call.respond(HttpStatusCode.NotFound)
-                    ShoppingListService.DeleteListResult.CannotDeleteDefault -> call.respond(HttpStatusCode.Conflict)
+                    DeleteListResult.Deleted -> call.respond(HttpStatusCode.NoContent)
+                    DeleteListResult.NotFound -> call.respond(HttpStatusCode.NotFound)
+                    DeleteListResult.CannotDeleteDefault -> call.respond(HttpStatusCode.Conflict)
                 }
             }
             shoppingItemRoutes(service)

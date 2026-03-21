@@ -2,6 +2,7 @@ package io.github.fgrutsch.cookmaid.recipe
 
 import io.github.fgrutsch.cookmaid.catalog.Item
 import io.github.fgrutsch.cookmaid.support.BaseTest
+import io.github.fgrutsch.cookmaid.user.UserId
 import io.github.fgrutsch.cookmaid.user.UserRepository
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
@@ -14,17 +15,18 @@ import kotlin.uuid.Uuid
 
 class RecipeServiceTest : BaseTest() {
 
-    private suspend fun createUser(subject: String = "test-subject"): Uuid {
+    private suspend fun createUser(subject: String = "test-subject"): UserId {
         val userRepo = getKoin().get<UserRepository>()
-        return userRepo.create(subject).id
+        return UserId(userRepo.create(subject).id)
     }
 
-    private suspend fun createUserWithRecipe(subject: String = "test-subject"): Pair<Uuid, Recipe> {
+    private suspend fun createUserWithRecipe(subject: String = "test-subject"): Pair<UserId, Recipe> {
         val userId = createUser(subject)
         val service = getKoin().get<RecipeService>()
         val data = RecipeData(
             name = "Test Recipe",
-            ingredients = listOf(RecipeIngredient(Item.FreeTextItem("Flour"), 200f)),
+            description = null,
+            ingredients = listOf(RecipeIngredient(Item.FreeText("Flour"), 200f)),
             steps = listOf("Mix", "Bake"),
             tags = listOf("Baking"),
         )
@@ -37,7 +39,7 @@ class RecipeServiceTest : BaseTest() {
         val service = getKoin().get<RecipeService>()
         val (userId, _) = createUserWithRecipe()
 
-        assertEquals(1, service.findByUser(userId, cursor = null, limit = 20, search = null, tag = null).items.size)
+        assertEquals(1, service.find(userId, cursor = null, limit = 20, search = null, tag = null).items.size)
     }
 
     @Test
@@ -65,7 +67,7 @@ class RecipeServiceTest : BaseTest() {
         val service = getKoin().get<RecipeService>()
         val userId = createUser()
 
-        val recipe = service.create(userId, RecipeData("Pasta", emptyList(), emptyList(), emptyList()))
+        val recipe = service.create(userId, RecipeData("Pasta", null, emptyList(), emptyList(), emptyList()))
 
         assertEquals("Pasta", recipe.name)
     }
@@ -75,7 +77,7 @@ class RecipeServiceTest : BaseTest() {
         val service = getKoin().get<RecipeService>()
         val (userId, recipe) = createUserWithRecipe()
 
-        val request = RecipeData("New Name", emptyList(), emptyList(), emptyList())
+        val request = RecipeData("New Name", null, emptyList(), emptyList(), emptyList())
         val result = service.update(userId, recipe.id, request)
 
         assertTrue(result)
@@ -87,7 +89,7 @@ class RecipeServiceTest : BaseTest() {
         val (_, recipe) = createUserWithRecipe("user-1")
         val otherUserId = createUser("user-2")
 
-        val request = RecipeData("Hacked", emptyList(), emptyList(), emptyList())
+        val request = RecipeData("Hacked", null, emptyList(), emptyList(), emptyList())
         assertFalse(service.update(otherUserId, recipe.id, request))
     }
 

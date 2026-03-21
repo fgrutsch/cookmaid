@@ -1,6 +1,7 @@
 package io.github.fgrutsch.cookmaid.shopping
 
 import io.github.fgrutsch.cookmaid.support.BaseTest
+import io.github.fgrutsch.cookmaid.user.UserId
 import io.github.fgrutsch.cookmaid.user.UserRepository
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
@@ -13,12 +14,12 @@ import kotlin.uuid.Uuid
 
 class ShoppingListServiceTest : BaseTest() {
 
-    private suspend fun createUser(subject: String = "test-subject"): Uuid {
+    private suspend fun createUser(subject: String = "test-subject"): UserId {
         val userRepo = getKoin().get<UserRepository>()
-        return userRepo.create(subject).id
+        return UserId(userRepo.create(subject).id)
     }
 
-    private suspend fun createUserWithList(subject: String = "test-subject"): Pair<Uuid, ShoppingList> {
+    private suspend fun createUserWithList(subject: String = "test-subject"): Pair<UserId, ShoppingList> {
         val userId = createUser(subject)
         val repo = getKoin().get<ShoppingListRepository>()
         val list = repo.createList(userId, "Default", default = true)
@@ -26,11 +27,11 @@ class ShoppingListServiceTest : BaseTest() {
     }
 
     @Test
-    fun `findListsByUser returns lists`() = runTest {
+    fun `findLists returns lists`() = runTest {
         val service = getKoin().get<ShoppingListService>()
         val (userId, _) = createUserWithList()
 
-        val lists = service.findListsByUser(userId)
+        val lists = service.findLists(userId)
 
         assertEquals(1, lists.size)
     }
@@ -74,7 +75,7 @@ class ShoppingListServiceTest : BaseTest() {
 
         val result = service.deleteList(userId, list.id)
 
-        assertEquals(ShoppingListService.DeleteListResult.Deleted, result)
+        assertEquals(DeleteListResult.Deleted, result)
     }
 
     @Test
@@ -84,7 +85,7 @@ class ShoppingListServiceTest : BaseTest() {
 
         val result = service.deleteList(userId, defaultList.id)
 
-        assertEquals(ShoppingListService.DeleteListResult.CannotDeleteDefault, result)
+        assertEquals(DeleteListResult.CannotDeleteDefault, result)
     }
 
     @Test
@@ -95,7 +96,7 @@ class ShoppingListServiceTest : BaseTest() {
 
         val result = service.deleteList(otherUserId, list.id)
 
-        assertEquals(ShoppingListService.DeleteListResult.NotFound, result)
+        assertEquals(DeleteListResult.NotFound, result)
     }
 
     @Test
@@ -105,7 +106,7 @@ class ShoppingListServiceTest : BaseTest() {
 
         val result = service.deleteList(userId, Uuid.random())
 
-        assertEquals(ShoppingListService.DeleteListResult.NotFound, result)
+        assertEquals(DeleteListResult.NotFound, result)
     }
 
     @Test

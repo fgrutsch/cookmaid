@@ -74,6 +74,15 @@ internal fun AddRecipeContent(
             supportingText = if (state.nameError) {{ Text("Name is required") }} else null,
             modifier = Modifier.fillMaxWidth(),
         )
+        OutlinedTextField(
+            value = state.description,
+            onValueChange = { onEvent(AddRecipeEvent.SetDescription(it)) },
+            label = { Text("Description (optional)") },
+            singleLine = false,
+            minLines = 2,
+            maxLines = 4,
+            modifier = Modifier.fillMaxWidth(),
+        )
         IngredientsSection(
             ingredients = state.ingredients,
             ingredientQuery = state.ingredientQuery,
@@ -106,7 +115,7 @@ internal fun IngredientsSection(
     ingredients: List<RecipeIngredient>,
     ingredientQuery: String,
     ingredientQuantityInput: String,
-    ingredientSuggestions: List<Item.CatalogItem>,
+    ingredientSuggestions: List<Item.Catalog>,
     onEvent: (AddRecipeEvent) -> Unit,
     onQuantityInputChange: (String) -> Unit,
     onQuantityInputClear: () -> Unit,
@@ -135,7 +144,7 @@ internal fun IngredientsSection(
             onAddFreeText = {
                 if (ingredientQuery.isNotBlank()) {
                     onEvent(AddRecipeEvent.AddIngredient(
-                        Item.FreeTextItem(name = ingredientQuery.trim()),
+                        Item.FreeText(name = ingredientQuery.trim()),
                         ingredientQuantityInput.toFloatOrNull(),
                     ))
                     onQuantityInputClear()
@@ -267,11 +276,11 @@ internal fun IngredientRow(
 internal fun IngredientAddField(
     query: String,
     quantityInput: String,
-    suggestions: List<Item.CatalogItem>,
+    suggestions: List<Item.Catalog>,
     onQueryChange: (String) -> Unit,
     onQuantityChange: (String) -> Unit,
     onAddFreeText: () -> Unit,
-    onAddCatalogItem: (Item.CatalogItem) -> Unit,
+    onAddCatalogItem: (Item.Catalog) -> Unit,
 ) {
     val showSuggestions = suggestions.isNotEmpty() && query.isNotEmpty()
 

@@ -105,8 +105,8 @@ class ShoppingListViewModel(
         val listId = state.value.selectedListId ?: return
         updateSearchQuery("")
         launch {
-            val catalogItemId = (item as? Item.CatalogItem)?.id
-            val freeTextName = (item as? Item.FreeTextItem)?.name
+            val catalogItemId = (item as? Item.Catalog)?.id
+            val freeTextName = (item as? Item.FreeText)?.name
             val created = repository.addItem(listId, catalogItemId, freeTextName, null)
             updateState { copy(items = items + created) }
         }

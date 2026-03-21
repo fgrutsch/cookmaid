@@ -19,7 +19,6 @@ val recipeModule = module {
     singleOf(::RecipeService)
 }
 
-private const val DEFAULT_LIMIT = 20
 private const val MIN_LIMIT = 1
 private const val MAX_LIMIT = 100
 
@@ -30,14 +29,14 @@ fun Route.recipeRoutes() {
 
         get {
             val cursor = call.request.queryParameters.instant("cursor")
-            val limit = call.request.queryParameters.int("limit") ?: DEFAULT_LIMIT
+            val limit = call.request.queryParameters.int("limit") ?: DEFAULT_RECIPE_PAGE_SIZE
             val search = call.request.queryParameters["search"]
             val tag = call.request.queryParameters["tag"]
-            call.respond(service.findByUser(call.userId(), cursor, limit.coerceIn(MIN_LIMIT, MAX_LIMIT), search, tag))
+            call.respond(service.find(call.userId(), cursor, limit.coerceIn(MIN_LIMIT, MAX_LIMIT), search, tag))
         }
 
         get("/tags") {
-            call.respond(TagsResponse(items = service.findTagsByUser(call.userId())))
+            call.respond(TagsResponse(items = service.findTags(call.userId())))
         }
 
         post {
