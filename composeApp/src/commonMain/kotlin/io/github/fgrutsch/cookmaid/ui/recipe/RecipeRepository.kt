@@ -1,6 +1,7 @@
 package io.github.fgrutsch.cookmaid.ui.recipe
 
 import io.github.fgrutsch.cookmaid.recipe.CreateRecipeRequest
+import io.github.fgrutsch.cookmaid.recipe.DEFAULT_RECIPE_PAGE_SIZE
 import io.github.fgrutsch.cookmaid.recipe.Recipe
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
 import io.github.fgrutsch.cookmaid.recipe.RecipePage
@@ -22,7 +23,12 @@ interface RecipeRepository {
      * @param tag optional tag to filter by.
      * @return a [RecipePage] containing the matching recipes and pagination info.
      */
-    suspend fun fetchPage(cursor: String?, limit: Int = 20, search: String? = null, tag: String? = null): RecipePage
+    suspend fun fetchPage(
+        cursor: String?,
+        limit: Int = DEFAULT_RECIPE_PAGE_SIZE,
+        search: String? = null,
+        tag: String? = null,
+    ): RecipePage
 
     /**
      * Returns all distinct tags used across recipes.
