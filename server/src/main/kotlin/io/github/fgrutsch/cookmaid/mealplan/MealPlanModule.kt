@@ -25,7 +25,7 @@ fun Route.mealPlanRoutes() {
         get {
             val from = call.request.queryParameters.localDate("from")
             val to = call.request.queryParameters.localDate("to")
-            call.respond(service.findByUser(call.userId(), from, to))
+            call.respond(service.find(call.userId(), from, to))
         }
 
         post {

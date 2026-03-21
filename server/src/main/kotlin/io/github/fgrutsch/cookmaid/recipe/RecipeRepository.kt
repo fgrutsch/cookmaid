@@ -4,6 +4,7 @@ import io.github.fgrutsch.cookmaid.catalog.CatalogItemsTable
 import io.github.fgrutsch.cookmaid.catalog.Item
 import io.github.fgrutsch.cookmaid.catalog.ItemCategoriesTable
 import io.github.fgrutsch.cookmaid.catalog.ItemCategory
+import io.github.fgrutsch.cookmaid.user.UserId
 import kotlin.time.Instant
 import org.jetbrains.exposed.v1.core.JoinType
 import org.jetbrains.exposed.v1.core.SortOrder
@@ -28,26 +29,26 @@ import org.jetbrains.exposed.v1.jdbc.update
 import kotlin.uuid.Uuid
 
 interface RecipeRepository {
-    suspend fun findByUserId(userId: Uuid, cursor: Instant?, limit: Int, search: String?, tag: String?): RecipePage
+    suspend fun find(userId: UserId, cursor: Instant?, limit: Int, search: String?, tag: String?): RecipePage
     suspend fun findById(id: Uuid): Recipe?
-    suspend fun findTagsByUserId(userId: Uuid): List<String>
-    suspend fun create(userId: Uuid, data: RecipeData): Recipe
+    suspend fun findTags(userId: UserId): List<String>
+    suspend fun create(userId: UserId, data: RecipeData): Recipe
     suspend fun update(id: Uuid, data: RecipeData)
 
     suspend fun delete(id: Uuid)
-    suspend fun isOwnedByUser(userId: Uuid, recipeId: Uuid): Boolean
+    suspend fun isOwner(userId: UserId, recipeId: Uuid): Boolean
 }
 
 class PostgresRecipeRepository : RecipeRepository {
 
-    override suspend fun findByUserId(
-        userId: Uuid,
+    override suspend fun find(
+        userId: UserId,
         cursor: Instant?,
         limit: Int,
         search: String?,
         tag: String?,
     ): RecipePage = suspendTransaction {
-        var condition: Op<Boolean> = RecipesTable.userId eq userId
+        var condition: Op<Boolean> = RecipesTable.userId eq userId.value
 
         if (cursor != null) {
             val cursorCondition = LessOp(
@@ -119,17 +120,17 @@ class PostgresRecipeRepository : RecipeRepository {
         )
     }
 
-    override suspend fun findTagsByUserId(userId: Uuid): List<String> = suspendTransaction {
+    override suspend fun findTags(userId: UserId): List<String> = suspendTransaction {
         RecipesTable.selectAll()
-            .where(RecipesTable.userId eq userId)
+            .where(RecipesTable.userId eq userId.value)
             .flatMap { it[RecipesTable.tags] }
             .distinct()
             .sorted()
     }
 
-    override suspend fun create(userId: Uuid, data: RecipeData): Recipe = suspendTransaction {
+    override suspend fun create(userId: UserId, data: RecipeData): Recipe = suspendTransaction {
         val row = RecipesTable.insertReturning {
-            it[RecipesTable.userId] = userId
+            it[RecipesTable.userId] = userId.value
             it[RecipesTable.name] = data.name.trim()
             it[RecipesTable.description] = data.description?.trim()?.ifBlank { null }
             it[RecipesTable.steps] = data.steps.map(String::trim)
@@ -165,9 +166,9 @@ class PostgresRecipeRepository : RecipeRepository {
         RecipesTable.deleteWhere { RecipesTable.id eq id }
     }
 
-    override suspend fun isOwnedByUser(userId: Uuid, recipeId: Uuid): Boolean = suspendTransaction {
+    override suspend fun isOwner(userId: UserId, recipeId: Uuid): Boolean = suspendTransaction {
         RecipesTable.selectAll()
-            .where { (RecipesTable.id eq recipeId) and (RecipesTable.userId eq userId) }
+            .where { (RecipesTable.id eq recipeId) and (RecipesTable.userId eq userId.value) }
             .count() > 0
     }
 

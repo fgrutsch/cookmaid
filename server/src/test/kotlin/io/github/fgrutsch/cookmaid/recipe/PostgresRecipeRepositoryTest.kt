@@ -3,6 +3,7 @@ package io.github.fgrutsch.cookmaid.recipe
 import io.github.fgrutsch.cookmaid.catalog.CatalogItemRepository
 import io.github.fgrutsch.cookmaid.catalog.Item
 import io.github.fgrutsch.cookmaid.support.BaseTest
+import io.github.fgrutsch.cookmaid.user.UserId
 import io.github.fgrutsch.cookmaid.user.UserRepository
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
@@ -15,9 +16,9 @@ import kotlin.uuid.Uuid
 
 class PostgresRecipeRepositoryTest : BaseTest() {
 
-    private suspend fun createUser(subject: String = "test-subject"): Uuid {
+    private suspend fun createUser(subject: String = "test-subject"): UserId {
         val userRepo = getKoin().get<UserRepository>()
-        return userRepo.create(subject).id
+        return UserId(userRepo.create(subject).id)
     }
 
     private fun data(
@@ -77,23 +78,23 @@ class PostgresRecipeRepositoryTest : BaseTest() {
     }
 
     @Test
-    fun `findByUserId returns recipes for user`() = runTest {
+    fun `find returns recipes for user`() = runTest {
         val repo = getKoin().get<RecipeRepository>()
         val userId = createUser()
         repo.create(userId, data())
         repo.create(userId, data(name = "Salad"))
 
-        val page = repo.findByUserId(userId, cursor = null, limit = 20, search = null, tag = null)
+        val page = repo.find(userId, cursor = null, limit = 20, search = null, tag = null)
 
         assertEquals(2, page.items.size)
     }
 
     @Test
-    fun `findByUserId returns empty for user with no recipes`() = runTest {
+    fun `find returns empty for user with no recipes`() = runTest {
         val repo = getKoin().get<RecipeRepository>()
         val userId = createUser()
 
-        assertTrue(repo.findByUserId(userId, cursor = null, limit = 20, search = null, tag = null).items.isEmpty())
+        assertTrue(repo.find(userId, cursor = null, limit = 20, search = null, tag = null).items.isEmpty())
     }
 
     @Test
@@ -179,21 +180,21 @@ class PostgresRecipeRepositoryTest : BaseTest() {
     }
 
     @Test
-    fun `isOwnedByUser returns true for own recipe`() = runTest {
+    fun `isOwner returns true for own recipe`() = runTest {
         val repo = getKoin().get<RecipeRepository>()
         val userId = createUser()
         val recipe = repo.create(userId, data())
 
-        assertTrue(repo.isOwnedByUser(userId, recipe.id))
+        assertTrue(repo.isOwner(userId, recipe.id))
     }
 
     @Test
-    fun `isOwnedByUser returns false for another users recipe`() = runTest {
+    fun `isOwner returns false for another users recipe`() = runTest {
         val repo = getKoin().get<RecipeRepository>()
         val userId = createUser("user-1")
         val otherUserId = createUser("user-2")
         val recipe = repo.create(userId, data())
 
-        assertFalse(repo.isOwnedByUser(otherUserId, recipe.id))
+        assertFalse(repo.isOwner(otherUserId, recipe.id))
     }
 }

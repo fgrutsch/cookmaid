@@ -9,6 +9,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlin.uuid.Uuid
 
 class UserServiceTest : BaseTest() {
 
@@ -34,7 +35,7 @@ class UserServiceTest : BaseTest() {
         val shoppingListRepo by inject<ShoppingListRepository>()
 
         val user = service.getOrCreate("oidc-subject-1")
-        val lists = shoppingListRepo.findByUserId(user.id)
+        val lists = shoppingListRepo.find(UserId(user.id))
 
         assertEquals(1, lists.size)
         assertEquals("Shopping List", lists.first().name)
@@ -47,7 +48,7 @@ class UserServiceTest : BaseTest() {
 
         val id = service.findIdByOidcSubject("oidc-subject-1")
 
-        assertEquals(user.id, id)
+        assertEquals(user.id, id?.value)
     }
 
     @Test

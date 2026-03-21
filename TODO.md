@@ -8,4 +8,3 @@
 - server error handling / logging
 - client error handling
 - migration tool from samsung food
-- userid value class

@@ -4,6 +4,7 @@ import io.github.fgrutsch.cookmaid.catalog.CatalogItemsTable
 import io.github.fgrutsch.cookmaid.catalog.Item
 import io.github.fgrutsch.cookmaid.catalog.ItemCategoriesTable
 import io.github.fgrutsch.cookmaid.catalog.ItemCategory
+import io.github.fgrutsch.cookmaid.user.UserId
 import org.jetbrains.exposed.v1.core.JoinType
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.Table
@@ -18,9 +19,9 @@ import org.jetbrains.exposed.v1.jdbc.update
 import kotlin.uuid.Uuid
 
 interface ShoppingListRepository {
-    suspend fun findByUserId(userId: Uuid): List<ShoppingList>
+    suspend fun find(userId: UserId): List<ShoppingList>
     suspend fun findById(id: Uuid): ShoppingList?
-    suspend fun createList(userId: Uuid, name: String, default: Boolean = false): ShoppingList
+    suspend fun createList(userId: UserId, name: String, default: Boolean = false): ShoppingList
     suspend fun updateList(id: Uuid, name: String)
     suspend fun deleteList(id: Uuid)
     suspend fun findItemsByListId(listId: Uuid): List<ShoppingItem>
@@ -29,15 +30,15 @@ interface ShoppingListRepository {
     suspend fun updateItem(itemId: Uuid, quantity: Float?, checked: Boolean)
     suspend fun deleteItem(itemId: Uuid)
     suspend fun deleteCheckedItems(listId: Uuid)
-    suspend fun isListOwnedByUser(userId: Uuid, listId: Uuid): Boolean
-    suspend fun isItemOwnedByUser(userId: Uuid, itemId: Uuid): Boolean
+    suspend fun isListOwner(userId: UserId, listId: Uuid): Boolean
+    suspend fun isItemOwner(userId: UserId, itemId: Uuid): Boolean
 }
 
 class PostgresShoppingListRepository : ShoppingListRepository {
 
-    override suspend fun findByUserId(userId: Uuid): List<ShoppingList> = suspendTransaction {
+    override suspend fun find(userId: UserId): List<ShoppingList> = suspendTransaction {
         ShoppingListsTable.selectAll()
-            .where(ShoppingListsTable.userId eq userId)
+            .where(ShoppingListsTable.userId eq userId.value)
             .orderBy(ShoppingListsTable.isDefault to SortOrder.DESC, ShoppingListsTable.name to SortOrder.ASC)
             .map { row ->
                 ShoppingList(
@@ -61,9 +62,9 @@ class PostgresShoppingListRepository : ShoppingListRepository {
             }
     }
 
-    override suspend fun createList(userId: Uuid, name: String, default: Boolean): ShoppingList = suspendTransaction {
+    override suspend fun createList(userId: UserId, name: String, default: Boolean): ShoppingList = suspendTransaction {
         val row = ShoppingListsTable.insertReturning {
-            it[ShoppingListsTable.userId] = userId
+            it[ShoppingListsTable.userId] = userId.value
             it[ShoppingListsTable.name] = name.trim()
             it[ShoppingListsTable.isDefault] = default
         }.single()
@@ -193,17 +194,17 @@ class PostgresShoppingListRepository : ShoppingListRepository {
         }
     }
 
-    override suspend fun isListOwnedByUser(userId: Uuid, listId: Uuid): Boolean = suspendTransaction {
+    override suspend fun isListOwner(userId: UserId, listId: Uuid): Boolean = suspendTransaction {
         ShoppingListsTable.selectAll()
-            .where { (ShoppingListsTable.id eq listId) and (ShoppingListsTable.userId eq userId) }
+            .where { (ShoppingListsTable.id eq listId) and (ShoppingListsTable.userId eq userId.value) }
             .count() > 0
     }
 
-    override suspend fun isItemOwnedByUser(userId: Uuid, itemId: Uuid): Boolean = suspendTransaction {
+    override suspend fun isItemOwner(userId: UserId, itemId: Uuid): Boolean = suspendTransaction {
         ShoppingItemsTable
             .join(ShoppingListsTable, JoinType.INNER, ShoppingItemsTable.listId, ShoppingListsTable.id)
             .selectAll()
-            .where { (ShoppingItemsTable.id eq itemId) and (ShoppingListsTable.userId eq userId) }
+            .where { (ShoppingItemsTable.id eq itemId) and (ShoppingListsTable.userId eq userId.value) }
             .count() > 0
     }
 }

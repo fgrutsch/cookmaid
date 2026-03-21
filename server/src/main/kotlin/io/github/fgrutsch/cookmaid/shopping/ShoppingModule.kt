@@ -26,7 +26,7 @@ fun Route.shoppingRoutes() {
 
     route("/shopping-lists") {
         get {
-            call.respond(service.findListsByUser(call.userId()))
+            call.respond(service.findLists(call.userId()))
         }
         post {
             val body = call.receive<CreateListRequest>()

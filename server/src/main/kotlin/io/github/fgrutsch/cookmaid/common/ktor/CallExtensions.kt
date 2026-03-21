@@ -1,16 +1,16 @@
 package io.github.fgrutsch.cookmaid.common.ktor
 
+import io.github.fgrutsch.cookmaid.user.UserId
 import io.github.fgrutsch.cookmaid.user.UserService
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.principal
 import io.ktor.util.AttributeKey
 import org.koin.ktor.ext.get
-import kotlin.uuid.Uuid
 
-private val UserIdKey = AttributeKey<Uuid>("userId")
+private val UserIdKey = AttributeKey<UserId>("userId")
 
-suspend fun ApplicationCall.userId(): Uuid {
+suspend fun ApplicationCall.userId(): UserId {
     val cached = attributes.getOrNull(UserIdKey)
     if (cached != null) return cached
 
