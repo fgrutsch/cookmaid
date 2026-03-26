@@ -1,5 +1,6 @@
 package io.github.fgrutsch.cookmaid.catalog
 
+import io.github.fgrutsch.cookmaid.common.ktor.locale
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
@@ -18,7 +19,7 @@ fun Route.catalogRoutes() {
 
     route("/catalog-items") {
         get {
-            call.respond(itemRepository.findAll())
+            call.respond(itemRepository.findAll(call.locale()))
         }
     }
 }

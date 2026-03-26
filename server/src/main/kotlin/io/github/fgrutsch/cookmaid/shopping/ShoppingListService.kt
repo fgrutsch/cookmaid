@@ -1,5 +1,6 @@
 package io.github.fgrutsch.cookmaid.shopping
 
+import io.github.fgrutsch.cookmaid.common.SupportedLocale
 import io.github.fgrutsch.cookmaid.user.UserId
 import kotlin.uuid.Uuid
 
@@ -66,11 +67,12 @@ class ShoppingListService(
      *
      * @param userId the expected owner.
      * @param listId the shopping list whose items to retrieve.
+     * @param locale the language code for catalog item names.
      * @return the items in the list, or an empty list if not owned.
      */
-    suspend fun findItemsByListId(userId: UserId, listId: Uuid): List<ShoppingItem> {
+    suspend fun findItemsByListId(userId: UserId, listId: Uuid, locale: SupportedLocale): List<ShoppingItem> {
         if (!repository.isListOwner(userId, listId)) return emptyList()
-        return repository.findItemsByListId(listId)
+        return repository.findItemsByListId(listId, locale)
     }
 
     /**
@@ -81,6 +83,7 @@ class ShoppingListService(
      * @param catalogItemId optional catalog item reference.
      * @param freeTextName optional free-text item name (used when no catalog item).
      * @param quantity optional quantity.
+     * @param locale the language code for catalog item names.
      * @return the created item, or null if the list is not owned.
      */
     suspend fun addItem(
@@ -89,9 +92,10 @@ class ShoppingListService(
         catalogItemId: Uuid?,
         freeTextName: String?,
         quantity: Float?,
+        locale: SupportedLocale,
     ): ShoppingItem? {
         if (!repository.isListOwner(userId, listId)) return null
-        return repository.addItem(listId, catalogItemId, freeTextName, quantity)
+        return repository.addItem(listId, catalogItemId, freeTextName, quantity, locale)
     }
 
     /**
@@ -100,11 +104,17 @@ class ShoppingListService(
      * @param userId the expected owner.
      * @param listId the target shopping list.
      * @param items the items to add.
+     * @param locale the language code for catalog item names.
      * @return the created items, or null if the list is not owned.
      */
-    suspend fun addItems(userId: UserId, listId: Uuid, items: List<CreateShoppingItemRequest>): List<ShoppingItem>? {
+    suspend fun addItems(
+        userId: UserId,
+        listId: Uuid,
+        items: List<CreateShoppingItemRequest>,
+        locale: SupportedLocale,
+    ): List<ShoppingItem>? {
         if (!repository.isListOwner(userId, listId)) return null
-        return repository.addItems(listId, items)
+        return repository.addItems(listId, items, locale)
     }
 
     /**

@@ -10,9 +10,11 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -47,6 +49,8 @@ import io.github.fgrutsch.cookmaid.ui.shopping.ShoppingListViewModel
 import io.github.fgrutsch.cookmaid.ui.theme.AppTheme
 import org.koin.compose.KoinApplication
 import org.koin.compose.getKoin
+import io.github.fgrutsch.cookmaid.ui.common.LocalAppLocale
+import io.github.fgrutsch.cookmaid.ui.common.resolve
 import org.koin.compose.koinInject
 import org.koin.dsl.module
 import org.publicvalue.multiplatform.oidc.flows.CodeAuthFlowFactory
@@ -77,28 +81,35 @@ fun App(
         modules(allModules + platformModule)
     }) {
         val settingsViewModel = koinInject<SettingsViewModel>()
-        val isDarkMode by settingsViewModel.isDarkMode.collectAsState()
+        val settingsState by settingsViewModel.state.collectAsState()
 
-        AppTheme(isDark = isDarkMode) {
-            val authViewModel = koinInject<AuthViewModel>()
-            val authState by authViewModel.state.collectAsState()
+        CompositionLocalProvider(
+            LocalAppLocale provides (settingsState.locale?.code),
+        ) {
+            key(settingsState.locale) {
+                AppTheme(isDark = settingsState.isDarkMode) {
+                    val authViewModel = koinInject<AuthViewModel>()
+                    val authState by authViewModel.state.collectAsState()
 
-            LaunchedEffect(Unit) {
-                authViewModel.onEvent(AuthEvent.Initialize)
-            }
+                    LaunchedEffect(Unit) {
+                        authViewModel.onEvent(AuthEvent.Initialize)
+                    }
 
-            when (authState.status) {
-                AuthState.Status.Initializing -> {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
+                    when (authState.status) {
+                        AuthState.Status.Initializing -> {
+                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator()
+                            }
+                        }
+
+                        AuthState.Status.Unauthenticated -> LoginScreen(viewModel = authViewModel)
+                        AuthState.Status.Authenticated -> MainContent(
+                            settingsViewModel = settingsViewModel,
+                            authViewModel = authViewModel,
+                            userProfile = authState.profile,
+                        )
                     }
                 }
-                AuthState.Status.Unauthenticated -> LoginScreen(viewModel = authViewModel)
-                AuthState.Status.Authenticated -> MainContent(
-                    settingsViewModel = settingsViewModel,
-                    authViewModel = authViewModel,
-                    userProfile = authState.profile,
-                )
             }
         }
     }
@@ -147,8 +158,10 @@ private fun BottomNavigationBar(
             NavigationBarItem(
                 selected = selectedTab == tab,
                 onClick = { onTabSelected(tab) },
-                icon = { Icon(tab.icon, contentDescription = tab.label) },
-                label = { Text(tab.label) },
+                icon = {
+                    Icon(tab.icon, contentDescription = tab.labelRes.resolve())
+                },
+                label = { Text(tab.labelRes.resolve()) },
             )
         }
     }

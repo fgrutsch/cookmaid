@@ -1,5 +1,7 @@
 package io.github.fgrutsch.cookmaid.ui.settings
 
+import io.github.fgrutsch.cookmaid.common.SupportedLocale
+import io.github.fgrutsch.cookmaid.common.displayName
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,6 +19,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -30,7 +35,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import cookmaid.composeapp.generated.resources.Res
+import cookmaid.composeapp.generated.resources.settings_dark_mode
+import cookmaid.composeapp.generated.resources.settings_language
+import cookmaid.composeapp.generated.resources.settings_profile_picture
+import cookmaid.composeapp.generated.resources.settings_sign_out
+import cookmaid.composeapp.generated.resources.settings_title
 import io.github.fgrutsch.cookmaid.ui.auth.UserProfile
+import io.github.fgrutsch.cookmaid.ui.common.resolve
 
 /**
  * Settings screen displaying user profile info, theme toggle, and logout.
@@ -41,12 +53,12 @@ import io.github.fgrutsch.cookmaid.ui.auth.UserProfile
  */
 @Composable
 fun SettingsScreen(viewModel: SettingsViewModel, userProfile: UserProfile, onLogout: () -> Unit) {
-    val isDarkMode by viewModel.isDarkMode.collectAsState()
+    val state by viewModel.state.collectAsState()
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Settings") },
+                title = { Text(Res.string.settings_title.resolve()) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainer,
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
@@ -56,8 +68,10 @@ fun SettingsScreen(viewModel: SettingsViewModel, userProfile: UserProfile, onLog
     ) { padding ->
         SettingsContent(
             userProfile = userProfile,
-            isDarkMode = isDarkMode,
-            onToggleDarkMode = { viewModel.toggleDarkMode() },
+            isDarkMode = state.isDarkMode,
+            onToggleDarkMode = { viewModel.onEvent(SettingsEvent.ToggleDarkMode) },
+            locale = state.locale,
+            onLocaleSelected = { viewModel.onEvent(SettingsEvent.SetLocale(it)) },
             onLogout = onLogout,
             modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp),
         )
@@ -69,6 +83,8 @@ private fun SettingsContent(
     userProfile: UserProfile,
     isDarkMode: Boolean,
     onToggleDarkMode: () -> Unit,
+    locale: SupportedLocale?,
+    onLocaleSelected: (SupportedLocale?) -> Unit,
     onLogout: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -85,9 +101,14 @@ private fun SettingsContent(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text("Dark Mode")
+            Text(Res.string.settings_dark_mode.resolve())
             Switch(checked = isDarkMode, onCheckedChange = { onToggleDarkMode() })
         }
+
+        LanguagePicker(
+            selectedLocale = locale,
+            onSelected = onLocaleSelected,
+        )
 
         HorizontalDivider()
 
@@ -97,7 +118,36 @@ private fun SettingsContent(
             onClick = onLogout,
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Text("Sign out")
+            Text(Res.string.settings_sign_out.resolve())
+        }
+    }
+}
+
+@Composable
+private fun LanguagePicker(
+    selectedLocale: SupportedLocale?,
+    onSelected: (SupportedLocale?) -> Unit,
+) {
+    val options: List<SupportedLocale?> = listOf(null) + SupportedLocale.entries
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(Res.string.settings_language.resolve())
+        SingleChoiceSegmentedButtonRow {
+            options.forEachIndexed { index, locale ->
+                SegmentedButton(
+                    selected = selectedLocale == locale,
+                    onClick = { onSelected(locale) },
+                    shape = SegmentedButtonDefaults.itemShape(
+                        index,
+                        options.size,
+                    ),
+                ) {
+                    Text(locale.displayName())
+                }
+            }
         }
     }
 }
@@ -111,14 +161,14 @@ private fun UserProfileSection(userProfile: UserProfile) {
         if (!userProfile.pictureUrl.isNullOrBlank()) {
             AsyncImage(
                 model = userProfile.pictureUrl,
-                contentDescription = "Profile picture",
+                contentDescription = Res.string.settings_profile_picture.resolve(),
                 modifier = Modifier.size(80.dp).clip(CircleShape),
                 contentScale = ContentScale.Crop,
             )
         } else {
             Icon(
                 imageVector = Icons.Default.Person,
-                contentDescription = "Profile picture",
+                contentDescription = Res.string.settings_profile_picture.resolve(),
                 modifier = Modifier.size(80.dp),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )

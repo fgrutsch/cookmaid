@@ -22,8 +22,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
+import cookmaid.composeapp.generated.resources.Res
+import cookmaid.composeapp.generated.resources.common_added_to_shopping_list
+import cookmaid.composeapp.generated.resources.meal_plan_go_to_current
+import cookmaid.composeapp.generated.resources.meal_plan_title
 import io.github.fgrutsch.cookmaid.mealplan.MealPlanItem
 import io.github.fgrutsch.cookmaid.ui.common.SuccessSnackbarHost
+import io.github.fgrutsch.cookmaid.ui.common.resolve
+import org.jetbrains.compose.resources.getString
+import org.jetbrains.compose.resources.rememberResourceEnvironment
 import kotlinx.datetime.LocalDate
 import kotlin.uuid.Uuid
 
@@ -48,12 +55,13 @@ fun MealPlanScreen(
     var editingNote by remember { mutableStateOf<EditNoteState?>(null) }
     var ingredientPickerState by remember { mutableStateOf<IngredientPickerState?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
-
+    val env = rememberResourceEnvironment()
     LaunchedEffect(Unit) {
         onEvent(MealPlanEvent.Load)
         viewModel.effects.collect { effect ->
             when (effect) {
-                is MealPlanEffect.IngredientsAdded -> snackbarHostState.showSnackbar("Added to shopping list")
+                is MealPlanEffect.IngredientsAdded ->
+                    snackbarHostState.showSnackbar(getString(env, Res.string.common_added_to_shopping_list))
                 is MealPlanEffect.ShowIngredientPicker ->
                     ingredientPickerState = IngredientPickerState(effect.recipeName, effect.ingredients)
                 is MealPlanEffect.Error -> snackbarHostState.showSnackbar(effect.message)
@@ -65,14 +73,17 @@ fun MealPlanScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Meal Plan") },
+                title = { Text(Res.string.meal_plan_title.resolve()) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainer,
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
                 ),
                 actions = {
                     IconButton(onClick = { onEvent(MealPlanEvent.GoToCurrentWeek) }) {
-                        Icon(Icons.Default.Today, contentDescription = "Go to current week")
+                        Icon(
+                            Icons.Default.Today,
+                            contentDescription = Res.string.meal_plan_go_to_current.resolve(),
+                        )
                     }
                 },
             )

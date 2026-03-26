@@ -1,9 +1,12 @@
 package io.github.fgrutsch.cookmaid.shopping
 
 import io.github.fgrutsch.cookmaid.catalog.CatalogItemsTable
+import io.github.fgrutsch.cookmaid.common.SupportedLocale
 import io.github.fgrutsch.cookmaid.catalog.Item
 import io.github.fgrutsch.cookmaid.catalog.ItemCategoriesTable
 import io.github.fgrutsch.cookmaid.catalog.ItemCategory
+import io.github.fgrutsch.cookmaid.catalog.resolveCategoryName
+import io.github.fgrutsch.cookmaid.catalog.resolveItemName
 import io.github.fgrutsch.cookmaid.user.UserId
 import org.jetbrains.exposed.v1.core.JoinType
 import org.jetbrains.exposed.v1.core.SortOrder
@@ -67,9 +70,10 @@ interface ShoppingListRepository {
      * Returns all items belonging to the given shopping list.
      *
      * @param listId the shopping list whose items to retrieve.
+     * @param locale the language code for catalog item names.
      * @return the items in the list.
      */
-    suspend fun findItemsByListId(listId: Uuid): List<ShoppingItem>
+    suspend fun findItemsByListId(listId: Uuid, locale: SupportedLocale): List<ShoppingItem>
 
     /**
      * Adds a single item to a shopping list.
@@ -78,18 +82,30 @@ interface ShoppingListRepository {
      * @param catalogItemId optional catalog item reference.
      * @param freeTextName optional free-text item name.
      * @param quantity optional quantity.
+     * @param locale the language code for catalog item names.
      * @return the created shopping item.
      */
-    suspend fun addItem(listId: Uuid, catalogItemId: Uuid?, freeTextName: String?, quantity: Float?): ShoppingItem
+    suspend fun addItem(
+        listId: Uuid,
+        catalogItemId: Uuid?,
+        freeTextName: String?,
+        quantity: Float?,
+        locale: SupportedLocale,
+    ): ShoppingItem
 
     /**
      * Adds multiple items to a shopping list in a single transaction.
      *
      * @param listId the target shopping list.
      * @param items the items to add.
+     * @param locale the language code for catalog item names.
      * @return the created shopping items.
      */
-    suspend fun addItems(listId: Uuid, items: List<CreateShoppingItemRequest>): List<ShoppingItem>
+    suspend fun addItems(
+        listId: Uuid,
+        items: List<CreateShoppingItemRequest>,
+        locale: SupportedLocale,
+    ): List<ShoppingItem>
 
     /**
      * Updates quantity and checked state of a shopping item.
@@ -185,7 +201,10 @@ class PostgresShoppingListRepository : ShoppingListRepository {
         ShoppingListsTable.deleteWhere { ShoppingListsTable.id eq id }
     }
 
-    override suspend fun findItemsByListId(listId: Uuid): List<ShoppingItem> = suspendTransaction {
+    override suspend fun findItemsByListId(
+        listId: Uuid,
+        locale: SupportedLocale,
+    ): List<ShoppingItem> = suspendTransaction {
         val joined = ShoppingItemsTable
             .join(CatalogItemsTable, JoinType.LEFT, ShoppingItemsTable.catalogItemId, CatalogItemsTable.id)
             .join(ItemCategoriesTable, JoinType.LEFT, CatalogItemsTable.categoryId, ItemCategoriesTable.id)
@@ -197,10 +216,10 @@ class PostgresShoppingListRepository : ShoppingListRepository {
                 val item: Item = if (catalogItemId != null) {
                     Item.Catalog(
                         id = catalogItemId,
-                        name = row[CatalogItemsTable.name],
+                        name = resolveItemName(row, locale),
                         category = ItemCategory(
                             id = row[ItemCategoriesTable.id],
-                            name = row[ItemCategoriesTable.name],
+                            name = resolveCategoryName(row, locale),
                         ),
                     )
                 } else {
@@ -220,8 +239,9 @@ class PostgresShoppingListRepository : ShoppingListRepository {
         catalogItemId: Uuid?,
         freeTextName: String?,
         quantity: Float?,
+        locale: SupportedLocale,
     ): ShoppingItem = suspendTransaction {
-        addItemInternal(listId, catalogItemId, freeTextName, quantity)
+        addItemInternal(listId, catalogItemId, freeTextName, quantity, locale)
     }
 
     private fun addItemInternal(
@@ -229,6 +249,7 @@ class PostgresShoppingListRepository : ShoppingListRepository {
         catalogItemId: Uuid?,
         freeTextName: String?,
         quantity: Float?,
+        locale: SupportedLocale,
     ): ShoppingItem {
         val row = ShoppingItemsTable.insertReturning {
             it[ShoppingItemsTable.listId] = listId
@@ -251,10 +272,10 @@ class PostgresShoppingListRepository : ShoppingListRepository {
         val item: Item = if (catalogItemId != null) {
             Item.Catalog(
                 id = catalogItemId,
-                name = fetched[CatalogItemsTable.name],
+                name = resolveItemName(fetched, locale),
                 category = ItemCategory(
                     id = fetched[ItemCategoriesTable.id],
-                    name = fetched[ItemCategoriesTable.name],
+                    name = resolveCategoryName(fetched, locale),
                 ),
             )
         } else {
@@ -269,10 +290,14 @@ class PostgresShoppingListRepository : ShoppingListRepository {
         )
     }
 
-    override suspend fun addItems(listId: Uuid, items: List<CreateShoppingItemRequest>): List<ShoppingItem> =
+    override suspend fun addItems(
+        listId: Uuid,
+        items: List<CreateShoppingItemRequest>,
+        locale: SupportedLocale,
+    ): List<ShoppingItem> =
         suspendTransaction {
             items.map { req ->
-                addItemInternal(listId, req.catalogItemId, req.freeTextName, req.quantity)
+                addItemInternal(listId, req.catalogItemId, req.freeTextName, req.quantity, locale)
             }
         }
 

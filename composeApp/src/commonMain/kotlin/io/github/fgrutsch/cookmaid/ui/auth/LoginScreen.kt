@@ -19,8 +19,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cookmaid.composeapp.generated.resources.Res
+import cookmaid.composeapp.generated.resources.auth_app_logo
+import cookmaid.composeapp.generated.resources.auth_sign_in
 import cookmaid.composeapp.generated.resources.logo
 import org.jetbrains.compose.resources.painterResource
+import io.github.fgrutsch.cookmaid.ui.common.resolve
 
 /**
  * Login screen that initiates the OIDC authentication flow.
@@ -39,7 +42,7 @@ fun LoginScreen(viewModel: AuthViewModel) {
     ) {
         Image(
             painter = painterResource(Res.drawable.logo),
-            contentDescription = "Cookmaid",
+            contentDescription = Res.string.auth_app_logo.resolve(),
             modifier = Modifier.size(240.dp),
         )
 
@@ -49,7 +52,7 @@ fun LoginScreen(viewModel: AuthViewModel) {
             onClick = { viewModel.onEvent(AuthEvent.Login) },
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Text("Sign in")
+            Text(Res.string.auth_sign_in.resolve())
         }
 
         if (loginError != null) {

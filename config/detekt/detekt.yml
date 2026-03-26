@@ -114,6 +114,7 @@ complexity:
   LongMethod:
     active: true
     allowedLines: 60
+    excludes: ['**/build/**']
   LongParameterList:
     active: true
     allowedFunctionParameters: 8

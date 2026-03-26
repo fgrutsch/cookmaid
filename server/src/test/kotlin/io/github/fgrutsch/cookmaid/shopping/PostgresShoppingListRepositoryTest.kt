@@ -1,6 +1,7 @@
 package io.github.fgrutsch.cookmaid.shopping
 
 import io.github.fgrutsch.cookmaid.catalog.CatalogItemRepository
+import io.github.fgrutsch.cookmaid.common.SupportedLocale
 import io.github.fgrutsch.cookmaid.catalog.Item
 import io.github.fgrutsch.cookmaid.support.BaseTest
 import io.github.fgrutsch.cookmaid.user.UserId
@@ -82,7 +83,7 @@ class PostgresShoppingListRepositoryTest : BaseTest() {
         val repo = getKoin().get<ShoppingListRepository>()
         val userId = createUser()
         val list = repo.createList(userId, "To Delete")
-        repo.addItem(list.id, catalogItemId = null, freeTextName = "Test", quantity = null)
+        repo.addItem(list.id, catalogItemId = null, freeTextName = "Test", quantity = null, locale = SupportedLocale.EN)
 
         repo.deleteList(list.id)
 
@@ -95,7 +96,9 @@ class PostgresShoppingListRepositoryTest : BaseTest() {
         val userId = createUser()
         val list = repo.createList(userId, "Groceries")
 
-        val created = repo.addItem(list.id, catalogItemId = null, freeTextName = "Paper towels", quantity = 2f)
+        val created = repo.addItem(
+            list.id, catalogItemId = null, freeTextName = "Paper towels", quantity = 2f, locale = SupportedLocale.EN,
+        )
 
         assertEquals("Paper towels", created.item.name)
         assertEquals(2f, created.quantity)
@@ -108,9 +111,11 @@ class PostgresShoppingListRepositoryTest : BaseTest() {
         val catalogRepo = getKoin().get<CatalogItemRepository>()
         val userId = createUser()
         val list = repo.createList(userId, "Groceries")
-        val catalogItem = catalogRepo.findAll().first()
+        val catalogItem = catalogRepo.findAll(SupportedLocale.EN).first()
 
-        val created = repo.addItem(list.id, catalogItemId = catalogItem.id, freeTextName = null, quantity = 3f)
+        val created = repo.addItem(
+            list.id, catalogItemId = catalogItem.id, freeTextName = null, quantity = 3f, locale = SupportedLocale.EN,
+        )
 
         val addedItem = created.item as Item.Catalog
         assertEquals(catalogItem.name, addedItem.name)
@@ -123,11 +128,13 @@ class PostgresShoppingListRepositoryTest : BaseTest() {
         val repo = getKoin().get<ShoppingListRepository>()
         val userId = createUser()
         val list = repo.createList(userId, "Groceries")
-        val item = repo.addItem(list.id, catalogItemId = null, freeTextName = "Eggs", quantity = 6f)
+        val item = repo.addItem(
+            list.id, catalogItemId = null, freeTextName = "Eggs", quantity = 6f, locale = SupportedLocale.EN,
+        )
 
         repo.updateItem(item.id, quantity = 12f, checked = true)
 
-        val items = repo.findItemsByListId(list.id)
+        val items = repo.findItemsByListId(list.id, SupportedLocale.EN)
         assertEquals(12f, items.first().quantity)
         assertTrue(items.first().checked)
     }
@@ -137,13 +144,17 @@ class PostgresShoppingListRepositoryTest : BaseTest() {
         val repo = getKoin().get<ShoppingListRepository>()
         val userId = createUser()
         val list = repo.createList(userId, "Groceries")
-        repo.addItem(list.id, catalogItemId = null, freeTextName = "Keep", quantity = null)
-        val item2 = repo.addItem(list.id, catalogItemId = null, freeTextName = "Remove", quantity = null)
+        repo.addItem(
+            list.id, catalogItemId = null, freeTextName = "Keep", quantity = null, locale = SupportedLocale.EN,
+        )
+        val item2 = repo.addItem(
+            list.id, catalogItemId = null, freeTextName = "Remove", quantity = null, locale = SupportedLocale.EN,
+        )
         repo.updateItem(item2.id, quantity = null, checked = true)
 
         repo.deleteCheckedItems(list.id)
 
-        val items = repo.findItemsByListId(list.id)
+        val items = repo.findItemsByListId(list.id, SupportedLocale.EN)
         assertEquals(1, items.size)
         assertEquals("Keep", items.first().item.name)
     }
@@ -153,11 +164,13 @@ class PostgresShoppingListRepositoryTest : BaseTest() {
         val repo = getKoin().get<ShoppingListRepository>()
         val userId = createUser()
         val list = repo.createList(userId, "Groceries")
-        val item = repo.addItem(list.id, catalogItemId = null, freeTextName = "Remove me", quantity = null)
+        val item = repo.addItem(
+            list.id, catalogItemId = null, freeTextName = "Remove me", quantity = null, locale = SupportedLocale.EN,
+        )
 
         repo.deleteItem(item.id)
 
-        val items = repo.findItemsByListId(list.id)
+        val items = repo.findItemsByListId(list.id, SupportedLocale.EN)
         assertTrue(items.isEmpty())
     }
 
@@ -228,7 +241,9 @@ class PostgresShoppingListRepositoryTest : BaseTest() {
         val repo = getKoin().get<ShoppingListRepository>()
         val userId = createUser()
         val list = repo.createList(userId, "Groceries")
-        val item = repo.addItem(list.id, catalogItemId = null, freeTextName = "My item", quantity = null)
+        val item = repo.addItem(
+            list.id, catalogItemId = null, freeTextName = "My item", quantity = null, locale = SupportedLocale.EN,
+        )
 
         assertTrue(repo.isItemOwner(userId, item.id))
     }
@@ -239,7 +254,9 @@ class PostgresShoppingListRepositoryTest : BaseTest() {
         val userId = createUser("user-1")
         val otherUserId = createUser("user-2")
         val list = repo.createList(userId, "Groceries")
-        val item = repo.addItem(list.id, catalogItemId = null, freeTextName = "My item", quantity = null)
+        val item = repo.addItem(
+            list.id, catalogItemId = null, freeTextName = "My item", quantity = null, locale = SupportedLocale.EN,
+        )
 
         assertFalse(repo.isItemOwner(otherUserId, item.id))
     }

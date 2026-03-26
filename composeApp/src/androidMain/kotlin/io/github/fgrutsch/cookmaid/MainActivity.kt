@@ -7,8 +7,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import io.github.fgrutsch.cookmaid.ui.auth.OidcConfig
-import io.github.fgrutsch.cookmaid.ui.auth.SharedPreferencesSettingsStore
 import org.publicvalue.multiplatform.oidc.appsupport.AndroidCodeAuthFlowFactory
+import org.publicvalue.multiplatform.oidc.tokenstore.AndroidDataStoreSettingsStore
 import org.publicvalue.multiplatform.oidc.tokenstore.SettingsTokenStore
 
 class MainActivity : ComponentActivity() {
@@ -30,7 +30,7 @@ class MainActivity : ComponentActivity() {
                     postLogoutRedirectUri = "cookmaid://callback",
                 ),
                 codeAuthFlowFactory = codeAuthFlowFactory,
-                tokenStore = SettingsTokenStore(SharedPreferencesSettingsStore(this)),
+                tokenStore = SettingsTokenStore(AndroidDataStoreSettingsStore(this)),
             )
         }
     }

@@ -1,0 +1,125 @@
+<resources>
+    <!-- Common -->
+    <string name="common_add">Add</string>
+    <string name="common_cancel">Cancel</string>
+    <string name="common_save">Save</string>
+    <string name="common_ok">OK</string>
+    <string name="common_close">Close</string>
+    <string name="common_delete">Delete</string>
+    <string name="common_edit">Edit</string>
+    <string name="common_back">Back</string>
+    <string name="common_options">Options</string>
+    <string name="common_remove">Remove</string>
+    <string name="common_search">Search</string>
+    <string name="common_add_to_shopping_list">Add to shopping list</string>
+    <string name="common_add_to_meal_plan">Add to meal plan</string>
+    <string name="common_added_to_shopping_list">Added to shopping list</string>
+    <string name="common_added_to_meal_plan">Added to meal plan</string>
+    <string name="common_previous_week">Previous week</string>
+    <string name="common_next_week">Next week</string>
+    <string name="common_search_recipes">Search recipes…</string>
+    <string name="common_uncategorized">Uncategorized</string>
+    <string name="common_quantity">Qty</string>
+
+    <!-- Navigation -->
+    <string name="nav_shopping">Shopping</string>
+    <string name="nav_recipes">Recipes</string>
+    <string name="nav_meal_plan">Meal Plan</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Auth -->
+    <string name="auth_app_logo">Cookmaid</string>
+    <string name="auth_sign_in">Sign in</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_dark_mode">Dark Mode</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_sign_out">Sign out</string>
+    <string name="settings_profile_picture">Profile picture</string>
+
+    <!-- Recipe List -->
+    <string name="recipe_list_title">Recipes</string>
+    <string name="recipe_list_add">Add recipe</string>
+    <string name="recipe_list_close_search">Close search</string>
+    <string name="recipe_list_random">Random recipe</string>
+    <string name="recipe_list_empty">No recipes found</string>
+    <string name="recipe_list_reroll">Re-roll</string>
+    <string name="recipe_list_view_details">View details</string>
+
+    <!-- Recipe Detail -->
+    <string name="recipe_detail_title">Recipe</string>
+    <string name="recipe_detail_not_found">Recipe not found</string>
+    <string name="recipe_detail_description">Description</string>
+    <string name="recipe_detail_tags">Tags</string>
+    <string name="recipe_detail_ingredients">Ingredients</string>
+    <string name="recipe_detail_steps">Steps</string>
+
+    <!-- Recipe Edit -->
+    <string name="recipe_edit_title">Edit Recipe</string>
+    <string name="recipe_add_title">Add Recipe</string>
+    <string name="recipe_edit_name_label">Recipe name</string>
+    <string name="recipe_edit_name_required">Name is required</string>
+    <string name="recipe_edit_description_label">Description (optional)</string>
+    <string name="recipe_edit_add_step">Add step</string>
+    <string name="recipe_edit_add_ingredient">Add ingredient</string>
+    <string name="recipe_edit_new_tag_title">New Tag</string>
+    <string name="recipe_edit_tag_name_label">Tag name</string>
+
+    <!-- Shopping -->
+    <string name="shopping_title">Shopping</string>
+    <string name="shopping_new_list">New list</string>
+    <string name="shopping_rename_list">Rename list</string>
+    <string name="shopping_delete_list">Delete list</string>
+    <string name="shopping_list_options">List options</string>
+    <string name="shopping_empty_title">No items yet</string>
+    <string name="shopping_empty_subtitle">Type above to add items</string>
+    <string name="shopping_add_item">Add item…</string>
+    <string name="shopping_quantity_label">Quantity</string>
+    <string name="shopping_list_name_label">List name</string>
+    <string name="shopping_checked_count">Checked (%1$d)</string>
+    <string name="shopping_delete_checked">Delete checked</string>
+
+    <!-- Meal Plan -->
+    <string name="meal_plan_title">Meal Plan</string>
+    <string name="meal_plan_go_to_current">Go to current week</string>
+    <string name="meal_plan_add_item">Add item</string>
+    <string name="meal_plan_add_to_day">Add to %1$s</string>
+    <string name="meal_plan_tab_recipe">Recipe</string>
+    <string name="meal_plan_tab_note">Note</string>
+    <string name="meal_plan_note_label">Note or URL</string>
+    <string name="meal_plan_edit_note_title">Edit note</string>
+    <string name="meal_plan_add_to_meal_plan">Add to meal plan</string>
+    <string name="meal_plan_select_all">Select all</string>
+    <string name="meal_plan_deselect_all">Deselect all</string>
+    <string name="meal_plan_add_count">Add (%1$d)</string>
+
+    <!-- Recipe Card -->
+    <string name="recipe_card_summary">%1$d ingredients · %2$d steps</string>
+
+    <!-- Months (short) -->
+    <string name="month_jan">Jan</string>
+    <string name="month_feb">Feb</string>
+    <string name="month_mar">Mar</string>
+    <string name="month_apr">Apr</string>
+    <string name="month_may">May</string>
+    <string name="month_jun">Jun</string>
+    <string name="month_jul">Jul</string>
+    <string name="month_aug">Aug</string>
+    <string name="month_sep">Sep</string>
+    <string name="month_oct">Oct</string>
+    <string name="month_nov">Nov</string>
+    <string name="month_dec">Dec</string>
+
+    <!-- Date format: short month + day -->
+    <string name="date_short">%1$s %2$d</string>
+
+    <!-- Days -->
+    <string name="day_monday">Monday</string>
+    <string name="day_tuesday">Tuesday</string>
+    <string name="day_wednesday">Wednesday</string>
+    <string name="day_thursday">Thursday</string>
+    <string name="day_friday">Friday</string>
+    <string name="day_saturday">Saturday</string>
+    <string name="day_sunday">Sunday</string>
+</resources>

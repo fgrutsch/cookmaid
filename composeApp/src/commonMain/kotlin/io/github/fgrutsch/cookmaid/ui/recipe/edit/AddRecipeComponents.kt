@@ -42,8 +42,24 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import cookmaid.composeapp.generated.resources.Res
+import cookmaid.composeapp.generated.resources.common_add
+import cookmaid.composeapp.generated.resources.common_cancel
+import cookmaid.composeapp.generated.resources.common_quantity
+import cookmaid.composeapp.generated.resources.common_remove
+import cookmaid.composeapp.generated.resources.recipe_detail_ingredients
+import cookmaid.composeapp.generated.resources.recipe_detail_steps
+import cookmaid.composeapp.generated.resources.recipe_detail_tags
+import cookmaid.composeapp.generated.resources.recipe_edit_add_ingredient
+import cookmaid.composeapp.generated.resources.recipe_edit_add_step
+import cookmaid.composeapp.generated.resources.recipe_edit_description_label
+import cookmaid.composeapp.generated.resources.recipe_edit_name_label
+import cookmaid.composeapp.generated.resources.recipe_edit_name_required
+import cookmaid.composeapp.generated.resources.recipe_edit_new_tag_title
+import cookmaid.composeapp.generated.resources.recipe_edit_tag_name_label
 import io.github.fgrutsch.cookmaid.catalog.Item
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
+import io.github.fgrutsch.cookmaid.ui.common.resolve
 import io.github.fgrutsch.cookmaid.ui.shopping.formatQuantity
 
 @Composable
@@ -68,16 +84,20 @@ internal fun AddRecipeContent(
         OutlinedTextField(
             value = state.name,
             onValueChange = { onEvent(AddRecipeEvent.SetName(it)) },
-            label = { Text("Recipe name") },
+            label = { Text(Res.string.recipe_edit_name_label.resolve()) },
             singleLine = true,
             isError = state.nameError,
-            supportingText = if (state.nameError) {{ Text("Name is required") }} else null,
+            supportingText = if (state.nameError) {
+                { Text(Res.string.recipe_edit_name_required.resolve()) }
+            } else {
+                null
+            },
             modifier = Modifier.fillMaxWidth(),
         )
         OutlinedTextField(
             value = state.description,
             onValueChange = { onEvent(AddRecipeEvent.SetDescription(it)) },
-            label = { Text("Description (optional)") },
+            label = { Text(Res.string.recipe_edit_description_label.resolve()) },
             singleLine = false,
             minLines = 2,
             maxLines = 4,
@@ -122,7 +142,7 @@ internal fun IngredientsSection(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(
-            "Ingredients",
+            Res.string.recipe_detail_ingredients.resolve(),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary,
@@ -168,7 +188,7 @@ internal fun StepsSection(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(
-            "Steps",
+            Res.string.recipe_detail_steps.resolve(),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary,
@@ -178,7 +198,7 @@ internal fun StepsSection(
                 headlineContent = { Text("${index + 1}. $step") },
                 trailingContent = {
                     IconButton(onClick = { onRemoveStep(index) }) {
-                        Icon(Icons.Default.Close, contentDescription = "Remove")
+                        Icon(Icons.Default.Close, contentDescription = Res.string.common_remove.resolve())
                     }
                 },
             )
@@ -186,14 +206,17 @@ internal fun StepsSection(
         OutlinedTextField(
             value = stepInput,
             onValueChange = onStepInputChange,
-            label = { Text("Add step") },
+            label = { Text(Res.string.recipe_edit_add_step.resolve()) },
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { onAddStep() }),
             trailingIcon = {
                 if (stepInput.isNotBlank()) {
                     IconButton(onClick = onAddStep) {
-                        Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Add step")
+                        Icon(
+                            Icons.AutoMirrored.Filled.Send,
+                            contentDescription = Res.string.recipe_edit_add_step.resolve(),
+                        )
                     }
                 }
             },
@@ -211,7 +234,7 @@ internal fun TagsSection(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
-            "Tags",
+            Res.string.recipe_detail_tags.resolve(),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary,
@@ -228,7 +251,7 @@ internal fun TagsSection(
                 )
             }
             IconButton(onClick = onShowNewTagDialog) {
-                Icon(Icons.Default.Add, contentDescription = "Add tag")
+                Icon(Icons.Default.Add, contentDescription = Res.string.common_add.resolve())
             }
         }
     }
@@ -261,13 +284,13 @@ internal fun IngredientRow(
                 qtyText = value.filter { it.isDigit() || it == '.' }
                 onQuantityChange(qtyText.toFloatOrNull())
             },
-            label = { Text("Qty") },
+            label = { Text(Res.string.common_quantity.resolve()) },
             singleLine = true,
             modifier = Modifier.width(80.dp),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
         )
         IconButton(onClick = onRemove) {
-            Icon(Icons.Default.Close, contentDescription = "Remove")
+            Icon(Icons.Default.Close, contentDescription = Res.string.common_remove.resolve())
         }
     }
 }
@@ -297,7 +320,7 @@ internal fun IngredientAddField(
             OutlinedTextField(
                 value = query,
                 onValueChange = onQueryChange,
-                label = { Text("Add ingredient") },
+                label = { Text(Res.string.recipe_edit_add_ingredient.resolve()) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable),
@@ -320,13 +343,13 @@ internal fun IngredientAddField(
         OutlinedTextField(
             value = quantityInput,
             onValueChange = { value -> onQuantityChange(value.filter { it.isDigit() || it == '.' }) },
-            label = { Text("Qty") },
+            label = { Text(Res.string.common_quantity.resolve()) },
             singleLine = true,
             modifier = Modifier.width(80.dp),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
         )
         IconButton(onClick = onAddFreeText) {
-            Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Add")
+            Icon(Icons.AutoMirrored.Filled.Send, contentDescription = Res.string.common_add.resolve())
         }
     }
 }
@@ -340,12 +363,12 @@ internal fun NewTagDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("New Tag") },
+        title = { Text(Res.string.recipe_edit_new_tag_title.resolve()) },
         text = {
             OutlinedTextField(
                 value = tagName,
                 onValueChange = { tagName = it },
-                label = { Text("Tag name") },
+                label = { Text(Res.string.recipe_edit_tag_name_label.resolve()) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -355,11 +378,11 @@ internal fun NewTagDialog(
                 onClick = { onConfirm(tagName) },
                 enabled = tagName.isNotBlank(),
             ) {
-                Text("Add")
+                Text(Res.string.common_add.resolve())
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(onClick = onDismiss) { Text(Res.string.common_cancel.resolve()) }
         },
     )
 }

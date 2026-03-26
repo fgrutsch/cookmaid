@@ -11,7 +11,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import cookmaid.composeapp.generated.resources.Res
+import cookmaid.composeapp.generated.resources.common_cancel
+import cookmaid.composeapp.generated.resources.common_ok
+import cookmaid.composeapp.generated.resources.common_save
+import cookmaid.composeapp.generated.resources.shopping_list_name_label
+import cookmaid.composeapp.generated.resources.shopping_quantity_label
 import io.github.fgrutsch.cookmaid.shopping.ShoppingItem
+import io.github.fgrutsch.cookmaid.ui.common.resolve
 
 @Composable
 internal fun EditItemDialog(
@@ -28,7 +35,7 @@ internal fun EditItemDialog(
             OutlinedTextField(
                 value = quantity,
                 onValueChange = { quantity = it },
-                label = { Text("Quantity") },
+                label = { Text(Res.string.shopping_quantity_label.resolve()) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -40,11 +47,11 @@ internal fun EditItemDialog(
                     onSave(item.copy(quantity = parsedQuantity))
                 },
             ) {
-                Text("Save")
+                Text(Res.string.common_save.resolve())
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(onClick = onDismiss) { Text(Res.string.common_cancel.resolve()) }
         },
     )
 }
@@ -65,7 +72,7 @@ internal fun ListNameDialog(
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
-                label = { Text("List name") },
+                label = { Text(Res.string.shopping_list_name_label.resolve()) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -75,11 +82,11 @@ internal fun ListNameDialog(
                 onClick = { onConfirm(name) },
                 enabled = name.isNotBlank(),
             ) {
-                Text("OK")
+                Text(Res.string.common_ok.resolve())
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(onClick = onDismiss) { Text(Res.string.common_cancel.resolve()) }
         },
     )
 }

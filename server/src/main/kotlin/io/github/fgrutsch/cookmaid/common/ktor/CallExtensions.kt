@@ -1,7 +1,9 @@
 package io.github.fgrutsch.cookmaid.common.ktor
 
+import io.github.fgrutsch.cookmaid.common.SupportedLocale
 import io.github.fgrutsch.cookmaid.user.UserId
 import io.github.fgrutsch.cookmaid.user.UserService
+import io.ktor.http.HttpHeaders
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.principal
@@ -26,3 +28,9 @@ suspend fun ApplicationCall.userId(): UserId {
     attributes.put(UserIdKey, userId)
     return userId
 }
+
+/**
+ * Extracts the [SupportedLocale] from the Accept-Language header, falling back to English.
+ */
+fun ApplicationCall.locale(): SupportedLocale =
+    SupportedLocale.fromCode(request.headers[HttpHeaders.AcceptLanguage]?.take(2) ?: "en")

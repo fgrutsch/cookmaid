@@ -1,6 +1,7 @@
 package io.github.fgrutsch.cookmaid.recipe
 
 import io.github.fgrutsch.cookmaid.catalog.Item
+import io.github.fgrutsch.cookmaid.common.SupportedLocale
 import io.github.fgrutsch.cookmaid.support.BaseTest
 import io.github.fgrutsch.cookmaid.user.UserId
 import io.github.fgrutsch.cookmaid.user.UserRepository
@@ -30,7 +31,7 @@ class RecipeServiceTest : BaseTest() {
             steps = listOf("Mix", "Bake"),
             tags = listOf("Baking"),
         )
-        val recipe = service.create(userId, data)
+        val recipe = service.create(userId, data, SupportedLocale.EN)
         return userId to recipe
     }
 
@@ -39,7 +40,10 @@ class RecipeServiceTest : BaseTest() {
         val service = getKoin().get<RecipeService>()
         val (userId, _) = createUserWithRecipe()
 
-        assertEquals(1, service.find(userId, cursor = null, limit = 20, search = null, tag = null).items.size)
+        val page = service.find(
+            userId, cursor = null, limit = 20, search = null, tag = null, locale = SupportedLocale.EN,
+        )
+        assertEquals(1, page.items.size)
     }
 
     @Test
@@ -47,7 +51,7 @@ class RecipeServiceTest : BaseTest() {
         val service = getKoin().get<RecipeService>()
         val (userId, recipe) = createUserWithRecipe()
 
-        val found = service.findById(userId, recipe.id)
+        val found = service.findById(userId, recipe.id, SupportedLocale.EN)
 
         assertNotNull(found)
         assertEquals(recipe.id, found.id)
@@ -59,7 +63,7 @@ class RecipeServiceTest : BaseTest() {
         val (_, recipe) = createUserWithRecipe("user-1")
         val otherUserId = createUser("user-2")
 
-        assertNull(service.findById(otherUserId, recipe.id))
+        assertNull(service.findById(otherUserId, recipe.id, SupportedLocale.EN))
     }
 
     @Test
@@ -67,7 +71,9 @@ class RecipeServiceTest : BaseTest() {
         val service = getKoin().get<RecipeService>()
         val userId = createUser()
 
-        val recipe = service.create(userId, RecipeData("Pasta", null, emptyList(), emptyList(), emptyList()))
+        val recipe = service.create(
+            userId, RecipeData("Pasta", null, emptyList(), emptyList(), emptyList()), SupportedLocale.EN,
+        )
 
         assertEquals("Pasta", recipe.name)
     }

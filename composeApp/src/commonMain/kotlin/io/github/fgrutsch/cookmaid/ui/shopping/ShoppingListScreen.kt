@@ -41,10 +41,22 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import cookmaid.composeapp.generated.resources.Res
+import cookmaid.composeapp.generated.resources.common_uncategorized
+import cookmaid.composeapp.generated.resources.shopping_checked_count
+import cookmaid.composeapp.generated.resources.shopping_delete_checked
+import cookmaid.composeapp.generated.resources.shopping_delete_list
+import cookmaid.composeapp.generated.resources.shopping_empty_subtitle
+import cookmaid.composeapp.generated.resources.shopping_empty_title
+import cookmaid.composeapp.generated.resources.shopping_list_options
+import cookmaid.composeapp.generated.resources.shopping_new_list
+import cookmaid.composeapp.generated.resources.shopping_rename_list
+import cookmaid.composeapp.generated.resources.shopping_title
 import io.github.fgrutsch.cookmaid.catalog.Item
 import io.github.fgrutsch.cookmaid.shopping.ShoppingItem
 import io.github.fgrutsch.cookmaid.shopping.ShoppingList
 import io.github.fgrutsch.cookmaid.ui.common.SwipeItem
+import io.github.fgrutsch.cookmaid.ui.common.resolve
 import kotlin.uuid.Uuid
 
 /**
@@ -144,7 +156,7 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
 
     if (showNewListDialog) {
         ListNameDialog(
-            title = "New List",
+            title = Res.string.shopping_new_list.resolve(),
             initialName = "",
             onDismiss = { showNewListDialog = false },
             onConfirm = { name ->
@@ -156,7 +168,7 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
 
     editingList?.let { (listId, listName) ->
         ListNameDialog(
-            title = "Rename List",
+            title = Res.string.shopping_rename_list.resolve(),
             initialName = listName,
             onDismiss = { editingList = null },
             onConfirm = { newName ->
@@ -180,28 +192,28 @@ private fun ShoppingListTopBar(
     onDeleteList: (Uuid) -> Unit,
 ) {
     TopAppBar(
-        title = { Text("Shopping") },
+        title = { Text(Res.string.shopping_title.resolve()) },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer,
             titleContentColor = MaterialTheme.colorScheme.onSurface,
         ),
         actions = {
             IconButton(onClick = onShowMenu) {
-                Icon(Icons.Default.MoreVert, contentDescription = "List options")
+                Icon(Icons.Default.MoreVert, contentDescription = Res.string.shopping_list_options.resolve())
             }
             DropdownMenu(
                 expanded = showMenu,
                 onDismissRequest = onDismissMenu,
             ) {
-                DropdownMenuItem(text = { Text("New list") }, onClick = onNewList)
+                DropdownMenuItem(text = { Text(Res.string.shopping_new_list.resolve()) }, onClick = onNewList)
                 if (selectedList != null) {
                     DropdownMenuItem(
-                        text = { Text("Rename list") },
+                        text = { Text(Res.string.shopping_rename_list.resolve()) },
                         onClick = { onRenameList(selectedList.id, selectedList.name) },
                     )
                     if (!selectedList.default && listCount > 1) {
                         DropdownMenuItem(
-                            text = { Text("Delete list") },
+                            text = { Text(Res.string.shopping_delete_list.resolve()) },
                             onClick = { onDeleteList(selectedList.id) },
                         )
                     }
@@ -244,6 +256,8 @@ private fun ShoppingItemList(
     onEditItem: (ShoppingItem) -> Unit,
     onDeleteChecked: () -> Unit,
 ) {
+    val uncategorizedLabel = Res.string.common_uncategorized.resolve()
+
     PullToRefreshBox(
         isRefreshing = state.isRefreshing,
         onRefresh = onRefresh,
@@ -255,9 +269,9 @@ private fun ShoppingItemList(
                 contentAlignment = Alignment.Center,
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("No items yet", style = MaterialTheme.typography.bodyLarge)
+                    Text(Res.string.shopping_empty_title.resolve(), style = MaterialTheme.typography.bodyLarge)
                     Text(
-                        "Type above to add items",
+                        Res.string.shopping_empty_subtitle.resolve(),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -265,7 +279,13 @@ private fun ShoppingItemList(
             }
         } else {
             LazyColumn(modifier = Modifier.fillMaxSize()) {
-                uncheckedItemsSection(state.uncheckedItems, onToggleChecked, onDeleteItem, onEditItem)
+                uncheckedItemsSection(
+                    uncheckedItems = state.uncheckedItems,
+                    uncategorizedLabel = uncategorizedLabel,
+                    onToggleChecked = onToggleChecked,
+                    onDeleteItem = onDeleteItem,
+                    onEditItem = onEditItem,
+                )
                 checkedItemsSection(state.checkedItems, onToggleChecked, onDeleteItem, onEditItem, onDeleteChecked)
             }
         }
@@ -274,12 +294,13 @@ private fun ShoppingItemList(
 
 private fun LazyListScope.uncheckedItemsSection(
     uncheckedItems: List<ShoppingItem>,
+    uncategorizedLabel: String,
     onToggleChecked: (Uuid) -> Unit,
     onDeleteItem: (Uuid) -> Unit,
     onEditItem: (ShoppingItem) -> Unit,
 ) {
     val grouped = uncheckedItems.groupBy { item ->
-        (item.item as? Item.Catalog)?.category?.name ?: "Uncategorized"
+        (item.item as? Item.Catalog)?.category?.name ?: uncategorizedLabel
     }.entries.sortedBy { it.key }
     grouped.forEach { (categoryName, categoryItems) ->
         item(key = "header-$categoryName") {
@@ -327,14 +348,14 @@ private fun CheckedSectionHeader(checkedCount: Int, onDeleteChecked: () -> Unit)
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text = "Checked ($checkedCount)",
+            text = Res.string.shopping_checked_count.resolve(checkedCount),
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.outline,
         )
         IconButton(onClick = onDeleteChecked) {
             Icon(
                 Icons.Default.DeleteSweep,
-                contentDescription = "Delete checked",
+                contentDescription = Res.string.shopping_delete_checked.resolve(),
                 tint = MaterialTheme.colorScheme.outline,
             )
         }
