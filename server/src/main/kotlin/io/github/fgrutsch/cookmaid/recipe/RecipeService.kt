@@ -1,5 +1,6 @@
 package io.github.fgrutsch.cookmaid.recipe
 
+import io.github.fgrutsch.cookmaid.common.SupportedLocale
 import io.github.fgrutsch.cookmaid.user.UserId
 import kotlin.time.Instant
 import kotlin.uuid.Uuid
@@ -19,10 +20,18 @@ class RecipeService(
      * @param limit maximum number of recipes to return.
      * @param search optional case-insensitive text filter on recipe name.
      * @param tag optional tag filter.
+     * @param locale the language code for catalog item names.
      * @return a page of matching recipes with an optional next-page cursor.
      */
-    suspend fun find(userId: UserId, cursor: Instant?, limit: Int, search: String?, tag: String?): RecipePage {
-        return repository.find(userId, cursor, limit, search, tag)
+    suspend fun find(
+        userId: UserId,
+        cursor: Instant?,
+        limit: Int,
+        search: String?,
+        tag: String?,
+        locale: SupportedLocale,
+    ): RecipePage {
+        return repository.find(userId, cursor, limit, search, tag, locale)
     }
 
     /**
@@ -30,11 +39,12 @@ class RecipeService(
      *
      * @param userId the expected owner.
      * @param recipeId the recipe to look up.
+     * @param locale the language code for catalog item names.
      * @return the recipe, or null if not found or not owned by [userId].
      */
-    suspend fun findById(userId: UserId, recipeId: Uuid): Recipe? {
+    suspend fun findById(userId: UserId, recipeId: Uuid, locale: SupportedLocale): Recipe? {
         if (!repository.isOwner(userId, recipeId)) return null
-        return repository.findById(recipeId)
+        return repository.findById(recipeId, locale)
     }
 
     /**
@@ -52,10 +62,11 @@ class RecipeService(
      *
      * @param userId the owner of the new recipe.
      * @param data the recipe content.
+     * @param locale the language code for catalog item names.
      * @return the persisted recipe.
      */
-    suspend fun create(userId: UserId, data: RecipeData): Recipe {
-        return repository.create(userId, data)
+    suspend fun create(userId: UserId, data: RecipeData, locale: SupportedLocale): Recipe {
+        return repository.create(userId, data, locale)
     }
 
     /**

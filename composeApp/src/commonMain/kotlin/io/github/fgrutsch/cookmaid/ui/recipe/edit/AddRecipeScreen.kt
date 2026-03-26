@@ -19,6 +19,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import cookmaid.composeapp.generated.resources.Res
+import cookmaid.composeapp.generated.resources.common_back
+import cookmaid.composeapp.generated.resources.common_save
+import cookmaid.composeapp.generated.resources.recipe_add_title
+import cookmaid.composeapp.generated.resources.recipe_edit_title
+import io.github.fgrutsch.cookmaid.ui.common.resolve
 
 /**
  * Form screen for creating or editing a recipe.
@@ -27,6 +33,7 @@ import androidx.compose.runtime.setValue
  * @param onBack called when navigating back after save or cancel.
  */
 @Composable
+@Suppress("LongMethod")
 fun AddRecipeScreen(
     viewModel: AddRecipeViewModel,
     onBack: () -> Unit,
@@ -53,18 +60,26 @@ fun AddRecipeScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text(if (state.isEditing) "Edit Recipe" else "Add Recipe") },
+                title = {
+                    Text(
+                        if (state.isEditing) Res.string.recipe_edit_title.resolve()
+                        else Res.string.recipe_add_title.resolve(),
+                    )
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainer,
                 ),
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = Res.string.common_back.resolve(),
+                        )
                     }
                 },
                 actions = {
                     IconButton(onClick = { onEvent(AddRecipeEvent.Save) }) {
-                        Icon(Icons.Default.Check, contentDescription = "Save")
+                        Icon(Icons.Default.Check, contentDescription = Res.string.common_save.resolve())
                     }
                 },
             )

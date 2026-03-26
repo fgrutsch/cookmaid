@@ -9,7 +9,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import cookmaid.composeapp.generated.resources.Res
+import cookmaid.composeapp.generated.resources.common_added_to_meal_plan
+import cookmaid.composeapp.generated.resources.common_added_to_shopping_list
 import io.github.fgrutsch.cookmaid.ui.common.SuccessSnackbarHost
+import org.jetbrains.compose.resources.getString
+import org.jetbrains.compose.resources.rememberResourceEnvironment
 import io.github.fgrutsch.cookmaid.ui.mealplan.DayPickerDialog
 import io.github.fgrutsch.cookmaid.ui.mealplan.DayPickerViewModel
 import io.github.fgrutsch.cookmaid.ui.mealplan.IngredientPickerDialog
@@ -36,14 +41,16 @@ fun RecipeDetailScreen(
     var showIngredientPicker by remember { mutableStateOf(false) }
     var showDayPicker by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
-
+    val env = rememberResourceEnvironment()
     LaunchedEffect(Unit) {
         onEvent(RecipeDetailEvent.Load)
         viewModel.effects.collect { effect ->
             when (effect) {
                 is RecipeDetailEffect.Deleted -> onBack()
-                is RecipeDetailEffect.AddedToShoppingList -> snackbarHostState.showSnackbar("Added to shopping list")
-                is RecipeDetailEffect.AddedToMealPlan -> snackbarHostState.showSnackbar("Added to meal plan")
+                is RecipeDetailEffect.AddedToShoppingList ->
+                    snackbarHostState.showSnackbar(getString(env, Res.string.common_added_to_shopping_list))
+                is RecipeDetailEffect.AddedToMealPlan ->
+                    snackbarHostState.showSnackbar(getString(env, Res.string.common_added_to_meal_plan))
                 is RecipeDetailEffect.Error -> snackbarHostState.showSnackbar(effect.message)
             }
         }

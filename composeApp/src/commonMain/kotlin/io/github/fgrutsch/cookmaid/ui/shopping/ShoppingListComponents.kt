@@ -23,8 +23,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextDecoration
+import cookmaid.composeapp.generated.resources.Res
+import cookmaid.composeapp.generated.resources.common_add
+import cookmaid.composeapp.generated.resources.shopping_add_item
 import io.github.fgrutsch.cookmaid.catalog.Item
 import io.github.fgrutsch.cookmaid.shopping.ShoppingItem
+import io.github.fgrutsch.cookmaid.ui.common.resolve
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,7 +49,7 @@ internal fun AddItemField(
         TextField(
             value = query,
             onValueChange = onQueryChange,
-            placeholder = { Text("Add item...") },
+            placeholder = { Text(Res.string.shopping_add_item.resolve()) },
             modifier = Modifier.fillMaxWidth().menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable),
             singleLine = true,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
@@ -53,7 +57,7 @@ internal fun AddItemField(
             trailingIcon = {
                 if (query.isNotBlank()) {
                     IconButton(onClick = onAddFreeText) {
-                        Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Add")
+                        Icon(Icons.AutoMirrored.Filled.Send, contentDescription = Res.string.common_add.resolve())
                     }
                 }
             },

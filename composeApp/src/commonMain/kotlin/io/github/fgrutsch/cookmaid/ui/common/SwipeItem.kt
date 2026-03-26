@@ -17,6 +17,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import cookmaid.composeapp.generated.resources.Res
+import cookmaid.composeapp.generated.resources.common_delete
+import cookmaid.composeapp.generated.resources.common_edit
+import io.github.fgrutsch.cookmaid.ui.common.resolve
 
 /**
  * A swipe-to-dismiss container supporting delete (end-to-start)
@@ -60,7 +64,7 @@ fun SwipeItem(
                     ) {
                         Icon(
                             Icons.Default.Delete,
-                            contentDescription = "Delete",
+                            contentDescription = Res.string.common_delete.resolve(),
                             tint = MaterialTheme.colorScheme.onErrorContainer,
                         )
                     }
@@ -76,7 +80,7 @@ fun SwipeItem(
                         ) {
                             Icon(
                                 Icons.Default.Edit,
-                                contentDescription = "Edit",
+                                contentDescription = Res.string.common_edit.resolve(),
                                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
                             )
                         }

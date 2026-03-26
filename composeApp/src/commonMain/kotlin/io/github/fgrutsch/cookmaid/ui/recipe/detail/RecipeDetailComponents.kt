@@ -43,8 +43,22 @@ import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
+import cookmaid.composeapp.generated.resources.Res
+import cookmaid.composeapp.generated.resources.common_add_to_meal_plan
+import cookmaid.composeapp.generated.resources.common_add_to_shopping_list
+import cookmaid.composeapp.generated.resources.common_back
+import cookmaid.composeapp.generated.resources.common_delete
+import cookmaid.composeapp.generated.resources.common_edit
+import cookmaid.composeapp.generated.resources.common_options
+import cookmaid.composeapp.generated.resources.recipe_detail_description
+import cookmaid.composeapp.generated.resources.recipe_detail_ingredients
+import cookmaid.composeapp.generated.resources.recipe_detail_not_found
+import cookmaid.composeapp.generated.resources.recipe_detail_steps
+import cookmaid.composeapp.generated.resources.recipe_detail_tags
+import cookmaid.composeapp.generated.resources.recipe_detail_title
 import io.github.fgrutsch.cookmaid.recipe.Recipe
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
+import io.github.fgrutsch.cookmaid.ui.common.resolve
 import io.github.fgrutsch.cookmaid.ui.shopping.formatQuantity
 
 @Composable
@@ -58,26 +72,38 @@ internal fun RecipeDetailTopBar(
     actions: RecipeMenuActions,
 ) {
     TopAppBar(
-        title = { Text(recipeName ?: "Recipe") },
+        title = { Text(recipeName ?: Res.string.recipe_detail_title.resolve()) },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer,
         ),
         navigationIcon = {
             IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = Res.string.common_back.resolve())
             }
         },
         actions = {
             IconButton(onClick = onShowMenu) {
-                Icon(Icons.Default.MoreVert, contentDescription = "Options")
+                Icon(Icons.Default.MoreVert, contentDescription = Res.string.common_options.resolve())
             }
             DropdownMenu(expanded = showMenu, onDismissRequest = onDismissMenu) {
-                DropdownMenuItem(text = { Text("Edit") }, onClick = actions.onEdit)
-                DropdownMenuItem(text = { Text("Delete") }, onClick = actions.onDelete)
+                DropdownMenuItem(
+                    text = { Text(Res.string.common_edit.resolve()) },
+                    onClick = actions.onEdit,
+                )
+                DropdownMenuItem(
+                    text = { Text(Res.string.common_delete.resolve()) },
+                    onClick = actions.onDelete,
+                )
                 if (hasIngredients) {
-                    DropdownMenuItem(text = { Text("Add to shopping list") }, onClick = actions.onAddToShoppingList)
+                    DropdownMenuItem(
+                        text = { Text(Res.string.common_add_to_shopping_list.resolve()) },
+                        onClick = actions.onAddToShoppingList,
+                    )
                 }
-                DropdownMenuItem(text = { Text("Add to meal plan") }, onClick = actions.onAddToMealPlan)
+                DropdownMenuItem(
+                    text = { Text(Res.string.common_add_to_meal_plan.resolve()) },
+                    onClick = actions.onAddToMealPlan,
+                )
             }
         },
     )
@@ -128,7 +154,7 @@ private val urlPattern = Regex("https?://\\S+", RegexOption.IGNORE_CASE)
 internal fun DescriptionSection(description: String, onLinkClick: (String) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(
-            "Description",
+            Res.string.recipe_detail_description.resolve(),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary,
@@ -161,7 +187,7 @@ internal fun DescriptionSection(description: String, onLinkClick: (String) -> Un
 internal fun TagsSection(tags: List<String>) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(
-            "Tags",
+            Res.string.recipe_detail_tags.resolve(),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary,
@@ -181,7 +207,7 @@ internal fun TagsSection(tags: List<String>) {
 internal fun IngredientsSection(ingredients: List<RecipeIngredient>) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
-            "Ingredients",
+            Res.string.recipe_detail_ingredients.resolve(),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary,
@@ -218,7 +244,7 @@ internal fun IngredientsSection(ingredients: List<RecipeIngredient>) {
 internal fun StepsSection(steps: List<String>) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(
-            "Steps",
+            Res.string.recipe_detail_steps.resolve(),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary,
@@ -264,6 +290,6 @@ internal fun RecipeNotFound(padding: PaddingValues) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text("Recipe not found")
+        Text(Res.string.recipe_detail_not_found.resolve())
     }
 }

@@ -44,14 +44,39 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import cookmaid.composeapp.generated.resources.Res
+import cookmaid.composeapp.generated.resources.common_add
+import cookmaid.composeapp.generated.resources.common_cancel
+import cookmaid.composeapp.generated.resources.common_previous_week
+import cookmaid.composeapp.generated.resources.common_next_week
+import cookmaid.composeapp.generated.resources.common_save
+import cookmaid.composeapp.generated.resources.common_search_recipes
+import cookmaid.composeapp.generated.resources.day_friday
+import cookmaid.composeapp.generated.resources.day_monday
+import cookmaid.composeapp.generated.resources.day_saturday
+import cookmaid.composeapp.generated.resources.day_sunday
+import cookmaid.composeapp.generated.resources.day_thursday
+import cookmaid.composeapp.generated.resources.day_tuesday
+import cookmaid.composeapp.generated.resources.day_wednesday
+import cookmaid.composeapp.generated.resources.meal_plan_add_count
+import cookmaid.composeapp.generated.resources.meal_plan_add_to_day
+import cookmaid.composeapp.generated.resources.meal_plan_add_to_meal_plan
+import cookmaid.composeapp.generated.resources.meal_plan_deselect_all
+import cookmaid.composeapp.generated.resources.meal_plan_edit_note_title
+import cookmaid.composeapp.generated.resources.meal_plan_note_label
+import cookmaid.composeapp.generated.resources.meal_plan_select_all
+import cookmaid.composeapp.generated.resources.meal_plan_tab_note
+import cookmaid.composeapp.generated.resources.meal_plan_tab_recipe
 import io.github.fgrutsch.cookmaid.mealplan.WEEK_END_OFFSET
 import io.github.fgrutsch.cookmaid.recipe.Recipe
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
 import io.github.fgrutsch.cookmaid.ui.common.formatShortDate
 import io.github.fgrutsch.cookmaid.ui.shopping.formatQuantity
 import kotlin.time.Clock
+import io.github.fgrutsch.cookmaid.ui.common.resolve
 import kotlin.uuid.Uuid
 import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
@@ -77,14 +102,14 @@ fun AddMealPlanItemDialog(
     onDismiss: () -> Unit,
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
-    val options = listOf("Recipe", "Note")
+    val options = listOf(Res.string.meal_plan_tab_recipe.resolve(), Res.string.meal_plan_tab_note.resolve())
 
     var noteName by remember { mutableStateOf("") }
     val keyboardController = LocalSoftwareKeyboardController.current
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Add to ${formatDayNameShort(day)}") },
+        title = { Text(Res.string.meal_plan_add_to_day.resolve(formatDayNameShort(day))) },
         text = {
             Column {
                 SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
@@ -108,7 +133,7 @@ fun AddMealPlanItemDialog(
                     1 -> OutlinedTextField(
                         value = noteName,
                         onValueChange = { noteName = it },
-                        label = { Text("Note or URL") },
+                        label = { Text(Res.string.meal_plan_note_label.resolve()) },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
@@ -122,11 +147,11 @@ fun AddMealPlanItemDialog(
                 TextButton(
                     onClick = { if (noteName.isNotBlank()) onAddNote(noteName) },
                     enabled = noteName.isNotBlank(),
-                ) { Text("Add") }
+                ) { Text(Res.string.common_add.resolve()) }
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(onClick = onDismiss) { Text(Res.string.common_cancel.resolve()) }
         },
     )
 }
@@ -149,12 +174,12 @@ fun EditNoteDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Edit note") },
+        title = { Text(Res.string.meal_plan_edit_note_title.resolve()) },
         text = {
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
-                label = { Text("Note or URL") },
+                label = { Text(Res.string.meal_plan_note_label.resolve()) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
@@ -166,11 +191,11 @@ fun EditNoteDialog(
                 onClick = { if (name.isNotBlank()) onSave(name) },
                 enabled = name.isNotBlank(),
             ) {
-                Text("Save")
+                Text(Res.string.common_save.resolve())
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(onClick = onDismiss) { Text(Res.string.common_cancel.resolve()) }
         },
     )
 }
@@ -217,11 +242,11 @@ fun IngredientPickerDialog(
                 onClick = { onAdd(selected.toList()) },
                 enabled = selected.isNotEmpty(),
             ) {
-                Text("Add (${selected.size})")
+                Text(Res.string.meal_plan_add_count.resolve(selected.size))
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(onClick = onDismiss) { Text(Res.string.common_cancel.resolve()) }
         },
     )
 }
@@ -236,7 +261,12 @@ private fun IngredientPickerSelectAllRow(
         horizontalArrangement = Arrangement.End,
     ) {
         TextButton(onClick = onToggleAll) {
-            Text(if (allSelected) "Deselect all" else "Select all")
+            val text = if (allSelected) {
+                Res.string.meal_plan_deselect_all.resolve()
+            } else {
+                Res.string.meal_plan_select_all.resolve()
+            }
+            Text(text)
         }
     }
 }
@@ -297,7 +327,7 @@ private fun RecipePickerTab(
                 searchQuery = it
                 onSearchChanged(it)
             },
-            placeholder = { Text("Search recipes...") },
+            placeholder = { Text(Res.string.common_search_recipes.resolve()) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
@@ -343,7 +373,7 @@ fun DayPickerDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Add to meal plan") },
+        title = { Text(Res.string.meal_plan_add_to_meal_plan.resolve()) },
         text = {
             Column {
                 DayPickerWeekNavigation(
@@ -369,7 +399,7 @@ fun DayPickerDialog(
         },
         confirmButton = {},
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(onClick = onDismiss) { Text(Res.string.common_cancel.resolve()) }
         },
     )
 }
@@ -387,7 +417,10 @@ private fun DayPickerWeekNavigation(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         IconButton(onClick = onPrevious) {
-            Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "Previous week")
+            Icon(
+                Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                contentDescription = Res.string.common_previous_week.resolve(),
+            )
         }
         Text(
             text = "${formatShortDate(weekStart)} - ${formatShortDate(weekEnd)}",
@@ -395,7 +428,10 @@ private fun DayPickerWeekNavigation(
             fontWeight = FontWeight.Medium,
         )
         IconButton(onClick = onNext) {
-            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Next week")
+            Icon(
+                Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = Res.string.common_next_week.resolve(),
+            )
         }
     }
 }
@@ -438,7 +474,16 @@ private fun DayPickerDayList(
     }
 }
 
+@Composable
 private fun formatDayNameShort(date: LocalDate): String {
-    val dayName = date.dayOfWeek.name.lowercase().replaceFirstChar { it.uppercase() }
+    val dayName = when (date.dayOfWeek) {
+        DayOfWeek.MONDAY -> Res.string.day_monday.resolve()
+        DayOfWeek.TUESDAY -> Res.string.day_tuesday.resolve()
+        DayOfWeek.WEDNESDAY -> Res.string.day_wednesday.resolve()
+        DayOfWeek.THURSDAY -> Res.string.day_thursday.resolve()
+        DayOfWeek.FRIDAY -> Res.string.day_friday.resolve()
+        DayOfWeek.SATURDAY -> Res.string.day_saturday.resolve()
+        DayOfWeek.SUNDAY -> Res.string.day_sunday.resolve()
+    }
     return "$dayName, ${formatShortDate(date)}"
 }

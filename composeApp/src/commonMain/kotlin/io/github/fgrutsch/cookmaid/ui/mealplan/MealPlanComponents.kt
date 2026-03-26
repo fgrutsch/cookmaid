@@ -41,6 +41,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import cookmaid.composeapp.generated.resources.Res
+import cookmaid.composeapp.generated.resources.common_add_to_shopping_list
+import cookmaid.composeapp.generated.resources.common_next_week
+import cookmaid.composeapp.generated.resources.common_options
+import cookmaid.composeapp.generated.resources.common_previous_week
+import cookmaid.composeapp.generated.resources.day_friday
+import cookmaid.composeapp.generated.resources.day_monday
+import cookmaid.composeapp.generated.resources.day_saturday
+import cookmaid.composeapp.generated.resources.day_sunday
+import cookmaid.composeapp.generated.resources.day_thursday
+import cookmaid.composeapp.generated.resources.day_tuesday
+import cookmaid.composeapp.generated.resources.day_wednesday
+import cookmaid.composeapp.generated.resources.meal_plan_add_item
 import io.github.fgrutsch.cookmaid.mealplan.MealPlanDay
 import io.github.fgrutsch.cookmaid.mealplan.MealPlanItem
 import io.github.fgrutsch.cookmaid.mealplan.WEEK_END_OFFSET
@@ -50,6 +63,7 @@ import io.github.fgrutsch.cookmaid.ui.common.formatShortDate
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
+import io.github.fgrutsch.cookmaid.ui.common.resolve
 import kotlinx.datetime.plus
 import kotlin.uuid.Uuid
 
@@ -120,7 +134,10 @@ internal fun WeekNavigationBar(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         IconButton(onClick = onPrevious) {
-            Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "Previous week")
+            Icon(
+                Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                contentDescription = Res.string.common_previous_week.resolve(),
+            )
         }
         Text(
             text = label,
@@ -128,7 +145,10 @@ internal fun WeekNavigationBar(
             fontWeight = FontWeight.Medium,
         )
         IconButton(onClick = onNext) {
-            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Next week")
+            Icon(
+                Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = Res.string.common_next_week.resolve(),
+            )
         }
     }
 }
@@ -170,7 +190,7 @@ internal fun DayCard(
                     )
                 }
                 IconButton(onClick = onAddItem) {
-                    Icon(Icons.Default.Add, contentDescription = "Add item")
+                    Icon(Icons.Default.Add, contentDescription = Res.string.meal_plan_add_item.resolve())
                 }
             }
 
@@ -230,14 +250,14 @@ internal fun MealPlanItemRow(
         if (item is MealPlanItem.Recipe) {
             Box {
                 IconButton(onClick = { showMenu = true }) {
-                    Icon(Icons.Default.MoreVert, contentDescription = "Options")
+                    Icon(Icons.Default.MoreVert, contentDescription = Res.string.common_options.resolve())
                 }
                 DropdownMenu(
                     expanded = showMenu,
                     onDismissRequest = { showMenu = false },
                 ) {
                     DropdownMenuItem(
-                        text = { Text("Add to shopping list") },
+                        text = { Text(Res.string.common_add_to_shopping_list.resolve()) },
                         onClick = {
                             showMenu = false
                             onAddToShoppingList()
@@ -249,16 +269,18 @@ internal fun MealPlanItemRow(
     }
 }
 
+@Composable
 internal fun formatDayName(dayOfWeek: DayOfWeek): String = when (dayOfWeek) {
-    DayOfWeek.MONDAY -> "Monday"
-    DayOfWeek.TUESDAY -> "Tuesday"
-    DayOfWeek.WEDNESDAY -> "Wednesday"
-    DayOfWeek.THURSDAY -> "Thursday"
-    DayOfWeek.FRIDAY -> "Friday"
-    DayOfWeek.SATURDAY -> "Saturday"
-    DayOfWeek.SUNDAY -> "Sunday"
+    DayOfWeek.MONDAY -> Res.string.day_monday.resolve()
+    DayOfWeek.TUESDAY -> Res.string.day_tuesday.resolve()
+    DayOfWeek.WEDNESDAY -> Res.string.day_wednesday.resolve()
+    DayOfWeek.THURSDAY -> Res.string.day_thursday.resolve()
+    DayOfWeek.FRIDAY -> Res.string.day_friday.resolve()
+    DayOfWeek.SATURDAY -> Res.string.day_saturday.resolve()
+    DayOfWeek.SUNDAY -> Res.string.day_sunday.resolve()
 }
 
+@Composable
 internal fun formatDateRange(start: LocalDate, end: LocalDate): String {
     return "${formatShortDate(start)} - ${formatShortDate(end)}"
 }

@@ -1,9 +1,12 @@
 package io.github.fgrutsch.cookmaid.recipe
 
 import io.github.fgrutsch.cookmaid.catalog.CatalogItemsTable
+import io.github.fgrutsch.cookmaid.common.SupportedLocale
 import io.github.fgrutsch.cookmaid.catalog.Item
 import io.github.fgrutsch.cookmaid.catalog.ItemCategoriesTable
 import io.github.fgrutsch.cookmaid.catalog.ItemCategory
+import io.github.fgrutsch.cookmaid.catalog.resolveCategoryName
+import io.github.fgrutsch.cookmaid.catalog.resolveItemName
 import io.github.fgrutsch.cookmaid.user.UserId
 import kotlin.time.Instant
 import org.jetbrains.exposed.v1.core.JoinType
@@ -40,17 +43,26 @@ interface RecipeRepository {
      * @param limit maximum number of recipes to return.
      * @param search optional case-insensitive text filter on recipe name.
      * @param tag optional tag filter.
+     * @param locale the language code for catalog item names.
      * @return a page of matching recipes with an optional next-page cursor.
      */
-    suspend fun find(userId: UserId, cursor: Instant?, limit: Int, search: String?, tag: String?): RecipePage
+    suspend fun find(
+        userId: UserId,
+        cursor: Instant?,
+        limit: Int,
+        search: String?,
+        tag: String?,
+        locale: SupportedLocale,
+    ): RecipePage
 
     /**
      * Returns a single recipe by [id], or null if it does not exist.
      *
      * @param id the recipe identifier.
+     * @param locale the language code for catalog item names.
      * @return the matching recipe, or null if not found.
      */
-    suspend fun findById(id: Uuid): Recipe?
+    suspend fun findById(id: Uuid, locale: SupportedLocale): Recipe?
 
     /**
      * Returns all distinct tags across the user's recipes.
@@ -65,9 +77,10 @@ interface RecipeRepository {
      *
      * @param userId the owner of the new recipe.
      * @param data the recipe content including ingredients.
+     * @param locale the language code for catalog item names.
      * @return the persisted recipe.
      */
-    suspend fun create(userId: UserId, data: RecipeData): Recipe
+    suspend fun create(userId: UserId, data: RecipeData, locale: SupportedLocale): Recipe
 
     /**
      * Replaces the recipe data (including ingredients) for the given [id].
@@ -102,6 +115,7 @@ class PostgresRecipeRepository : RecipeRepository {
         limit: Int,
         search: String?,
         tag: String?,
+        locale: SupportedLocale,
     ): RecipePage = suspendTransaction {
         var condition: Op<Boolean> = RecipesTable.userId eq userId.value
 
@@ -150,7 +164,7 @@ class PostgresRecipeRepository : RecipeRepository {
                 id = id,
                 name = row[RecipesTable.name],
                 description = row[RecipesTable.description],
-                ingredients = loadIngredients(id),
+                ingredients = loadIngredients(id, locale),
                 steps = row[RecipesTable.steps],
                 tags = row[RecipesTable.tags],
             )
@@ -160,7 +174,7 @@ class PostgresRecipeRepository : RecipeRepository {
         RecipePage(items = items, nextCursor = nextCursor)
     }
 
-    override suspend fun findById(id: Uuid): Recipe? = suspendTransaction {
+    override suspend fun findById(id: Uuid, locale: SupportedLocale): Recipe? = suspendTransaction {
         val row = RecipesTable.selectAll()
             .where(RecipesTable.id eq id)
             .singleOrNull() ?: return@suspendTransaction null
@@ -169,7 +183,7 @@ class PostgresRecipeRepository : RecipeRepository {
             id = row[RecipesTable.id],
             name = row[RecipesTable.name],
             description = row[RecipesTable.description],
-            ingredients = loadIngredients(id),
+            ingredients = loadIngredients(id, locale),
             steps = row[RecipesTable.steps],
             tags = row[RecipesTable.tags],
         )
@@ -183,7 +197,11 @@ class PostgresRecipeRepository : RecipeRepository {
             .sorted()
     }
 
-    override suspend fun create(userId: UserId, data: RecipeData): Recipe = suspendTransaction {
+    override suspend fun create(
+        userId: UserId,
+        data: RecipeData,
+        locale: SupportedLocale,
+    ): Recipe = suspendTransaction {
         val row = RecipesTable.insertReturning {
             it[RecipesTable.userId] = userId.value
             it[RecipesTable.name] = data.name.trim()
@@ -199,7 +217,7 @@ class PostgresRecipeRepository : RecipeRepository {
             id = recipeId,
             name = row[RecipesTable.name],
             description = row[RecipesTable.description],
-            ingredients = loadIngredients(recipeId),
+            ingredients = loadIngredients(recipeId, locale),
             steps = row[RecipesTable.steps],
             tags = row[RecipesTable.tags],
         )
@@ -227,7 +245,7 @@ class PostgresRecipeRepository : RecipeRepository {
             .count() > 0
     }
 
-    private fun loadIngredients(recipeId: Uuid): List<RecipeIngredient> {
+    private fun loadIngredients(recipeId: Uuid, locale: SupportedLocale): List<RecipeIngredient> {
         val joined = RecipeIngredientsTable
             .join(CatalogItemsTable, JoinType.LEFT, RecipeIngredientsTable.catalogItemId, CatalogItemsTable.id)
             .join(ItemCategoriesTable, JoinType.LEFT, CatalogItemsTable.categoryId, ItemCategoriesTable.id)
@@ -239,10 +257,10 @@ class PostgresRecipeRepository : RecipeRepository {
                 val item: Item = if (catalogItemId != null) {
                     Item.Catalog(
                         id = catalogItemId,
-                        name = row[CatalogItemsTable.name],
+                        name = resolveItemName(row, locale),
                         category = ItemCategory(
                             id = row[ItemCategoriesTable.id],
-                            name = row[ItemCategoriesTable.name],
+                            name = resolveCategoryName(row, locale),
                         ),
                     )
                 } else {

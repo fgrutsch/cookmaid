@@ -21,7 +21,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import cookmaid.composeapp.generated.resources.Res
+import cookmaid.composeapp.generated.resources.common_added_to_meal_plan
+import cookmaid.composeapp.generated.resources.common_added_to_shopping_list
+import cookmaid.composeapp.generated.resources.recipe_list_add
 import io.github.fgrutsch.cookmaid.ui.common.SuccessSnackbarHost
+import io.github.fgrutsch.cookmaid.ui.common.resolve
+import org.jetbrains.compose.resources.getString
+import org.jetbrains.compose.resources.rememberResourceEnvironment
 import io.github.fgrutsch.cookmaid.ui.mealplan.DayPickerDialog
 import io.github.fgrutsch.cookmaid.ui.mealplan.DayPickerViewModel
 import io.github.fgrutsch.cookmaid.ui.mealplan.IngredientPickerDialog
@@ -50,6 +57,9 @@ fun RecipeListScreen(
     var ingredientPickerRecipeId by remember { mutableStateOf<Uuid?>(null) }
     var dayPickerRecipeId by remember { mutableStateOf<Uuid?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
+    val env = rememberResourceEnvironment()
+
+    val addRecipeMsg = Res.string.recipe_list_add.resolve()
 
     val listState = rememberLazyListState()
     val shouldLoadMore by remember {
@@ -65,8 +75,10 @@ fun RecipeListScreen(
         onEvent(RecipeListEvent.LoadRecipes)
         viewModel.effects.collect { effect ->
             when (effect) {
-                is RecipeListEffect.AddedToShoppingList -> snackbarHostState.showSnackbar("Added to shopping list")
-                is RecipeListEffect.AddedToMealPlan -> snackbarHostState.showSnackbar("Added to meal plan")
+                is RecipeListEffect.AddedToShoppingList ->
+                    snackbarHostState.showSnackbar(getString(env, Res.string.common_added_to_shopping_list))
+                is RecipeListEffect.AddedToMealPlan ->
+                    snackbarHostState.showSnackbar(getString(env, Res.string.common_added_to_meal_plan))
                 is RecipeListEffect.Error -> snackbarHostState.showSnackbar(effect.message)
             }
         }
@@ -89,7 +101,7 @@ fun RecipeListScreen(
         },
         floatingActionButton = {
             FloatingActionButton(onClick = onAddRecipe) {
-                Icon(Icons.Default.Add, contentDescription = "Add recipe")
+                Icon(Icons.Default.Add, contentDescription = addRecipeMsg)
             }
         },
     ) { padding ->

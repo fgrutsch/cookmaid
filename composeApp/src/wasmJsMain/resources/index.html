@@ -16,6 +16,17 @@
     </circle>
 </svg>
 <script>
+    var currentLanguagesImpl = Object.getOwnPropertyDescriptor(Navigator.prototype, "languages");
+    Object.defineProperty(Navigator.prototype, "languages", Object.assign({}, currentLanguagesImpl, {
+        get: function () {
+            if (window.__customLocale) {
+                return [window.__customLocale];
+            }
+            return currentLanguagesImpl.get.apply(this);
+        }
+    }));
+</script>
+<script>
     window.__CONFIG__ = {
         OIDC_DISCOVERY_URI: "${OIDC_DISCOVERY_URI}",
         OIDC_CLIENT_ID: "${OIDC_CLIENT_ID}",

@@ -57,6 +57,7 @@ kotlin {
             implementation(libs.bundles.ktor.client)
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor3)
+            implementation(libs.multiplatform.settings.no.arg)
             implementation(projects.shared)
         }
         commonTest.dependencies {

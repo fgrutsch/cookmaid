@@ -1,22 +1,22 @@
 package io.github.fgrutsch.cookmaid.ui.auth
 
-import kotlinx.browser.window
+import com.russhwolf.settings.StorageSettings
 import org.publicvalue.multiplatform.oidc.tokenstore.SettingsStore
 
 class LocalStorageSettingsStore : SettingsStore {
-    private val storage = window.localStorage
+    private val settings = StorageSettings()
 
-    override suspend fun get(key: String): String? = storage.getItem(key)
+    override suspend fun get(key: String): String? = settings.getStringOrNull(key)
 
     override suspend fun put(key: String, value: String) {
-        storage.setItem(key, value)
+        settings.putString(key, value)
     }
 
     override suspend fun remove(key: String) {
-        storage.removeItem(key)
+        settings.remove(key)
     }
 
     override suspend fun clear() {
-        storage.clear()
+        settings.clear()
     }
 }

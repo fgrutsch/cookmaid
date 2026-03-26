@@ -1,0 +1,125 @@
+<resources>
+    <!-- Common -->
+    <string name="common_add">Hinzufügen</string>
+    <string name="common_cancel">Abbrechen</string>
+    <string name="common_save">Speichern</string>
+    <string name="common_ok">OK</string>
+    <string name="common_close">Schließen</string>
+    <string name="common_delete">Löschen</string>
+    <string name="common_edit">Bearbeiten</string>
+    <string name="common_back">Zurück</string>
+    <string name="common_options">Optionen</string>
+    <string name="common_remove">Entfernen</string>
+    <string name="common_search">Suchen</string>
+    <string name="common_add_to_shopping_list">Zur Einkaufsliste hinzufügen</string>
+    <string name="common_add_to_meal_plan">Zum Essensplan hinzufügen</string>
+    <string name="common_added_to_shopping_list">Zur Einkaufsliste hinzugefügt</string>
+    <string name="common_added_to_meal_plan">Zum Essensplan hinzugefügt</string>
+    <string name="common_previous_week">Vorherige Woche</string>
+    <string name="common_next_week">Nächste Woche</string>
+    <string name="common_search_recipes">Rezepte suchen…</string>
+    <string name="common_uncategorized">Ohne Kategorie</string>
+    <string name="common_quantity">Menge</string>
+
+    <!-- Navigation -->
+    <string name="nav_shopping">Einkaufen</string>
+    <string name="nav_recipes">Rezepte</string>
+    <string name="nav_meal_plan">Essensplan</string>
+    <string name="nav_settings">Einstellungen</string>
+
+    <!-- Auth -->
+    <string name="auth_app_logo">Cookmaid</string>
+    <string name="auth_sign_in">Anmelden</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Einstellungen</string>
+    <string name="settings_dark_mode">Dunkelmodus</string>
+    <string name="settings_language">Sprache</string>
+    <string name="settings_sign_out">Abmelden</string>
+    <string name="settings_profile_picture">Profilbild</string>
+
+    <!-- Recipe List -->
+    <string name="recipe_list_title">Rezepte</string>
+    <string name="recipe_list_add">Rezept hinzufügen</string>
+    <string name="recipe_list_close_search">Suche schließen</string>
+    <string name="recipe_list_random">Zufälliges Rezept</string>
+    <string name="recipe_list_empty">Keine Rezepte gefunden</string>
+    <string name="recipe_list_reroll">Neu würfeln</string>
+    <string name="recipe_list_view_details">Details anzeigen</string>
+
+    <!-- Recipe Detail -->
+    <string name="recipe_detail_title">Rezept</string>
+    <string name="recipe_detail_not_found">Rezept nicht gefunden</string>
+    <string name="recipe_detail_description">Beschreibung</string>
+    <string name="recipe_detail_tags">Tags</string>
+    <string name="recipe_detail_ingredients">Zutaten</string>
+    <string name="recipe_detail_steps">Schritte</string>
+
+    <!-- Recipe Edit -->
+    <string name="recipe_edit_title">Rezept bearbeiten</string>
+    <string name="recipe_add_title">Rezept hinzufügen</string>
+    <string name="recipe_edit_name_label">Rezeptname</string>
+    <string name="recipe_edit_name_required">Name ist erforderlich</string>
+    <string name="recipe_edit_description_label">Beschreibung (optional)</string>
+    <string name="recipe_edit_add_step">Schritt hinzufügen</string>
+    <string name="recipe_edit_add_ingredient">Zutat hinzufügen</string>
+    <string name="recipe_edit_new_tag_title">Neuer Tag</string>
+    <string name="recipe_edit_tag_name_label">Tag-Name</string>
+
+    <!-- Shopping -->
+    <string name="shopping_title">Einkaufen</string>
+    <string name="shopping_new_list">Neue Liste</string>
+    <string name="shopping_rename_list">Liste umbenennen</string>
+    <string name="shopping_delete_list">Liste löschen</string>
+    <string name="shopping_list_options">Listenoptionen</string>
+    <string name="shopping_empty_title">Noch keine Einträge</string>
+    <string name="shopping_empty_subtitle">Tippe oben, um Einträge hinzuzufügen</string>
+    <string name="shopping_add_item">Eintrag hinzufügen…</string>
+    <string name="shopping_quantity_label">Menge</string>
+    <string name="shopping_list_name_label">Listenname</string>
+    <string name="shopping_checked_count">Erledigt (%1$d)</string>
+    <string name="shopping_delete_checked">Erledigte löschen</string>
+
+    <!-- Meal Plan -->
+    <string name="meal_plan_title">Essensplan</string>
+    <string name="meal_plan_go_to_current">Zur aktuellen Woche</string>
+    <string name="meal_plan_add_item">Eintrag hinzufügen</string>
+    <string name="meal_plan_add_to_day">Hinzufügen zu %1$s</string>
+    <string name="meal_plan_tab_recipe">Rezept</string>
+    <string name="meal_plan_tab_note">Notiz</string>
+    <string name="meal_plan_note_label">Notiz oder URL</string>
+    <string name="meal_plan_edit_note_title">Notiz bearbeiten</string>
+    <string name="meal_plan_add_to_meal_plan">Zum Essensplan hinzufügen</string>
+    <string name="meal_plan_select_all">Alle auswählen</string>
+    <string name="meal_plan_deselect_all">Alle abwählen</string>
+    <string name="meal_plan_add_count">Hinzufügen (%1$d)</string>
+
+    <!-- Recipe Card -->
+    <string name="recipe_card_summary">%1$d Zutaten · %2$d Schritte</string>
+
+    <!-- Months (short) -->
+    <string name="month_jan">Jan</string>
+    <string name="month_feb">Feb</string>
+    <string name="month_mar">Mär</string>
+    <string name="month_apr">Apr</string>
+    <string name="month_may">Mai</string>
+    <string name="month_jun">Jun</string>
+    <string name="month_jul">Jul</string>
+    <string name="month_aug">Aug</string>
+    <string name="month_sep">Sep</string>
+    <string name="month_oct">Okt</string>
+    <string name="month_nov">Nov</string>
+    <string name="month_dec">Dez</string>
+
+    <!-- Date format: day + short month (German order) -->
+    <string name="date_short">%2$d. %1$s</string>
+
+    <!-- Days -->
+    <string name="day_monday">Montag</string>
+    <string name="day_tuesday">Dienstag</string>
+    <string name="day_wednesday">Mittwoch</string>
+    <string name="day_thursday">Donnerstag</string>
+    <string name="day_friday">Freitag</string>
+    <string name="day_saturday">Samstag</string>
+    <string name="day_sunday">Sonntag</string>
+</resources>

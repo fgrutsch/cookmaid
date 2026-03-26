@@ -51,7 +51,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import cookmaid.composeapp.generated.resources.Res
+import cookmaid.composeapp.generated.resources.common_add_to_meal_plan
+import cookmaid.composeapp.generated.resources.common_add_to_shopping_list
+import cookmaid.composeapp.generated.resources.common_close
+import cookmaid.composeapp.generated.resources.common_options
+import cookmaid.composeapp.generated.resources.common_search
+import cookmaid.composeapp.generated.resources.common_search_recipes
+import cookmaid.composeapp.generated.resources.recipe_list_close_search
+import cookmaid.composeapp.generated.resources.recipe_list_empty
+import cookmaid.composeapp.generated.resources.recipe_list_random
+import cookmaid.composeapp.generated.resources.recipe_list_reroll
+import cookmaid.composeapp.generated.resources.recipe_list_title
+import cookmaid.composeapp.generated.resources.recipe_card_summary
+import cookmaid.composeapp.generated.resources.recipe_list_view_details
 import io.github.fgrutsch.cookmaid.recipe.Recipe
+import io.github.fgrutsch.cookmaid.ui.common.resolve
 import kotlin.uuid.Uuid
 
 internal const val PAGINATION_THRESHOLD = 5
@@ -73,7 +88,7 @@ internal fun RecipeListTopBar(
                 TextField(
                     value = searchQuery,
                     onValueChange = onSearchQueryChange,
-                    placeholder = { Text("Search recipes...") },
+                    placeholder = { Text(Res.string.common_search_recipes.resolve()) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth().focusRequester(searchFocusRequester),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
@@ -89,7 +104,7 @@ internal fun RecipeListTopBar(
                     searchFocusRequester.requestFocus()
                 }
             } else {
-                Text("Recipes")
+                Text(Res.string.recipe_list_title.resolve())
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
@@ -98,14 +113,14 @@ internal fun RecipeListTopBar(
         actions = {
             if (searchActive) {
                 IconButton(onClick = onCloseSearch) {
-                    Icon(Icons.Default.Close, contentDescription = "Close search")
+                    Icon(Icons.Default.Close, contentDescription = Res.string.recipe_list_close_search.resolve())
                 }
             } else {
                 IconButton(onClick = onOpenSearch) {
-                    Icon(Icons.Default.Search, contentDescription = "Search")
+                    Icon(Icons.Default.Search, contentDescription = Res.string.common_search.resolve())
                 }
                 IconButton(onClick = onRandomRecipe) {
-                    Icon(Icons.Default.Casino, contentDescription = "Random recipe")
+                    Icon(Icons.Default.Casino, contentDescription = Res.string.recipe_list_random.resolve())
                 }
             }
         },
@@ -163,7 +178,7 @@ internal fun RecipeListContent(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text("No recipes found", style = MaterialTheme.typography.bodyLarge)
+                Text(Res.string.recipe_list_empty.resolve(), style = MaterialTheme.typography.bodyLarge)
             }
         } else {
             LazyColumn(
@@ -228,7 +243,10 @@ internal fun RecipeCard(
                 )
                 if (recipe.ingredients.isNotEmpty()) {
                     Text(
-                        "${recipe.ingredients.size} ingredients · ${recipe.steps.size} steps",
+                        Res.string.recipe_card_summary.resolve(
+                            recipe.ingredients.size,
+                            recipe.steps.size,
+                        ),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -257,17 +275,17 @@ internal fun RecipeCardMenu(
 ) {
     Box {
         IconButton(onClick = onShowMenu) {
-            Icon(Icons.Default.MoreVert, contentDescription = "Options")
+            Icon(Icons.Default.MoreVert, contentDescription = Res.string.common_options.resolve())
         }
         DropdownMenu(expanded = showMenu, onDismissRequest = onDismissMenu) {
             if (hasIngredients) {
                 DropdownMenuItem(
-                    text = { Text("Add to shopping list") },
+                    text = { Text(Res.string.common_add_to_shopping_list.resolve()) },
                     onClick = onAddToShoppingList,
                 )
             }
             DropdownMenuItem(
-                text = { Text("Add to meal plan") },
+                text = { Text(Res.string.common_add_to_meal_plan.resolve()) },
                 onClick = onAddToMealPlan,
             )
         }
@@ -293,22 +311,22 @@ internal fun RandomRecipeDialog(
             ) {
                 Text(recipe.name, modifier = Modifier.weight(1f))
                 IconButton(onClick = onReroll) {
-                    Icon(Icons.Default.Refresh, contentDescription = "Re-roll")
+                    Icon(Icons.Default.Refresh, contentDescription = Res.string.recipe_list_reroll.resolve())
                 }
             }
         },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                TextButton(onClick = onView) { Text("View details") }
+                TextButton(onClick = onView) { Text(Res.string.recipe_list_view_details.resolve()) }
                 onAddToShoppingList?.let {
-                    TextButton(onClick = it) { Text("Add to shopping list") }
+                    TextButton(onClick = it) { Text(Res.string.common_add_to_shopping_list.resolve()) }
                 }
-                TextButton(onClick = onAddToMealPlan) { Text("Add to meal plan") }
+                TextButton(onClick = onAddToMealPlan) { Text(Res.string.common_add_to_meal_plan.resolve()) }
             }
         },
         confirmButton = {},
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Close") }
+            TextButton(onClick = onDismiss) { Text(Res.string.common_close.resolve()) }
         },
     )
 }

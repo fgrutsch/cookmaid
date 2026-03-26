@@ -1,5 +1,6 @@
 package io.github.fgrutsch.cookmaid.shopping
 
+import io.github.fgrutsch.cookmaid.common.ktor.locale
 import io.github.fgrutsch.cookmaid.common.ktor.userId
 import io.github.fgrutsch.cookmaid.common.ktor.uuid
 import io.ktor.http.HttpStatusCode
@@ -56,16 +57,19 @@ fun Route.shoppingRoutes() {
     }
 }
 
+@Suppress("LongMethod")
 private fun Route.shoppingItemRoutes(service: ShoppingListService) {
     route("/items") {
         get {
             val listId = call.parameters.uuid("listId")
-            call.respond(service.findItemsByListId(call.userId(), listId))
+            call.respond(service.findItemsByListId(call.userId(), listId, call.locale()))
         }
         post {
             val listId = call.parameters.uuid("listId")
             val body = call.receive<CreateShoppingItemRequest>()
-            val created = service.addItem(call.userId(), listId, body.catalogItemId, body.freeTextName, body.quantity)
+            val created = service.addItem(
+                call.userId(), listId, body.catalogItemId, body.freeTextName, body.quantity, call.locale(),
+            )
             if (created == null) {
                 call.respond(HttpStatusCode.NotFound)
             } else {
@@ -75,7 +79,7 @@ private fun Route.shoppingItemRoutes(service: ShoppingListService) {
         post("/batch") {
             val listId = call.parameters.uuid("listId")
             val body = call.receive<BatchAddItemsRequest>()
-            val created = service.addItems(call.userId(), listId, body.items)
+            val created = service.addItems(call.userId(), listId, body.items, call.locale())
             if (created == null) {
                 call.respond(HttpStatusCode.NotFound)
             } else {

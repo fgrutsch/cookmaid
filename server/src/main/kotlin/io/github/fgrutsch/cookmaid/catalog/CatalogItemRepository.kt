@@ -1,5 +1,7 @@
 package io.github.fgrutsch.cookmaid.catalog
 
+import io.github.fgrutsch.cookmaid.common.SupportedLocale
+import org.jetbrains.exposed.v1.core.Column
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.Table
 import org.jetbrains.exposed.v1.core.eq
@@ -12,58 +14,91 @@ import kotlin.uuid.Uuid
  */
 interface CatalogItemRepository {
     /**
-     * Returns all catalog items, ordered by name.
+     * Returns all catalog items, ordered by name in the given [locale].
      *
+     * @param locale the language code (e.g. "en", "de").
      * @return the full list of catalog items.
      */
-    suspend fun findAll(): List<Item.Catalog>
+    suspend fun findAll(locale: SupportedLocale): List<Item.Catalog>
 
     /**
      * Returns a catalog item by [id], or null if it does not exist.
      *
      * @param id the catalog item identifier.
+     * @param locale the language code (e.g. "en", "de").
      * @return the matching catalog item, or null.
      */
-    suspend fun findById(id: Uuid): Item.Catalog?
+    suspend fun findById(id: Uuid, locale: SupportedLocale): Item.Catalog?
 }
 
 class PostgresCatalogItemRepository : CatalogItemRepository {
 
     private val joined = CatalogItemsTable.innerJoin(ItemCategoriesTable)
 
-    override suspend fun findAll(): List<Item.Catalog> = suspendTransaction {
+    override suspend fun findAll(locale: SupportedLocale): List<Item.Catalog> = suspendTransaction {
+        val itemNameCol = resolveItemNameColumn(locale)
         joined.selectAll()
-            .orderBy(CatalogItemsTable.name)
-            .map { it.toCatalogItem() }
+            .orderBy(itemNameCol)
+            .map { it.toCatalogItem(locale) }
     }
 
-    override suspend fun findById(id: Uuid): Item.Catalog? = suspendTransaction {
+    override suspend fun findById(id: Uuid, locale: SupportedLocale): Item.Catalog? = suspendTransaction {
         joined.selectAll()
             .where(CatalogItemsTable.id eq id)
             .singleOrNull()
-            ?.toCatalogItem()
+            ?.toCatalogItem(locale)
     }
 
-    private fun ResultRow.toCatalogItem() = Item.Catalog(
+    private fun ResultRow.toCatalogItem(locale: SupportedLocale) = Item.Catalog(
         id = this[CatalogItemsTable.id],
-        name = this[CatalogItemsTable.name],
+        name = resolveItemName(this, locale),
         category = ItemCategory(
             id = this[ItemCategoriesTable.id],
-            name = this[ItemCategoriesTable.name],
+            name = resolveCategoryName(this, locale),
         ),
     )
 }
 
+/**
+ * Returns the localized catalog item name from the given [row].
+ */
+fun resolveItemName(row: ResultRow, locale: SupportedLocale): String =
+    row[resolveItemNameColumn(locale)]
+
+/**
+ * Returns the localized category name from the given [row].
+ */
+fun resolveCategoryName(row: ResultRow, locale: SupportedLocale): String =
+    row[resolveCategoryNameColumn(locale)]
+
+/**
+ * Returns the catalog item name column for the given [locale].
+ */
+fun resolveItemNameColumn(locale: SupportedLocale): Column<String> = when (locale) {
+    SupportedLocale.DE -> CatalogItemsTable.nameDe
+    SupportedLocale.EN -> CatalogItemsTable.nameEn
+}
+
+/**
+ * Returns the category name column for the given [locale].
+ */
+fun resolveCategoryNameColumn(locale: SupportedLocale): Column<String> = when (locale) {
+    SupportedLocale.DE -> ItemCategoriesTable.nameDe
+    SupportedLocale.EN -> ItemCategoriesTable.nameEn
+}
+
 object ItemCategoriesTable : Table("item_categories") {
     val id = uuid("id")
-    val name = text("name")
+    val nameEn = text("name_en")
+    val nameDe = text("name_de")
 
     override val primaryKey = PrimaryKey(id)
 }
 
 object CatalogItemsTable : Table("catalog_items") {
     val id = uuid("id").autoGenerate()
-    val name = text("name")
+    val nameEn = text("name_en")
+    val nameDe = text("name_de")
     val categoryId = uuid("category_id").references(ItemCategoriesTable.id)
 
     override val primaryKey = PrimaryKey(id)
