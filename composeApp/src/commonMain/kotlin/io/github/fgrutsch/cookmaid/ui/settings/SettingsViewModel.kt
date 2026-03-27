@@ -1,10 +1,8 @@
 package io.github.fgrutsch.cookmaid.ui.settings
 
-import androidx.compose.ui.text.intl.Locale
 import com.russhwolf.settings.Settings
 import io.github.fgrutsch.cookmaid.common.SupportedLocale
 import io.github.fgrutsch.cookmaid.ui.common.MviViewModel
-
 
 /**
  * ViewModel for app-wide settings (dark mode, language).
@@ -23,7 +21,7 @@ class SettingsViewModel : MviViewModel<SettingsState, SettingsEvent, Nothing>(Se
     init {
         updateState {
             copy(
-                isDarkMode = settings.getBoolean(KEY_DARK_MODE, false),
+                darkMode = settings.getStringOrNull(KEY_DARK_MODE)?.toBooleanStrictOrNull(),
                 locale = settings.getStringOrNull(KEY_LOCALE)?.let { SupportedLocale.fromCode(it) },
             )
         }
@@ -31,18 +29,18 @@ class SettingsViewModel : MviViewModel<SettingsState, SettingsEvent, Nothing>(Se
 
     override fun handleEvent(event: SettingsEvent) {
         when (event) {
-            is SettingsEvent.ToggleDarkMode -> toggleDarkMode()
+            is SettingsEvent.SetDarkMode -> setDarkMode(event.enabled)
             is SettingsEvent.SetLocale -> setLocale(event.locale)
         }
     }
 
-    fun effectiveLocale(): SupportedLocale =
-        state.value.locale ?: SupportedLocale.fromCode(Locale.current.language)
-
-    private fun toggleDarkMode() {
-        val newValue = !state.value.isDarkMode
-        settings.putBoolean(KEY_DARK_MODE, newValue)
-        updateState { copy(isDarkMode = newValue) }
+    private fun setDarkMode(enabled: Boolean?) {
+        if (enabled != null) {
+            settings.putString(KEY_DARK_MODE, enabled.toString())
+        } else {
+            settings.remove(KEY_DARK_MODE)
+        }
+        updateState { copy(darkMode = enabled) }
     }
 
     private fun setLocale(locale: SupportedLocale?) {
@@ -53,5 +51,4 @@ class SettingsViewModel : MviViewModel<SettingsState, SettingsEvent, Nothing>(Se
         }
         updateState { copy(locale = locale) }
     }
-
 }

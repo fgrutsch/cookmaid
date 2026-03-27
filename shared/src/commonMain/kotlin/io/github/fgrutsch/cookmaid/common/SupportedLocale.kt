@@ -3,9 +3,9 @@ package io.github.fgrutsch.cookmaid.common
 /**
  * Supported languages for catalog item and category translations.
  */
-enum class SupportedLocale(val code: String, val displayName: String) {
-    EN("en", "English"),
-    DE("de", "Deutsch");
+enum class SupportedLocale(val code: String) {
+    EN("en"),
+    DE("de");
 
     companion object {
         /**
@@ -18,8 +18,3 @@ enum class SupportedLocale(val code: String, val displayName: String) {
             entries.find { it.code == code.lowercase() } ?: EN
     }
 }
-
-/**
- * Returns the display name of the locale, if null returns "Auto".
- */
-fun SupportedLocale?.displayName(): String = this?.displayName ?: "Auto"

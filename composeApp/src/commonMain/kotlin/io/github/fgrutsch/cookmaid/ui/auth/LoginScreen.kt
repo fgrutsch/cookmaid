@@ -11,12 +11,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import cookmaid.composeapp.generated.resources.Res
 import cookmaid.composeapp.generated.resources.auth_app_logo
@@ -35,6 +37,7 @@ fun LoginScreen(viewModel: AuthViewModel) {
     val state by viewModel.state.collectAsState()
     val loginError = state.loginError
 
+    Surface(modifier = Modifier.fillMaxSize()) {
     Column(
         modifier = Modifier.fillMaxSize().padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -44,6 +47,14 @@ fun LoginScreen(viewModel: AuthViewModel) {
             painter = painterResource(Res.drawable.logo),
             contentDescription = Res.string.auth_app_logo.resolve(),
             modifier = Modifier.size(240.dp),
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = "Cookmaid",
+            style = MaterialTheme.typography.headlineLarge,
+            color = MaterialTheme.colorScheme.primary,
         )
 
         Spacer(modifier = Modifier.height(48.dp))
@@ -63,5 +74,6 @@ fun LoginScreen(viewModel: AuthViewModel) {
                 style = MaterialTheme.typography.bodySmall,
             )
         }
+    }
     }
 }

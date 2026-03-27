@@ -8,7 +8,7 @@ import org.publicvalue.multiplatform.oidc.OpenIdConnectClient
 
 val authModule = module {
     single<OpenIdConnectClient> { createOidcClient(get()) }
-    single { ApiClient(get(), get(), get()) { get<SettingsViewModel>().effectiveLocale() } }
+    single { ApiClient(get(), get(), get()) { get<SettingsViewModel>().state.value.effectiveLocale() } }
     singleOf(::OidcAuthHandler) bind AuthHandler::class
     singleOf(::AuthViewModel)
 }

@@ -1,4 +1,4 @@
-![Cookmaid](docs/images/logo.png)
+<img src="docs/images/cookmaid_logo.png" alt="drawing" width="250"/>
 
 # Cookmaid
 
