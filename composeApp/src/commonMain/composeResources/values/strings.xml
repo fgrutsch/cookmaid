@@ -34,7 +34,11 @@
     <!-- Settings -->
     <string name="settings_title">Settings</string>
     <string name="settings_dark_mode">Dark Mode</string>
+    <string name="settings_dark_mode_light">Light</string>
+    <string name="settings_dark_mode_dark">Dark</string>
     <string name="settings_language">Language</string>
+    <string name="settings_language_en">English</string>
+    <string name="settings_language_de">German</string>
     <string name="settings_sign_out">Sign out</string>
     <string name="settings_profile_picture">Profile picture</string>
 

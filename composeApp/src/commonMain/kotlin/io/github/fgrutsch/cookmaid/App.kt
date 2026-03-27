@@ -1,5 +1,6 @@
 package io.github.fgrutsch.cookmaid
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -87,7 +88,7 @@ fun App(
             LocalAppLocale provides (settingsState.locale?.code),
         ) {
             key(settingsState.locale) {
-                AppTheme(isDark = settingsState.isDarkMode) {
+                AppTheme(isDark = settingsState.effectiveDarkMode(isSystemInDarkTheme())) {
                     val authViewModel = koinInject<AuthViewModel>()
                     val authState by authViewModel.state.collectAsState()
 

@@ -1,7 +1,8 @@
 package io.github.fgrutsch.cookmaid.ui.settings
 
 import io.github.fgrutsch.cookmaid.common.SupportedLocale
-import io.github.fgrutsch.cookmaid.common.displayName
+import cookmaid.composeapp.generated.resources.settings_language_de
+import cookmaid.composeapp.generated.resources.settings_language_en
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,7 +23,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
-import androidx.compose.material3.Switch
+import cookmaid.composeapp.generated.resources.settings_dark_mode_dark
+import cookmaid.composeapp.generated.resources.settings_dark_mode_light
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -68,8 +70,8 @@ fun SettingsScreen(viewModel: SettingsViewModel, userProfile: UserProfile, onLog
     ) { padding ->
         SettingsContent(
             userProfile = userProfile,
-            isDarkMode = state.isDarkMode,
-            onToggleDarkMode = { viewModel.onEvent(SettingsEvent.ToggleDarkMode) },
+            darkMode = state.darkMode,
+            onDarkModeSelected = { viewModel.onEvent(SettingsEvent.SetDarkMode(it)) },
             locale = state.locale,
             onLocaleSelected = { viewModel.onEvent(SettingsEvent.SetLocale(it)) },
             onLogout = onLogout,
@@ -81,8 +83,8 @@ fun SettingsScreen(viewModel: SettingsViewModel, userProfile: UserProfile, onLog
 @Composable
 private fun SettingsContent(
     userProfile: UserProfile,
-    isDarkMode: Boolean,
-    onToggleDarkMode: () -> Unit,
+    darkMode: Boolean?,
+    onDarkModeSelected: (Boolean?) -> Unit,
     locale: SupportedLocale?,
     onLocaleSelected: (SupportedLocale?) -> Unit,
     onLogout: () -> Unit,
@@ -96,14 +98,10 @@ private fun SettingsContent(
 
         HorizontalDivider()
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(Res.string.settings_dark_mode.resolve())
-            Switch(checked = isDarkMode, onCheckedChange = { onToggleDarkMode() })
-        }
+        DarkModePicker(
+            selectedMode = darkMode,
+            onSelected = onDarkModeSelected,
+        )
 
         LanguagePicker(
             selectedLocale = locale,
@@ -119,6 +117,41 @@ private fun SettingsContent(
             modifier = Modifier.fillMaxWidth(),
         ) {
             Text(Res.string.settings_sign_out.resolve())
+        }
+    }
+}
+
+@Composable
+private fun DarkModePicker(
+    selectedMode: Boolean?,
+    onSelected: (Boolean?) -> Unit,
+) {
+    val options: List<Boolean?> = listOf(null, false, true)
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(Res.string.settings_dark_mode.resolve())
+        SingleChoiceSegmentedButtonRow {
+            options.forEachIndexed { index, mode ->
+                SegmentedButton(
+                    selected = selectedMode == mode,
+                    onClick = { onSelected(mode) },
+                    shape = SegmentedButtonDefaults.itemShape(
+                        index,
+                        options.size,
+                    ),
+                ) {
+                    Text(
+                        when (mode) {
+                            null -> "Auto"
+                            false -> Res.string.settings_dark_mode_light.resolve()
+                            true -> Res.string.settings_dark_mode_dark.resolve()
+                        },
+                    )
+                }
+            }
         }
     }
 }
@@ -145,7 +178,13 @@ private fun LanguagePicker(
                         options.size,
                     ),
                 ) {
-                    Text(locale.displayName())
+                    Text(
+                        when (locale) {
+                            null -> "Auto"
+                            SupportedLocale.EN -> Res.string.settings_language_en.resolve()
+                            SupportedLocale.DE -> Res.string.settings_language_de.resolve()
+                        },
+                    )
                 }
             }
         }
