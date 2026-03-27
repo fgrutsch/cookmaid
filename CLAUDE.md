@@ -95,6 +95,10 @@ Three Gradle modules:
   `DayPickerDialog` (has its own `DayPickerViewModel`).
 - **URL handling**: Use `LinkAnnotation.Clickable` (not deprecated
   `ClickableText`) for clickable links. Open via `LocalUriHandler`.
+- **WasmJS static assets**: Place in `composeApp/src/wasmJsMain/resources/`.
+  `wasmJsProcessResources` copies them to build output automatically —
+  no Gradle or webpack config needed. `index.html` supports Gradle
+  `expand()` for variable substitution.
 
 ## KDoc
 
