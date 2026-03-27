@@ -1,7 +1,7 @@
 ---
 title: Add a Favicon
 type: feat
-status: active
+status: completed
 date: 2026-03-27
 ---
 
@@ -12,9 +12,9 @@ display a site icon in tabs, bookmarks, and history.
 
 ## Acceptance Criteria
 
-- [ ] Favicon visible in browser tab when running the web app
-- [ ] Uses the existing Cookmaid logo as source
-- [ ] `<link rel="icon">` tag added to `index.html`
+- [x] Favicon visible in browser tab when running the web app
+- [x] Uses the existing Cookmaid logo as source
+- [x] `<link rel="icon">` tag added to `index.html`
 
 ## Context
 
