@@ -1,7 +1,7 @@
 ---
 title: Add PWA Manifest
 type: feat
-status: active
+status: completed
 date: 2026-03-27
 ---
 
@@ -12,10 +12,10 @@ can be installed on devices and shows proper branding in app switchers.
 
 ## Acceptance Criteria
 
-- [ ] `manifest.json` in web resources with correct metadata
-- [ ] Multiple icon sizes generated from logo.png
-- [ ] `<link rel="manifest">` tag in `index.html`
-- [ ] `<meta name="theme-color">` tag in `index.html`
+- [x] `manifest.json` in web resources with correct metadata
+- [x] Multiple icon sizes generated from logo.png
+- [x] `<link rel="manifest">` tag in `index.html`
+- [x] `<meta name="theme-color">` tag in `index.html`
 - [ ] App installable from browser (shows install prompt)
 
 ## Context
