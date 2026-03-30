@@ -53,7 +53,8 @@
 <script type="application/javascript" src="composeApp.js"></script>
 <script>
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/service-worker.js');
+        navigator.serviceWorker.register('/service-worker.js')
+            .catch(err => console.error('SW registration failed:', err));
     }
 </script>
 </body>
