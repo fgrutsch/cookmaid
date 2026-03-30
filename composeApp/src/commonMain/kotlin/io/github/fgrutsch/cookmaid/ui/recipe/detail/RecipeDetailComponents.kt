@@ -151,14 +151,14 @@ internal fun RecipeContent(recipe: Recipe, padding: PaddingValues) {
                 )
             }
         }
-        if (recipe.tags.isNotEmpty()) {
-            TagsSection(tags = recipe.tags)
-        }
         if (recipe.ingredients.isNotEmpty()) {
             IngredientsSection(ingredients = recipe.ingredients)
         }
         if (recipe.steps.isNotEmpty()) {
             StepsSection(steps = recipe.steps)
+        }
+        if (recipe.tags.isNotEmpty()) {
+            TagsSection(tags = recipe.tags)
         }
     }
 }
