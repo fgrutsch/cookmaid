@@ -5,6 +5,7 @@ CREATE TABLE recipes (
     description TEXT,
     steps TEXT[] NOT NULL DEFAULT '{}',
     tags TEXT[] NOT NULL DEFAULT '{}',
+    servings INTEGER,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -20,7 +21,7 @@ CREATE TABLE recipe_ingredients (
     recipe_id UUID NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
     catalog_item_id UUID REFERENCES catalog_items(id),
     free_text_name TEXT,
-    quantity REAL,
+    quantity TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     CONSTRAINT recipe_ingredient_type_check CHECK (

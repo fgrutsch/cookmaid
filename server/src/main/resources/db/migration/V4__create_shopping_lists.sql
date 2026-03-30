@@ -18,7 +18,7 @@ CREATE TABLE shopping_items (
     list_id UUID NOT NULL REFERENCES shopping_lists(id) ON DELETE CASCADE,
     catalog_item_id UUID REFERENCES catalog_items(id),
     free_text_name TEXT,
-    quantity REAL,
+    quantity TEXT,
     checked BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
