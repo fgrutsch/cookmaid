@@ -58,7 +58,7 @@
     <string name="recipe_detail_tags">Tags</string>
     <string name="recipe_detail_ingredients">Zutaten</string>
     <string name="recipe_detail_steps">Schritte</string>
-    <string name="recipe_detail_servings">%1$d Portionen</string>
+    <string name="recipe_detail_servings">%1$d</string>
 
     <!-- Recipe Edit -->
     <string name="recipe_edit_title">Rezept bearbeiten</string>
