@@ -13,11 +13,11 @@ data class UpdateListRequest(val name: String)
 data class CreateShoppingItemRequest(
     val catalogItemId: Uuid? = null,
     val freeTextName: String? = null,
-    val quantity: Float? = null,
+    val quantity: String? = null,
 )
 
 @Serializable
-data class UpdateItemRequest(val quantity: Float?, val checked: Boolean)
+data class UpdateItemRequest(val quantity: String?, val checked: Boolean)
 
 @Serializable
 data class BatchAddItemsRequest(val items: List<CreateShoppingItemRequest>)

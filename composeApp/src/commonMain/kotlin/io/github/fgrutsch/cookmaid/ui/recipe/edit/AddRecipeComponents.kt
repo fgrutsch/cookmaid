@@ -60,7 +60,6 @@ import cookmaid.composeapp.generated.resources.recipe_edit_tag_name_label
 import io.github.fgrutsch.cookmaid.catalog.Item
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
 import io.github.fgrutsch.cookmaid.ui.common.resolve
-import io.github.fgrutsch.cookmaid.ui.shopping.formatQuantity
 
 @Composable
 internal fun AddRecipeContent(
@@ -101,6 +100,14 @@ internal fun AddRecipeContent(
             singleLine = false,
             minLines = 2,
             maxLines = 4,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        OutlinedTextField(
+            value = state.servings,
+            onValueChange = { onEvent(AddRecipeEvent.SetServings(it)) },
+            label = { Text("Servings") },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier = Modifier.fillMaxWidth(),
         )
         IngredientsSection(
@@ -165,13 +172,13 @@ internal fun IngredientsSection(
                 if (ingredientQuery.isNotBlank()) {
                     onEvent(AddRecipeEvent.AddIngredient(
                         Item.FreeText(name = ingredientQuery.trim()),
-                        ingredientQuantityInput.toFloatOrNull(),
+                        ingredientQuantityInput.ifBlank { null },
                     ))
                     onQuantityInputClear()
                 }
             },
             onAddCatalogItem = { item ->
-                onEvent(AddRecipeEvent.AddIngredient(item, ingredientQuantityInput.toFloatOrNull()))
+                onEvent(AddRecipeEvent.AddIngredient(item, ingredientQuantityInput.ifBlank { null }))
                 onQuantityInputClear()
             },
         )
@@ -260,12 +267,12 @@ internal fun TagsSection(
 @Composable
 internal fun IngredientRow(
     name: String,
-    quantity: Float?,
-    onQuantityChange: (Float?) -> Unit,
+    quantity: String?,
+    onQuantityChange: (String?) -> Unit,
     onRemove: () -> Unit,
 ) {
     var qtyText by remember(quantity) {
-        mutableStateOf(quantity?.let { formatQuantity(it) }.orEmpty())
+        mutableStateOf(quantity.orEmpty())
     }
 
     Row(
@@ -281,13 +288,12 @@ internal fun IngredientRow(
         OutlinedTextField(
             value = qtyText,
             onValueChange = { value ->
-                qtyText = value.filter { it.isDigit() || it == '.' }
-                onQuantityChange(qtyText.toFloatOrNull())
+                qtyText = value
+                onQuantityChange(qtyText.ifBlank { null })
             },
             label = { Text(Res.string.common_quantity.resolve()) },
             singleLine = true,
             modifier = Modifier.width(80.dp),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
         )
         IconButton(onClick = onRemove) {
             Icon(Icons.Default.Close, contentDescription = Res.string.common_remove.resolve())
@@ -342,11 +348,10 @@ internal fun IngredientAddField(
         }
         OutlinedTextField(
             value = quantityInput,
-            onValueChange = { value -> onQuantityChange(value.filter { it.isDigit() || it == '.' }) },
+            onValueChange = { value -> onQuantityChange(value) },
             label = { Text(Res.string.common_quantity.resolve()) },
             singleLine = true,
             modifier = Modifier.width(80.dp),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
         )
         IconButton(onClick = onAddFreeText) {
             Icon(Icons.AutoMirrored.Filled.Send, contentDescription = Res.string.common_add.resolve())

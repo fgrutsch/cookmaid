@@ -102,20 +102,11 @@ internal fun ShoppingItemRow(
         trailingContent = item.quantity?.let { qty ->
             {
                 Text(
-                    text = formatQuantity(qty),
+                    text = qty,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         },
     )
-}
-
-
-internal fun formatQuantity(quantity: Float): String {
-    return if (quantity == quantity.toLong().toFloat()) {
-        quantity.toLong().toString()
-    } else {
-        quantity.toString()
-    }
 }

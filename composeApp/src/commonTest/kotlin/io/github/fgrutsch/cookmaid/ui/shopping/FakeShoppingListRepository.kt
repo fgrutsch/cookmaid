@@ -35,7 +35,7 @@ class FakeShoppingListRepository : ShoppingListRepository {
         listId: Uuid,
         catalogItemId: Uuid?,
         freeTextName: String?,
-        quantity: Float?,
+        quantity: String?,
     ): ShoppingItem {
         val item = ShoppingItem(
             id = Uuid.random(),
@@ -53,7 +53,7 @@ class FakeShoppingListRepository : ShoppingListRepository {
         }
     }
 
-    override suspend fun updateItem(listId: Uuid, itemId: Uuid, quantity: Float?, checked: Boolean) {
+    override suspend fun updateItem(listId: Uuid, itemId: Uuid, quantity: String?, checked: Boolean) {
         itemsByList[listId] = itemsByList[listId]?.map {
             if (it.id == itemId) it.copy(quantity = quantity, checked = checked) else it
         }?.toMutableList() ?: return

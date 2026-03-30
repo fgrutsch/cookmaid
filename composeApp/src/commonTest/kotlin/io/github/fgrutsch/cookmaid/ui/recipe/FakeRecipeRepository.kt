@@ -40,6 +40,7 @@ class FakeRecipeRepository : RecipeRepository {
         ingredients: List<RecipeIngredient>,
         steps: List<String>,
         tags: List<String>,
+        servings: Int?,
     ): Recipe {
         val recipe = Recipe(
             id = Uuid.random(),
@@ -60,6 +61,7 @@ class FakeRecipeRepository : RecipeRepository {
         ingredients: List<RecipeIngredient>,
         steps: List<String>,
         tags: List<String>,
+        servings: Int?,
     ) {
         recipes = recipes.map {
             if (it.id == id) {

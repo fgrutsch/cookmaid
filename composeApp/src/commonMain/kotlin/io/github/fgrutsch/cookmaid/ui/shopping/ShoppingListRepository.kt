@@ -59,7 +59,7 @@ interface ShoppingListRepository {
      * @param quantity optional quantity.
      * @return the newly created [ShoppingItem].
      */
-    suspend fun addItem(listId: Uuid, catalogItemId: Uuid?, freeTextName: String?, quantity: Float?): ShoppingItem
+    suspend fun addItem(listId: Uuid, catalogItemId: Uuid?, freeTextName: String?, quantity: String?): ShoppingItem
 
     /**
      * Adds multiple items to a shopping list in a single operation.
@@ -78,7 +78,7 @@ interface ShoppingListRepository {
      * @param quantity the updated quantity.
      * @param checked whether the item is checked off.
      */
-    suspend fun updateItem(listId: Uuid, itemId: Uuid, quantity: Float?, checked: Boolean)
+    suspend fun updateItem(listId: Uuid, itemId: Uuid, quantity: String?, checked: Boolean)
 
     /**
      * Deletes a single item from a shopping list.
@@ -134,7 +134,7 @@ class ApiShoppingListRepository(
         listId: Uuid,
         catalogItemId: Uuid?,
         freeTextName: String?,
-        quantity: Float?,
+        quantity: String?,
     ): ShoppingItem {
         return client.addItem(listId, catalogItemId, freeTextName, quantity)
     }
@@ -143,7 +143,7 @@ class ApiShoppingListRepository(
         return client.addItems(listId, items)
     }
 
-    override suspend fun updateItem(listId: Uuid, itemId: Uuid, quantity: Float?, checked: Boolean) {
+    override suspend fun updateItem(listId: Uuid, itemId: Uuid, quantity: String?, checked: Boolean) {
         client.updateItem(listId, itemId, quantity, checked)
     }
 

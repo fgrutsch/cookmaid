@@ -9,6 +9,7 @@ data class CreateRecipeRequest(
     val ingredients: List<RecipeIngredient> = emptyList(),
     val steps: List<String> = emptyList(),
     val tags: List<String> = emptyList(),
+    val servings: Int? = null,
 )
 
 @Serializable
@@ -18,4 +19,5 @@ data class UpdateRecipeRequest(
     val ingredients: List<RecipeIngredient> = emptyList(),
     val steps: List<String> = emptyList(),
     val tags: List<String> = emptyList(),
+    val servings: Int? = null,
 )

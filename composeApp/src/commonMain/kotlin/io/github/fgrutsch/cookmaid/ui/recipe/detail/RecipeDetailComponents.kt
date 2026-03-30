@@ -59,7 +59,6 @@ import cookmaid.composeapp.generated.resources.recipe_detail_title
 import io.github.fgrutsch.cookmaid.recipe.Recipe
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
 import io.github.fgrutsch.cookmaid.ui.common.resolve
-import io.github.fgrutsch.cookmaid.ui.shopping.formatQuantity
 
 @Composable
 internal fun RecipeDetailTopBar(
@@ -134,6 +133,13 @@ internal fun RecipeContent(recipe: Recipe, padding: PaddingValues) {
             DescriptionSection(
                 description = description,
                 onLinkClick = { uriHandler.openUri(it) },
+            )
+        }
+        recipe.servings?.let { servings ->
+            Text(
+                "$servings servings",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
         if (recipe.tags.isNotEmpty()) {
@@ -230,7 +236,7 @@ internal fun IngredientsSection(ingredients: List<RecipeIngredient>) {
                 )
                 ingredient.quantity?.let { qty ->
                     Text(
-                        formatQuantity(qty),
+                        qty,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

@@ -27,9 +27,10 @@ class RecipeServiceTest : BaseTest() {
         val data = RecipeData(
             name = "Test Recipe",
             description = null,
-            ingredients = listOf(RecipeIngredient(Item.FreeText("Flour"), 200f)),
+            ingredients = listOf(RecipeIngredient(Item.FreeText("Flour"), "200")),
             steps = listOf("Mix", "Bake"),
             tags = listOf("Baking"),
+            servings = null,
         )
         val recipe = service.create(userId, data, SupportedLocale.EN)
         return userId to recipe
@@ -72,7 +73,7 @@ class RecipeServiceTest : BaseTest() {
         val userId = createUser()
 
         val recipe = service.create(
-            userId, RecipeData("Pasta", null, emptyList(), emptyList(), emptyList()), SupportedLocale.EN,
+            userId, RecipeData("Pasta", null, emptyList(), emptyList(), emptyList(), servings = null), SupportedLocale.EN,
         )
 
         assertEquals("Pasta", recipe.name)
@@ -83,7 +84,7 @@ class RecipeServiceTest : BaseTest() {
         val service = getKoin().get<RecipeService>()
         val (userId, recipe) = createUserWithRecipe()
 
-        val request = RecipeData("New Name", null, emptyList(), emptyList(), emptyList())
+        val request = RecipeData("New Name", null, emptyList(), emptyList(), emptyList(), servings = null)
         val result = service.update(userId, recipe.id, request)
 
         assertTrue(result)
@@ -95,7 +96,7 @@ class RecipeServiceTest : BaseTest() {
         val (_, recipe) = createUserWithRecipe("user-1")
         val otherUserId = createUser("user-2")
 
-        val request = RecipeData("Hacked", null, emptyList(), emptyList(), emptyList())
+        val request = RecipeData("Hacked", null, emptyList(), emptyList(), emptyList(), servings = null)
         assertFalse(service.update(otherUserId, recipe.id, request))
     }
 

@@ -89,7 +89,7 @@ interface ShoppingListRepository {
         listId: Uuid,
         catalogItemId: Uuid?,
         freeTextName: String?,
-        quantity: Float?,
+        quantity: String?,
         locale: SupportedLocale,
     ): ShoppingItem
 
@@ -114,7 +114,7 @@ interface ShoppingListRepository {
      * @param quantity the new quantity.
      * @param checked the new checked state.
      */
-    suspend fun updateItem(itemId: Uuid, quantity: Float?, checked: Boolean)
+    suspend fun updateItem(itemId: Uuid, quantity: String?, checked: Boolean)
 
     /**
      * Deletes a shopping item.
@@ -238,7 +238,7 @@ class PostgresShoppingListRepository : ShoppingListRepository {
         listId: Uuid,
         catalogItemId: Uuid?,
         freeTextName: String?,
-        quantity: Float?,
+        quantity: String?,
         locale: SupportedLocale,
     ): ShoppingItem = suspendTransaction {
         addItemInternal(listId, catalogItemId, freeTextName, quantity, locale)
@@ -248,7 +248,7 @@ class PostgresShoppingListRepository : ShoppingListRepository {
         listId: Uuid,
         catalogItemId: Uuid?,
         freeTextName: String?,
-        quantity: Float?,
+        quantity: String?,
         locale: SupportedLocale,
     ): ShoppingItem {
         val row = ShoppingItemsTable.insertReturning {
@@ -301,7 +301,7 @@ class PostgresShoppingListRepository : ShoppingListRepository {
             }
         }
 
-    override suspend fun updateItem(itemId: Uuid, quantity: Float?, checked: Boolean): Unit = suspendTransaction {
+    override suspend fun updateItem(itemId: Uuid, quantity: String?, checked: Boolean): Unit = suspendTransaction {
         ShoppingItemsTable.update({ ShoppingItemsTable.id eq itemId }) {
             it[ShoppingItemsTable.quantity] = quantity
             it[ShoppingItemsTable.checked] = checked
@@ -349,7 +349,7 @@ object ShoppingItemsTable : Table("shopping_items") {
     val listId = uuid("list_id").references(ShoppingListsTable.id)
     val catalogItemId = uuid("catalog_item_id").references(CatalogItemsTable.id).nullable()
     val freeTextName = text("free_text_name").nullable()
-    val quantity = float("quantity").nullable()
+    val quantity = text("quantity").nullable()
     val checked = bool("checked")
     val createdAt = timestamp("created_at")
     val updatedAt = timestamp("updated_at")

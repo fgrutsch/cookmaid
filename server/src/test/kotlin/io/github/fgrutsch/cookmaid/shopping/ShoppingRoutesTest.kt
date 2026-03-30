@@ -65,7 +65,7 @@ class ShoppingRoutesTest : BaseIntegrationTest() {
         val addItemResponse = client.post("/api/shopping-lists/${defaultList.id}/items") {
             bearerAuth(token)
             contentType(ContentType.Application.Json)
-            setBody(CreateShoppingItemRequest(freeTextName = "Paper towels", quantity = 3f))
+            setBody(CreateShoppingItemRequest(freeTextName = "Paper towels", quantity = "3"))
         }
         assertEquals(HttpStatusCode.Created, addItemResponse.status)
         val addedItem = addItemResponse.body<ShoppingItem>()
@@ -79,7 +79,7 @@ class ShoppingRoutesTest : BaseIntegrationTest() {
         val addCatalogResponse = client.post("/api/shopping-lists/${defaultList.id}/items") {
             bearerAuth(token)
             contentType(ContentType.Application.Json)
-            setBody(CreateShoppingItemRequest(catalogItemId = catalogItem.id, quantity = 2f))
+            setBody(CreateShoppingItemRequest(catalogItemId = catalogItem.id, quantity = "2"))
         }
         assertEquals(HttpStatusCode.Created, addCatalogResponse.status)
         val addedCatalogItem = addCatalogResponse.body<ShoppingItem>()
@@ -99,7 +99,7 @@ class ShoppingRoutesTest : BaseIntegrationTest() {
         val updateItemResponse = client.put("/api/shopping-lists/${defaultList.id}/items/${addedItem.id}") {
             bearerAuth(token)
             contentType(ContentType.Application.Json)
-            setBody(UpdateItemRequest(quantity = 3f, checked = true))
+            setBody(UpdateItemRequest(quantity = "3", checked = true))
         }
         assertEquals(HttpStatusCode.NoContent, updateItemResponse.status)
 

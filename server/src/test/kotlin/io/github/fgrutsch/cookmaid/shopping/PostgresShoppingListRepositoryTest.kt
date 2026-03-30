@@ -97,11 +97,11 @@ class PostgresShoppingListRepositoryTest : BaseTest() {
         val list = repo.createList(userId, "Groceries")
 
         val created = repo.addItem(
-            list.id, catalogItemId = null, freeTextName = "Paper towels", quantity = 2f, locale = SupportedLocale.EN,
+            list.id, catalogItemId = null, freeTextName = "Paper towels", quantity = "2", locale = SupportedLocale.EN,
         )
 
         assertEquals("Paper towels", created.item.name)
-        assertEquals(2f, created.quantity)
+        assertEquals("2", created.quantity)
         assertTrue(created.item is Item.FreeText)
     }
 
@@ -114,7 +114,7 @@ class PostgresShoppingListRepositoryTest : BaseTest() {
         val catalogItem = catalogRepo.findAll(SupportedLocale.EN).first()
 
         val created = repo.addItem(
-            list.id, catalogItemId = catalogItem.id, freeTextName = null, quantity = 3f, locale = SupportedLocale.EN,
+            list.id, catalogItemId = catalogItem.id, freeTextName = null, quantity = "3", locale = SupportedLocale.EN,
         )
 
         val addedItem = created.item as Item.Catalog
@@ -129,13 +129,13 @@ class PostgresShoppingListRepositoryTest : BaseTest() {
         val userId = createUser()
         val list = repo.createList(userId, "Groceries")
         val item = repo.addItem(
-            list.id, catalogItemId = null, freeTextName = "Eggs", quantity = 6f, locale = SupportedLocale.EN,
+            list.id, catalogItemId = null, freeTextName = "Eggs", quantity = "6", locale = SupportedLocale.EN,
         )
 
-        repo.updateItem(item.id, quantity = 12f, checked = true)
+        repo.updateItem(item.id, quantity = "12", checked = true)
 
         val items = repo.findItemsByListId(list.id, SupportedLocale.EN)
-        assertEquals(12f, items.first().quantity)
+        assertEquals("12", items.first().quantity)
         assertTrue(items.first().checked)
     }
 

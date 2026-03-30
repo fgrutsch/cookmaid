@@ -146,11 +146,11 @@ class ShoppingListViewModelTest : BaseViewModelTest() {
         val item = ShoppingItem(id = itemId, item = Item.FreeText("Milk"), quantity = null)
         val viewModel = createLoadedViewModel(items = listOf(item))
 
-        val updated = item.copy(quantity = 2f)
+        val updated = item.copy(quantity = "2")
         viewModel.onEvent(ShoppingListEvent.UpdateItem(updated))
         advanceUntilIdle()
 
-        assertEquals(2f, viewModel.state.value.items.first().quantity)
+        assertEquals("2", viewModel.state.value.items.first().quantity)
     }
 
     @Test
