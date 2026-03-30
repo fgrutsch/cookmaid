@@ -4,6 +4,9 @@
 -- To find your user_id after first login:
 --   SELECT id FROM users LIMIT 1;
 
+-- Clean existing data (preserves schema and users)
+TRUNCATE meal_plan_items, recipe_ingredients, shopping_items, shopping_lists, recipes CASCADE;
+
 -- Shorthand for catalog item UUIDs: CI(N) = 00000000-0000-0000-0001-00000000NNNN
 -- Shorthand for recipe UUIDs:       R(N)  = 00000000-0000-0000-2000-00000000NNNN
 
