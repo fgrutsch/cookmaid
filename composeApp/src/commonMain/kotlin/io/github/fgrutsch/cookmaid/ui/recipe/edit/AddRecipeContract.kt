@@ -13,7 +13,7 @@ data class AddRecipeState(
     val steps: List<String> = emptyList(),
     val selectedTags: List<String> = emptyList(),
     val availableTags: List<String> = emptyList(),
-    val servings: String = "",
+    val servings: Int? = null,
     val ingredientQuery: String = "",
     val ingredientSuggestions: List<Item.Catalog> = emptyList(),
 )
@@ -25,7 +25,7 @@ sealed interface AddRecipeEvent {
     data class UpdateIngredientQuery(val query: String) : AddRecipeEvent
     data class AddIngredient(val item: Item, val quantity: String?) : AddRecipeEvent
     data class UpdateIngredientQuantity(val index: Int, val quantity: String?) : AddRecipeEvent
-    data class SetServings(val value: String) : AddRecipeEvent
+    data class SetServings(val value: Int?) : AddRecipeEvent
     data class RemoveIngredient(val index: Int) : AddRecipeEvent
     data class AddStep(val step: String) : AddRecipeEvent
     data class RemoveStep(val index: Int) : AddRecipeEvent

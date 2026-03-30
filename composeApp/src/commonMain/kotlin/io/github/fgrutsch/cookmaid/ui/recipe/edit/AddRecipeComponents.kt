@@ -360,10 +360,10 @@ internal fun IngredientAddField(
 
 @Composable
 internal fun ServingsSelector(
-    value: String,
-    onValueChange: (String) -> Unit,
+    value: Int?,
+    onValueChange: (Int?) -> Unit,
 ) {
-    val current = value.toIntOrNull() ?: 0
+    val current = value ?: 0
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -381,7 +381,7 @@ internal fun ServingsSelector(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             IconButton(
-                onClick = { onValueChange(if (current > 1) (current - 1).toString() else "") },
+                onClick = { onValueChange(if (current > 1) current - 1 else null) },
                 enabled = current > 0,
             ) {
                 Icon(Icons.Default.Remove, contentDescription = Res.string.common_remove.resolve())
@@ -392,7 +392,7 @@ internal fun ServingsSelector(
                 modifier = Modifier.width(32.dp),
                 textAlign = TextAlign.Center,
             )
-            IconButton(onClick = { onValueChange((current + 1).toString()) }) {
+            IconButton(onClick = { onValueChange(current + 1) }) {
                 Icon(Icons.Default.Add, contentDescription = Res.string.common_add.resolve())
             }
         }

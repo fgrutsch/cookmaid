@@ -72,7 +72,7 @@ class AddRecipeViewModel(
                             ingredients = recipe.ingredients,
                             steps = recipe.steps,
                             selectedTags = recipe.tags,
-                            servings = recipe.servings?.toString().orEmpty(),
+                            servings = recipe.servings,
                         )
                     }
                 }
@@ -149,7 +149,7 @@ class AddRecipeViewModel(
                     s.ingredients,
                     s.steps,
                     s.selectedTags,
-                    s.servings.toIntOrNull(),
+                    s.servings,
                 )
             } else {
                 recipeRepository.create(
@@ -158,7 +158,7 @@ class AddRecipeViewModel(
                     s.ingredients,
                     s.steps,
                     s.selectedTags,
-                    s.servings.toIntOrNull(),
+                    s.servings,
                 )
             }
             sendEffect(AddRecipeEffect.Saved)

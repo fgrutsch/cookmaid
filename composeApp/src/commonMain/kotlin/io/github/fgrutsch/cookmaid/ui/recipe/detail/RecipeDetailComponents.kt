@@ -53,7 +53,7 @@ import cookmaid.composeapp.generated.resources.common_options
 import cookmaid.composeapp.generated.resources.recipe_detail_description
 import cookmaid.composeapp.generated.resources.recipe_detail_ingredients
 import cookmaid.composeapp.generated.resources.recipe_detail_not_found
-import cookmaid.composeapp.generated.resources.recipe_detail_servings
+
 import cookmaid.composeapp.generated.resources.recipe_edit_servings_label
 import cookmaid.composeapp.generated.resources.recipe_detail_steps
 import cookmaid.composeapp.generated.resources.recipe_detail_tags
@@ -146,7 +146,7 @@ internal fun RecipeContent(recipe: Recipe, padding: PaddingValues) {
                     color = MaterialTheme.colorScheme.primary,
                 )
                 Text(
-                    Res.string.recipe_detail_servings.resolve(servings),
+                    servings.toString(),
                     style = MaterialTheme.typography.bodyLarge,
                 )
             }
