@@ -56,6 +56,7 @@ import cookmaid.composeapp.generated.resources.recipe_edit_description_label
 import cookmaid.composeapp.generated.resources.recipe_edit_name_label
 import cookmaid.composeapp.generated.resources.recipe_edit_name_required
 import cookmaid.composeapp.generated.resources.recipe_edit_new_tag_title
+import cookmaid.composeapp.generated.resources.recipe_edit_servings_label
 import cookmaid.composeapp.generated.resources.recipe_edit_tag_name_label
 import io.github.fgrutsch.cookmaid.catalog.Item
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
@@ -104,8 +105,8 @@ internal fun AddRecipeContent(
         )
         OutlinedTextField(
             value = state.servings,
-            onValueChange = { onEvent(AddRecipeEvent.SetServings(it)) },
-            label = { Text("Servings") },
+            onValueChange = { onEvent(AddRecipeEvent.SetServings(it.filter { c -> c.isDigit() })) },
+            label = { Text(Res.string.recipe_edit_servings_label.resolve()) },
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier = Modifier.fillMaxWidth(),
@@ -348,7 +349,7 @@ internal fun IngredientAddField(
         }
         OutlinedTextField(
             value = quantityInput,
-            onValueChange = { value -> onQuantityChange(value) },
+            onValueChange = onQuantityChange,
             label = { Text(Res.string.common_quantity.resolve()) },
             singleLine = true,
             modifier = Modifier.width(80.dp),
