@@ -1,7 +1,6 @@
 const CACHE_NAME = 'cookmaid-v1';
 const PRECACHE_URLS = [
     '/',
-    '/styles.css',
     '/favicon.png',
     '/icon-192.png',
     '/icon-512.png',
