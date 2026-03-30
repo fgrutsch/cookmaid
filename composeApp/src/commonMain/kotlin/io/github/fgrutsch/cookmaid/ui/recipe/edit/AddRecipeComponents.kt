@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
@@ -40,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import cookmaid.composeapp.generated.resources.Res
@@ -103,13 +105,9 @@ internal fun AddRecipeContent(
             maxLines = 4,
             modifier = Modifier.fillMaxWidth(),
         )
-        OutlinedTextField(
+        ServingsSelector(
             value = state.servings,
-            onValueChange = { onEvent(AddRecipeEvent.SetServings(it.filter { c -> c.isDigit() })) },
-            label = { Text(Res.string.recipe_edit_servings_label.resolve()) },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth(),
+            onValueChange = { onEvent(AddRecipeEvent.SetServings(it)) },
         )
         IngredientsSection(
             ingredients = state.ingredients,
@@ -356,6 +354,47 @@ internal fun IngredientAddField(
         )
         IconButton(onClick = onAddFreeText) {
             Icon(Icons.AutoMirrored.Filled.Send, contentDescription = Res.string.common_add.resolve())
+        }
+    }
+}
+
+@Composable
+internal fun ServingsSelector(
+    value: String,
+    onValueChange: (String) -> Unit,
+) {
+    val current = value.toIntOrNull() ?: 0
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Text(
+            Res.string.recipe_edit_servings_label.resolve(),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary,
+        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            IconButton(
+                onClick = { onValueChange(if (current > 1) (current - 1).toString() else "") },
+                enabled = current > 0,
+            ) {
+                Icon(Icons.Default.Remove, contentDescription = Res.string.common_remove.resolve())
+            }
+            Text(
+                text = if (current > 0) current.toString() else "–",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.width(32.dp),
+                textAlign = TextAlign.Center,
+            )
+            IconButton(onClick = { onValueChange((current + 1).toString()) }) {
+                Icon(Icons.Default.Add, contentDescription = Res.string.common_add.resolve())
+            }
         }
     }
 }

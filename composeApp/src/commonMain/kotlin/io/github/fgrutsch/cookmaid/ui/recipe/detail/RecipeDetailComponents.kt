@@ -54,6 +54,7 @@ import cookmaid.composeapp.generated.resources.recipe_detail_description
 import cookmaid.composeapp.generated.resources.recipe_detail_ingredients
 import cookmaid.composeapp.generated.resources.recipe_detail_not_found
 import cookmaid.composeapp.generated.resources.recipe_detail_servings
+import cookmaid.composeapp.generated.resources.recipe_edit_servings_label
 import cookmaid.composeapp.generated.resources.recipe_detail_steps
 import cookmaid.composeapp.generated.resources.recipe_detail_tags
 import cookmaid.composeapp.generated.resources.recipe_detail_title
@@ -137,11 +138,18 @@ internal fun RecipeContent(recipe: Recipe, padding: PaddingValues) {
             )
         }
         recipe.servings?.let { servings ->
-            Text(
-                Res.string.recipe_detail_servings.resolve(servings),
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(
+                    Res.string.recipe_edit_servings_label.resolve(),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                Text(
+                    Res.string.recipe_detail_servings.resolve(servings),
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+            }
         }
         if (recipe.tags.isNotEmpty()) {
             TagsSection(tags = recipe.tags)
