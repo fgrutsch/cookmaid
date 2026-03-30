@@ -73,7 +73,9 @@ class RecipeServiceTest : BaseTest() {
         val userId = createUser()
 
         val recipe = service.create(
-            userId, RecipeData("Pasta", null, emptyList(), emptyList(), emptyList(), servings = null), SupportedLocale.EN,
+            userId,
+            RecipeData("Pasta", null, emptyList(), emptyList(), emptyList(), servings = null),
+            SupportedLocale.EN,
         )
 
         assertEquals("Pasta", recipe.name)

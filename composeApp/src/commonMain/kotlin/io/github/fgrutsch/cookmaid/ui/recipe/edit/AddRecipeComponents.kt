@@ -91,9 +91,7 @@ internal fun AddRecipeContent(
             isError = state.nameError,
             supportingText = if (state.nameError) {
                 { Text(Res.string.recipe_edit_name_required.resolve()) }
-            } else {
-                null
-            },
+            } else null,
             modifier = Modifier.fillMaxWidth(),
         )
         OutlinedTextField(
