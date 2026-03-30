@@ -56,8 +56,8 @@ class RecipeRoutesTest : BaseIntegrationTest() {
                 CreateRecipeRequest(
                     name = "Spaghetti Bolognese",
                     ingredients = listOf(
-                        RecipeIngredient(catalogItem, 400f),
-                        RecipeIngredient(Item.FreeText("Spaghetti"), 500f),
+                        RecipeIngredient(catalogItem, "400"),
+                        RecipeIngredient(Item.FreeText("Spaghetti"), "500"),
                     ),
                     steps = listOf("Cook pasta", "Make sauce", "Combine"),
                     tags = listOf("Noodles", "Meat"),
@@ -94,7 +94,7 @@ class RecipeRoutesTest : BaseIntegrationTest() {
             setBody(
                 UpdateRecipeRequest(
                     name = "Bolognese Pasta",
-                    ingredients = listOf(RecipeIngredient(Item.FreeText("Penne"), 400f)),
+                    ingredients = listOf(RecipeIngredient(Item.FreeText("Penne"), "400")),
                     steps = listOf("Cook penne", "Make sauce", "Mix together", "Serve"),
                     tags = listOf("Noodles"),
                 ),

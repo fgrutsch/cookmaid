@@ -59,6 +59,7 @@
     <string name="recipe_detail_ingredients">Zutaten</string>
     <string name="recipe_detail_steps">Schritte</string>
 
+
     <!-- Recipe Edit -->
     <string name="recipe_edit_title">Rezept bearbeiten</string>
     <string name="recipe_add_title">Rezept hinzufügen</string>
@@ -69,6 +70,7 @@
     <string name="recipe_edit_add_ingredient">Zutat hinzufügen</string>
     <string name="recipe_edit_new_tag_title">Neuer Tag</string>
     <string name="recipe_edit_tag_name_label">Tag-Name</string>
+    <string name="recipe_edit_servings_label">Portionen</string>
 
     <!-- Shopping -->
     <string name="shopping_title">Einkaufen</string>

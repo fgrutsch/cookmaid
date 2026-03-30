@@ -28,7 +28,7 @@ class PostgresRecipeRepositoryTest : BaseTest() {
         ingredients: List<RecipeIngredient> = emptyList(),
         steps: List<String> = emptyList(),
         tags: List<String> = emptyList(),
-    ) = RecipeData(name, description, ingredients, steps, tags)
+    ) = RecipeData(name, description, ingredients, steps, tags, servings = null)
 
     @Test
     fun `create creates a new recipe with all fields`() = runTest {
@@ -36,7 +36,7 @@ class PostgresRecipeRepositoryTest : BaseTest() {
         val userId = createUser()
 
         val recipe = repo.create(userId, data(
-            ingredients = listOf(RecipeIngredient(Item.FreeText("Spaghetti"), 500f)),
+            ingredients = listOf(RecipeIngredient(Item.FreeText("Spaghetti"), "500")),
             steps = listOf("Boil water", "Cook pasta"),
             tags = listOf("Noodles"),
         ), SupportedLocale.EN)
@@ -45,7 +45,7 @@ class PostgresRecipeRepositoryTest : BaseTest() {
         assertEquals("Pasta", recipe.name)
         assertEquals(1, recipe.ingredients.size)
         assertEquals("Spaghetti", recipe.ingredients.first().item.name)
-        assertEquals(500f, recipe.ingredients.first().quantity)
+        assertEquals("500", recipe.ingredients.first().quantity)
         assertEquals(2, recipe.steps.size)
         assertEquals("Boil water", recipe.steps.first())
         assertEquals(listOf("Noodles"), recipe.tags)
@@ -69,7 +69,7 @@ class PostgresRecipeRepositoryTest : BaseTest() {
         val catalogItem = catalogRepo.findAll(SupportedLocale.EN).first()
 
         val recipe = repo.create(userId, data(
-            ingredients = listOf(RecipeIngredient(catalogItem, 400f)),
+            ingredients = listOf(RecipeIngredient(catalogItem, "400")),
         ), SupportedLocale.EN)
 
         val ingredient = recipe.ingredients.first()
@@ -104,7 +104,7 @@ class PostgresRecipeRepositoryTest : BaseTest() {
         val repo = getKoin().get<RecipeRepository>()
         val userId = createUser()
         val recipe = repo.create(userId, data(
-            ingredients = listOf(RecipeIngredient(Item.FreeText("Noodles"), 500f)),
+            ingredients = listOf(RecipeIngredient(Item.FreeText("Noodles"), "500")),
             steps = listOf("Step 1", "Step 2"),
             tags = listOf("Italian"),
         ), SupportedLocale.EN)
@@ -139,8 +139,8 @@ class PostgresRecipeRepositoryTest : BaseTest() {
         repo.update(recipe.id, data(
             name = "New",
             ingredients = listOf(
-                RecipeIngredient(Item.FreeText("New item 1"), 1f),
-                RecipeIngredient(Item.FreeText("New item 2"), 2f),
+                RecipeIngredient(Item.FreeText("New item 1"), "1"),
+                RecipeIngredient(Item.FreeText("New item 2"), "2"),
             ),
             steps = listOf("New step 1", "New step 2", "New step 3"),
             tags = listOf("New tag"),

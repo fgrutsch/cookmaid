@@ -6,7 +6,8 @@ data class RecipeData(
     val ingredients: List<RecipeIngredient>,
     val steps: List<String>,
     val tags: List<String>,
+    val servings: Int?,
 )
 
-fun CreateRecipeRequest.toData() = RecipeData(name, description, ingredients, steps, tags)
-fun UpdateRecipeRequest.toData() = RecipeData(name, description, ingredients, steps, tags)
+fun CreateRecipeRequest.toData() = RecipeData(name, description, ingredients, steps, tags, servings)
+fun UpdateRecipeRequest.toData() = RecipeData(name, description, ingredients, steps, tags, servings)

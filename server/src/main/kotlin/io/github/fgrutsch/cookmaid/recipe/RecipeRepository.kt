@@ -167,6 +167,7 @@ class PostgresRecipeRepository : RecipeRepository {
                 ingredients = loadIngredients(id, locale),
                 steps = row[RecipesTable.steps],
                 tags = row[RecipesTable.tags],
+                servings = row[RecipesTable.servings],
             )
         }
 
@@ -186,6 +187,7 @@ class PostgresRecipeRepository : RecipeRepository {
             ingredients = loadIngredients(id, locale),
             steps = row[RecipesTable.steps],
             tags = row[RecipesTable.tags],
+            servings = row[RecipesTable.servings],
         )
     }
 
@@ -208,6 +210,7 @@ class PostgresRecipeRepository : RecipeRepository {
             it[RecipesTable.description] = data.description?.trim()?.ifBlank { null }
             it[RecipesTable.steps] = data.steps.map(String::trim)
             it[RecipesTable.tags] = data.tags.map(String::trim)
+            it[RecipesTable.servings] = data.servings
         }.single()
 
         val recipeId = row[RecipesTable.id]
@@ -220,6 +223,7 @@ class PostgresRecipeRepository : RecipeRepository {
             ingredients = loadIngredients(recipeId, locale),
             steps = row[RecipesTable.steps],
             tags = row[RecipesTable.tags],
+            servings = row[RecipesTable.servings],
         )
     }
 
@@ -229,6 +233,7 @@ class PostgresRecipeRepository : RecipeRepository {
             it[RecipesTable.description] = data.description?.trim()?.ifBlank { null }
             it[RecipesTable.steps] = data.steps.map(String::trim)
             it[RecipesTable.tags] = data.tags.map(String::trim)
+            it[RecipesTable.servings] = data.servings
         }
 
         RecipeIngredientsTable.deleteWhere { RecipeIngredientsTable.recipeId eq id }
@@ -301,6 +306,7 @@ object RecipesTable : Table("recipes") {
     val description = text("description").nullable()
     val steps = array("steps", TextColumnType())
     val tags = array("tags", TextColumnType())
+    val servings = integer("servings").nullable()
     val createdAt = timestamp("created_at")
     val updatedAt = timestamp("updated_at")
 
@@ -312,7 +318,7 @@ object RecipeIngredientsTable : Table("recipe_ingredients") {
     val recipeId = uuid("recipe_id").references(RecipesTable.id)
     val catalogItemId = uuid("catalog_item_id").references(CatalogItemsTable.id).nullable()
     val freeTextName = text("free_text_name").nullable()
-    val quantity = float("quantity").nullable()
+    val quantity = text("quantity").nullable()
     val createdAt = timestamp("created_at")
     val updatedAt = timestamp("updated_at")
 

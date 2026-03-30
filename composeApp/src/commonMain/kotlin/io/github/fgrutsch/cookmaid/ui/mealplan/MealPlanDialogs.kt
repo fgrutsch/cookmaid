@@ -71,7 +71,6 @@ import io.github.fgrutsch.cookmaid.mealplan.WEEK_END_OFFSET
 import io.github.fgrutsch.cookmaid.recipe.Recipe
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
 import io.github.fgrutsch.cookmaid.ui.common.formatShortDate
-import io.github.fgrutsch.cookmaid.ui.shopping.formatQuantity
 import kotlin.time.Clock
 import io.github.fgrutsch.cookmaid.ui.common.resolve
 import kotlin.uuid.Uuid
@@ -298,7 +297,7 @@ private fun IngredientPickerList(
                 )
                 ingredient.quantity?.let { qty ->
                     Text(
-                        text = formatQuantity(qty),
+                        text = qty,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(end = 8.dp),

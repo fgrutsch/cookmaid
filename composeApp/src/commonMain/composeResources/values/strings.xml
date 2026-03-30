@@ -59,6 +59,7 @@
     <string name="recipe_detail_ingredients">Ingredients</string>
     <string name="recipe_detail_steps">Steps</string>
 
+
     <!-- Recipe Edit -->
     <string name="recipe_edit_title">Edit Recipe</string>
     <string name="recipe_add_title">Add Recipe</string>
@@ -69,6 +70,7 @@
     <string name="recipe_edit_add_ingredient">Add ingredient</string>
     <string name="recipe_edit_new_tag_title">New Tag</string>
     <string name="recipe_edit_tag_name_label">Tag name</string>
+    <string name="recipe_edit_servings_label">Servings</string>
 
     <!-- Shopping -->
     <string name="shopping_title">Shopping</string>

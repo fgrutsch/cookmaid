@@ -53,13 +53,14 @@ import cookmaid.composeapp.generated.resources.common_options
 import cookmaid.composeapp.generated.resources.recipe_detail_description
 import cookmaid.composeapp.generated.resources.recipe_detail_ingredients
 import cookmaid.composeapp.generated.resources.recipe_detail_not_found
+
+import cookmaid.composeapp.generated.resources.recipe_edit_servings_label
 import cookmaid.composeapp.generated.resources.recipe_detail_steps
 import cookmaid.composeapp.generated.resources.recipe_detail_tags
 import cookmaid.composeapp.generated.resources.recipe_detail_title
 import io.github.fgrutsch.cookmaid.recipe.Recipe
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
 import io.github.fgrutsch.cookmaid.ui.common.resolve
-import io.github.fgrutsch.cookmaid.ui.shopping.formatQuantity
 
 @Composable
 internal fun RecipeDetailTopBar(
@@ -136,14 +137,28 @@ internal fun RecipeContent(recipe: Recipe, padding: PaddingValues) {
                 onLinkClick = { uriHandler.openUri(it) },
             )
         }
-        if (recipe.tags.isNotEmpty()) {
-            TagsSection(tags = recipe.tags)
+        recipe.servings?.let { servings ->
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(
+                    Res.string.recipe_edit_servings_label.resolve(),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                Text(
+                    servings.toString(),
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+            }
         }
         if (recipe.ingredients.isNotEmpty()) {
             IngredientsSection(ingredients = recipe.ingredients)
         }
         if (recipe.steps.isNotEmpty()) {
             StepsSection(steps = recipe.steps)
+        }
+        if (recipe.tags.isNotEmpty()) {
+            TagsSection(tags = recipe.tags)
         }
     }
 }
@@ -230,7 +245,7 @@ internal fun IngredientsSection(ingredients: List<RecipeIngredient>) {
                 )
                 ingredient.quantity?.let { qty ->
                     Text(
-                        formatQuantity(qty),
+                        qty,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

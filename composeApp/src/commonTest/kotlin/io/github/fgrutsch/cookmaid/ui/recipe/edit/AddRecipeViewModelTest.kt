@@ -43,7 +43,7 @@ class AddRecipeViewModelTest : BaseViewModelTest() {
         val recipe = Recipe(
             id = Uuid.random(),
             name = "Pasta",
-            ingredients = listOf(RecipeIngredient(item = Item.FreeText("Tomato"), quantity = 2f)),
+            ingredients = listOf(RecipeIngredient(item = Item.FreeText("Tomato"), quantity = "2")),
             steps = listOf("Boil water", "Cook pasta"),
             tags = listOf("Italian"),
         )
@@ -78,12 +78,12 @@ class AddRecipeViewModelTest : BaseViewModelTest() {
     fun `add ingredient appends to list`() = viewModelTest {
         val viewModel = createViewModel()
 
-        viewModel.onEvent(AddRecipeEvent.AddIngredient(Item.FreeText("Tomato"), 3f))
+        viewModel.onEvent(AddRecipeEvent.AddIngredient(Item.FreeText("Tomato"), "3"))
         advanceUntilIdle()
 
         assertEquals(1, viewModel.state.value.ingredients.size)
         assertEquals("Tomato", viewModel.state.value.ingredients.first().item.name)
-        assertEquals(3f, viewModel.state.value.ingredients.first().quantity)
+        assertEquals("3", viewModel.state.value.ingredients.first().quantity)
     }
 
     @Test
@@ -118,10 +118,10 @@ class AddRecipeViewModelTest : BaseViewModelTest() {
         viewModel.onEvent(AddRecipeEvent.AddIngredient(Item.FreeText("Tomato"), null))
         advanceUntilIdle()
 
-        viewModel.onEvent(AddRecipeEvent.UpdateIngredientQuantity(0, 5f))
+        viewModel.onEvent(AddRecipeEvent.UpdateIngredientQuantity(0, "5"))
         advanceUntilIdle()
 
-        assertEquals(5f, viewModel.state.value.ingredients.first().quantity)
+        assertEquals("5", viewModel.state.value.ingredients.first().quantity)
     }
 
     @Test

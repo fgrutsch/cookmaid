@@ -91,7 +91,7 @@ class ShoppingListService(
         listId: Uuid,
         catalogItemId: Uuid?,
         freeTextName: String?,
-        quantity: Float?,
+        quantity: String?,
         locale: SupportedLocale,
     ): ShoppingItem? {
         if (!repository.isListOwner(userId, listId)) return null
@@ -126,7 +126,7 @@ class ShoppingListService(
      * @param checked the new checked state.
      * @return true if the update succeeded, false if not owned.
      */
-    suspend fun updateItem(userId: UserId, itemId: Uuid, quantity: Float?, checked: Boolean): Boolean {
+    suspend fun updateItem(userId: UserId, itemId: Uuid, quantity: String?, checked: Boolean): Boolean {
         if (!repository.isItemOwner(userId, itemId)) return false
         repository.updateItem(itemId, quantity, checked)
         return true

@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
@@ -40,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import cookmaid.composeapp.generated.resources.Res
@@ -56,11 +58,11 @@ import cookmaid.composeapp.generated.resources.recipe_edit_description_label
 import cookmaid.composeapp.generated.resources.recipe_edit_name_label
 import cookmaid.composeapp.generated.resources.recipe_edit_name_required
 import cookmaid.composeapp.generated.resources.recipe_edit_new_tag_title
+import cookmaid.composeapp.generated.resources.recipe_edit_servings_label
 import cookmaid.composeapp.generated.resources.recipe_edit_tag_name_label
 import io.github.fgrutsch.cookmaid.catalog.Item
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
 import io.github.fgrutsch.cookmaid.ui.common.resolve
-import io.github.fgrutsch.cookmaid.ui.shopping.formatQuantity
 
 @Composable
 internal fun AddRecipeContent(
@@ -102,6 +104,10 @@ internal fun AddRecipeContent(
             minLines = 2,
             maxLines = 4,
             modifier = Modifier.fillMaxWidth(),
+        )
+        ServingsSelector(
+            value = state.servings,
+            onValueChange = { onEvent(AddRecipeEvent.SetServings(it)) },
         )
         IngredientsSection(
             ingredients = state.ingredients,
@@ -165,13 +171,13 @@ internal fun IngredientsSection(
                 if (ingredientQuery.isNotBlank()) {
                     onEvent(AddRecipeEvent.AddIngredient(
                         Item.FreeText(name = ingredientQuery.trim()),
-                        ingredientQuantityInput.toFloatOrNull(),
+                        ingredientQuantityInput.ifBlank { null },
                     ))
                     onQuantityInputClear()
                 }
             },
             onAddCatalogItem = { item ->
-                onEvent(AddRecipeEvent.AddIngredient(item, ingredientQuantityInput.toFloatOrNull()))
+                onEvent(AddRecipeEvent.AddIngredient(item, ingredientQuantityInput.ifBlank { null }))
                 onQuantityInputClear()
             },
         )
@@ -260,12 +266,12 @@ internal fun TagsSection(
 @Composable
 internal fun IngredientRow(
     name: String,
-    quantity: Float?,
-    onQuantityChange: (Float?) -> Unit,
+    quantity: String?,
+    onQuantityChange: (String?) -> Unit,
     onRemove: () -> Unit,
 ) {
     var qtyText by remember(quantity) {
-        mutableStateOf(quantity?.let { formatQuantity(it) }.orEmpty())
+        mutableStateOf(quantity.orEmpty())
     }
 
     Row(
@@ -281,13 +287,12 @@ internal fun IngredientRow(
         OutlinedTextField(
             value = qtyText,
             onValueChange = { value ->
-                qtyText = value.filter { it.isDigit() || it == '.' }
-                onQuantityChange(qtyText.toFloatOrNull())
+                qtyText = value
+                onQuantityChange(qtyText.ifBlank { null })
             },
             label = { Text(Res.string.common_quantity.resolve()) },
             singleLine = true,
             modifier = Modifier.width(80.dp),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
         )
         IconButton(onClick = onRemove) {
             Icon(Icons.Default.Close, contentDescription = Res.string.common_remove.resolve())
@@ -342,14 +347,54 @@ internal fun IngredientAddField(
         }
         OutlinedTextField(
             value = quantityInput,
-            onValueChange = { value -> onQuantityChange(value.filter { it.isDigit() || it == '.' }) },
+            onValueChange = onQuantityChange,
             label = { Text(Res.string.common_quantity.resolve()) },
             singleLine = true,
             modifier = Modifier.width(80.dp),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
         )
         IconButton(onClick = onAddFreeText) {
             Icon(Icons.AutoMirrored.Filled.Send, contentDescription = Res.string.common_add.resolve())
+        }
+    }
+}
+
+@Composable
+internal fun ServingsSelector(
+    value: Int?,
+    onValueChange: (Int?) -> Unit,
+) {
+    val current = value ?: 0
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Text(
+            Res.string.recipe_edit_servings_label.resolve(),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary,
+        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            IconButton(
+                onClick = { onValueChange(if (current > 1) current - 1 else null) },
+                enabled = current > 0,
+            ) {
+                Icon(Icons.Default.Remove, contentDescription = Res.string.common_remove.resolve())
+            }
+            Text(
+                text = if (current > 0) current.toString() else "–",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.width(32.dp),
+                textAlign = TextAlign.Center,
+            )
+            IconButton(onClick = { onValueChange(current + 1) }) {
+                Icon(Icons.Default.Add, contentDescription = Res.string.common_add.resolve())
+            }
         }
     }
 }

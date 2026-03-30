@@ -6,5 +6,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class RecipeIngredient(
     val item: Item,
-    val quantity: Float? = null,
+    val quantity: String? = null,
 )

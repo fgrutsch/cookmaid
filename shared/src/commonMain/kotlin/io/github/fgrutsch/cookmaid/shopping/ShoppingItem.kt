@@ -8,6 +8,6 @@ import kotlin.uuid.Uuid
 data class ShoppingItem(
     val id: Uuid,
     val item: Item,
-    val quantity: Float?,
+    val quantity: String?,
     val checked: Boolean = false,
 )

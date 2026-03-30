@@ -52,13 +52,13 @@ class ShoppingListClient(
             setBody(BatchAddItemsRequest(items))
         }.body()
 
-    suspend fun addItem(listId: Uuid, catalogItemId: Uuid?, freeTextName: String?, quantity: Float?): ShoppingItem =
+    suspend fun addItem(listId: Uuid, catalogItemId: Uuid?, freeTextName: String?, quantity: String?): ShoppingItem =
         apiClient.httpClient.post("$base/$listId/items") {
             contentType(ContentType.Application.Json)
             setBody(CreateShoppingItemRequest(catalogItemId, freeTextName, quantity))
         }.body()
 
-    suspend fun updateItem(listId: Uuid, itemId: Uuid, quantity: Float?, checked: Boolean) {
+    suspend fun updateItem(listId: Uuid, itemId: Uuid, quantity: String?, checked: Boolean) {
         apiClient.httpClient.put("$base/$listId/items/$itemId") {
             contentType(ContentType.Application.Json)
             setBody(UpdateItemRequest(quantity, checked))

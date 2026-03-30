@@ -43,6 +43,7 @@ class AddRecipeViewModel(
             is AddRecipeEvent.UpdateIngredientQuery -> updateIngredientQuery(event.query)
             is AddRecipeEvent.AddIngredient -> addIngredient(event.item, event.quantity)
             is AddRecipeEvent.UpdateIngredientQuantity -> updateIngredientQuantity(event.index, event.quantity)
+            is AddRecipeEvent.SetServings -> updateState { copy(servings = event.value) }
             is AddRecipeEvent.RemoveIngredient -> updateState {
                 copy(ingredients = ingredients.filterIndexed { i, _ -> i != event.index })
             }
@@ -71,6 +72,7 @@ class AddRecipeViewModel(
                             ingredients = recipe.ingredients,
                             steps = recipe.steps,
                             selectedTags = recipe.tags,
+                            servings = recipe.servings,
                         )
                     }
                 }
@@ -88,7 +90,7 @@ class AddRecipeViewModel(
         ingredientQueryFlow.value = query
     }
 
-    private fun addIngredient(item: Item, quantity: Float?) {
+    private fun addIngredient(item: Item, quantity: String?) {
         if (item.name.isBlank()) return
         updateState {
             copy(
@@ -100,7 +102,7 @@ class AddRecipeViewModel(
         ingredientQueryFlow.value = ""
     }
 
-    private fun updateIngredientQuantity(index: Int, quantity: Float?) {
+    private fun updateIngredientQuantity(index: Int, quantity: String?) {
         updateState {
             copy(ingredients = ingredients.mapIndexed { i, ing ->
                 if (i == index) ing.copy(quantity = quantity) else ing
@@ -147,9 +149,17 @@ class AddRecipeViewModel(
                     s.ingredients,
                     s.steps,
                     s.selectedTags,
+                    s.servings,
                 )
             } else {
-                recipeRepository.create(s.name.trim(), description, s.ingredients, s.steps, s.selectedTags)
+                recipeRepository.create(
+                    s.name.trim(),
+                    description,
+                    s.ingredients,
+                    s.steps,
+                    s.selectedTags,
+                    s.servings,
+                )
             }
             sendEffect(AddRecipeEffect.Saved)
         }

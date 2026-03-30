@@ -28,7 +28,7 @@ class MealPlanServiceTest : BaseTest() {
 
     private suspend fun createRecipe(userId: UserId): Uuid {
         val recipeRepo = getKoin().get<RecipeRepository>()
-        val data = RecipeData("Test Recipe", null, emptyList(), emptyList(), emptyList())
+        val data = RecipeData("Test Recipe", null, emptyList(), emptyList(), emptyList(), servings = null)
         return recipeRepo.create(userId, data, SupportedLocale.EN).id
     }
 

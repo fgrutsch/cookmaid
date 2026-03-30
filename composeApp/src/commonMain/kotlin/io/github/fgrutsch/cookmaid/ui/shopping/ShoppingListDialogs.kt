@@ -26,7 +26,7 @@ internal fun EditItemDialog(
     onDismiss: () -> Unit,
     onSave: (ShoppingItem) -> Unit,
 ) {
-    var quantity by remember { mutableStateOf(item.quantity?.let { formatQuantity(it) }.orEmpty()) }
+    var quantity by remember { mutableStateOf(item.quantity.orEmpty()) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -43,7 +43,7 @@ internal fun EditItemDialog(
         confirmButton = {
             TextButton(
                 onClick = {
-                    val parsedQuantity = quantity.trim().toFloatOrNull()
+                    val parsedQuantity = quantity.trim().ifBlank { null }
                     onSave(item.copy(quantity = parsedQuantity))
                 },
             ) {

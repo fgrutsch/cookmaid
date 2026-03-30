@@ -61,6 +61,7 @@ interface RecipeRepository {
         ingredients: List<RecipeIngredient>,
         steps: List<String>,
         tags: List<String>,
+        servings: Int? = null,
     ): Recipe
 
     /**
@@ -80,6 +81,7 @@ interface RecipeRepository {
         ingredients: List<RecipeIngredient>,
         steps: List<String>,
         tags: List<String>,
+        servings: Int? = null,
     )
 
     /**
@@ -116,8 +118,9 @@ class ApiRecipeRepository(
         ingredients: List<RecipeIngredient>,
         steps: List<String>,
         tags: List<String>,
+        servings: Int?,
     ): Recipe {
-        return client.create(CreateRecipeRequest(name, description, ingredients, steps, tags))
+        return client.create(CreateRecipeRequest(name, description, ingredients, steps, tags, servings))
     }
 
     override suspend fun update(
@@ -127,8 +130,9 @@ class ApiRecipeRepository(
         ingredients: List<RecipeIngredient>,
         steps: List<String>,
         tags: List<String>,
+        servings: Int?,
     ) {
-        client.update(id, UpdateRecipeRequest(name, description, ingredients, steps, tags))
+        client.update(id, UpdateRecipeRequest(name, description, ingredients, steps, tags, servings))
     }
 
     override suspend fun delete(id: Uuid) {

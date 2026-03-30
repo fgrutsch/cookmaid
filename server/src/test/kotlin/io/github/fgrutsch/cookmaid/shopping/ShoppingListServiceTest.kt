@@ -140,7 +140,7 @@ class ShoppingListServiceTest : BaseTest() {
         val service = getKoin().get<ShoppingListService>()
         val (userId, list) = createUserWithList()
 
-        val item = service.addItem(userId, list.id, null, "Milk", 1f, SupportedLocale.EN)
+        val item = service.addItem(userId, list.id, null, "Milk", "1", SupportedLocale.EN)
 
         assertNotNull(item)
         assertEquals("Milk", item.item.name)
@@ -163,10 +163,10 @@ class ShoppingListServiceTest : BaseTest() {
         val repo = getKoin().get<ShoppingListRepository>()
         val (userId, list) = createUserWithList()
         val item = repo.addItem(
-            list.id, catalogItemId = null, freeTextName = "Eggs", quantity = 6f, locale = SupportedLocale.EN,
+            list.id, catalogItemId = null, freeTextName = "Eggs", quantity = "6", locale = SupportedLocale.EN,
         )
 
-        val result = service.updateItem(userId, item.id, quantity = 12f, checked = true)
+        val result = service.updateItem(userId, item.id, quantity = "12", checked = true)
 
         assertTrue(result)
     }
@@ -177,11 +177,11 @@ class ShoppingListServiceTest : BaseTest() {
         val repo = getKoin().get<ShoppingListRepository>()
         val (_, list) = createUserWithList("user-1")
         val item = repo.addItem(
-            list.id, catalogItemId = null, freeTextName = "Eggs", quantity = 6f, locale = SupportedLocale.EN,
+            list.id, catalogItemId = null, freeTextName = "Eggs", quantity = "6", locale = SupportedLocale.EN,
         )
         val otherUserId = createUser("user-2")
 
-        val result = service.updateItem(otherUserId, item.id, quantity = 99f, checked = true)
+        val result = service.updateItem(otherUserId, item.id, quantity = "99", checked = true)
 
         assertFalse(result)
     }
