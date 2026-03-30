@@ -48,5 +48,10 @@ Web app not installable — no PWA manifest present.
   installability. No intermediate sizes needed.
 - Use absolute paths (`/manifest.json`, `/icon-*.png`) for
   client-side routing compatibility.
-- Install prompt requires a service worker — manifest alone enables
-  metadata but not full installability.
+- Service worker is required for install prompt — manifest alone is
+  not enough. Use a minimal network-first strategy.
+- Never cache `/api/*` in the service worker — authenticated responses
+  persist across sessions and survive token expiry.
+- Inline tiny CSS into `index.html` to avoid extra network requests.
+- Set `background-color` per `prefers-color-scheme` to avoid white
+  edges on mobile in dark mode.
