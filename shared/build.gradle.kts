@@ -28,10 +28,8 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.datetime)
-            api(libs.koin.core)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
