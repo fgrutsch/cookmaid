@@ -50,9 +50,10 @@ Three Gradle modules:
 
 ## Tech Stack
 
-- Kotlin 2.3.10, Compose Multiplatform 1.10.2, Ktor 3.4.1
-- Exposed 1.1.1 (ORM), Flyway (migrations), PostgreSQL
-- Koin 4.1.1 (DI), kotlinx.serialization, kotlinx.datetime
+- Kotlin, Compose Multiplatform, Ktor
+  (see `gradle/libs.versions.toml` for exact versions)
+- Exposed (ORM), Flyway (migrations), PostgreSQL
+- Koin (DI), kotlinx.serialization, kotlinx.datetime
 - Detekt (linting), Kover (coverage), Testcontainers (integration tests)
 - Gradle with version catalog (`gradle/libs.versions.toml`)
 - Android: minSdk 24, targetSdk 36
@@ -99,6 +100,15 @@ Three Gradle modules:
   `wasmJsProcessResources` copies them to build output automatically —
   no Gradle or webpack config needed. `index.html` supports Gradle
   `expand()` for variable substitution.
+
+## Version Catalog (`libs.versions.toml`)
+
+- Grouped by domain: Android, Compose, Kotlin, Ktor, DI, Database,
+  Auth, Testing, Tooling, Logging, Misc. Alphabetical within groups.
+  Same grouping across `[versions]`, `[libraries]`, `[bundles]`, `[plugins]`.
+- Only pin direct dependencies. Don't catalog transitive-only libraries.
+- When removing a dep from `build.gradle.kts`, also remove the matching
+  library entry (and version key if unused) from the catalog.
 
 ## KDoc
 
