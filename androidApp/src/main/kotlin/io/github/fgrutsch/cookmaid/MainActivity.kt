@@ -35,9 +35,3 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
-@Preview
-@Composable
-fun AppAndroidPreview() {
-    // Preview without auth
-}

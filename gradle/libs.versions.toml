@@ -27,7 +27,7 @@ ktor = "3.4.2"
 koin = "4.2.0"
 
 # Database
-exposed = "1.1.1"
+exposed = "1.2.0"
 flyway = "12.3.0"
 postgresql = "42.7.10"
 
@@ -35,8 +35,8 @@ postgresql = "42.7.10"
 oidc = "0.16.5"
 
 # Testing
-junit5 = "5.12.2"
-testcontainers = "1.21.1"
+junit5 = "5.13.0"
+testcontainers = "1.21.4"
 
 # Tooling
 detekt = "2.0.0-alpha.2"
@@ -105,7 +105,7 @@ flyway-postgresql = { module = "org.flywaydb:flyway-database-postgresql", versio
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
 
 # Auth
-nimbus-jose-jwt = { module = "com.nimbusds:nimbus-jose-jwt", version = "10.3" }
+nimbus-jose-jwt = { module = "com.nimbusds:nimbus-jose-jwt", version = "10.8" }
 oidc-appsupport = { module = "io.github.kalinjul.kotlin.multiplatform:oidc-appsupport", version.ref = "oidc" }
 oidc-ktor = { module = "io.github.kalinjul.kotlin.multiplatform:oidc-ktor", version.ref = "oidc" }
 oidc-tokenstore = { module = "io.github.kalinjul.kotlin.multiplatform:oidc-tokenstore", version.ref = "oidc" }
@@ -143,12 +143,14 @@ oidc = ["oidc-appsupport", "oidc-ktor", "oidc-tokenstore"]
 # Android
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
+androidMultiplatformLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 
 # Compose
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
 
 # Kotlin
+kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
