@@ -15,9 +15,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -45,6 +42,8 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
 import cookmaid.composeapp.generated.resources.Res
 import cookmaid.composeapp.generated.resources.common_add_to_meal_plan
+import cookmaid.composeapp.generated.resources.ic_arrow_back
+import cookmaid.composeapp.generated.resources.ic_more_vert
 import cookmaid.composeapp.generated.resources.common_add_to_shopping_list
 import cookmaid.composeapp.generated.resources.common_back
 import cookmaid.composeapp.generated.resources.common_delete
@@ -61,6 +60,7 @@ import cookmaid.composeapp.generated.resources.recipe_detail_title
 import io.github.fgrutsch.cookmaid.recipe.Recipe
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
 import io.github.fgrutsch.cookmaid.ui.common.resolve
+import org.jetbrains.compose.resources.painterResource
 
 @Composable
 internal fun RecipeDetailTopBar(
@@ -79,12 +79,15 @@ internal fun RecipeDetailTopBar(
         ),
         navigationIcon = {
             IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = Res.string.common_back.resolve())
+                Icon(painterResource(Res.drawable.ic_arrow_back), contentDescription = Res.string.common_back.resolve())
             }
         },
         actions = {
             IconButton(onClick = onShowMenu) {
-                Icon(Icons.Default.MoreVert, contentDescription = Res.string.common_options.resolve())
+                Icon(
+                    painterResource(Res.drawable.ic_more_vert),
+                    contentDescription = Res.string.common_options.resolve(),
+                )
             }
             DropdownMenu(expanded = showMenu, onDismissRequest = onDismissMenu) {
                 DropdownMenuItem(

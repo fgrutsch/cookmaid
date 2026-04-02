@@ -13,8 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -38,6 +36,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import cookmaid.composeapp.generated.resources.Res
+import cookmaid.composeapp.generated.resources.ic_person
 import cookmaid.composeapp.generated.resources.settings_dark_mode
 import cookmaid.composeapp.generated.resources.settings_language
 import cookmaid.composeapp.generated.resources.settings_profile_picture
@@ -45,6 +44,7 @@ import cookmaid.composeapp.generated.resources.settings_sign_out
 import cookmaid.composeapp.generated.resources.settings_title
 import io.github.fgrutsch.cookmaid.ui.auth.UserProfile
 import io.github.fgrutsch.cookmaid.ui.common.resolve
+import org.jetbrains.compose.resources.painterResource
 
 /**
  * Settings screen displaying user profile info, theme toggle, and logout.
@@ -206,7 +206,7 @@ private fun UserProfileSection(userProfile: UserProfile) {
             )
         } else {
             Icon(
-                imageVector = Icons.Default.Person,
+                painter = painterResource(Res.drawable.ic_person),
                 contentDescription = Res.string.settings_profile_picture.resolve(),
                 modifier = Modifier.size(80.dp),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,

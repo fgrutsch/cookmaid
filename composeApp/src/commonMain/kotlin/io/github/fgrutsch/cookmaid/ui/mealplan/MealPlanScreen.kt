@@ -2,8 +2,6 @@ package io.github.fgrutsch.cookmaid.ui.mealplan
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Today
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -24,12 +22,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import cookmaid.composeapp.generated.resources.Res
 import cookmaid.composeapp.generated.resources.common_added_to_shopping_list
+import cookmaid.composeapp.generated.resources.ic_today
 import cookmaid.composeapp.generated.resources.meal_plan_go_to_current
 import cookmaid.composeapp.generated.resources.meal_plan_title
 import io.github.fgrutsch.cookmaid.mealplan.MealPlanItem
 import io.github.fgrutsch.cookmaid.ui.common.SuccessSnackbarHost
 import io.github.fgrutsch.cookmaid.ui.common.resolve
 import org.jetbrains.compose.resources.getString
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.rememberResourceEnvironment
 import kotlinx.datetime.LocalDate
 import kotlin.uuid.Uuid
@@ -81,7 +81,7 @@ fun MealPlanScreen(
                 actions = {
                     IconButton(onClick = { onEvent(MealPlanEvent.GoToCurrentWeek) }) {
                         Icon(
-                            Icons.Default.Today,
+                            painterResource(Res.drawable.ic_today),
                             contentDescription = Res.string.meal_plan_go_to_current.resolve(),
                         )
                     }

@@ -3,8 +3,6 @@ package io.github.fgrutsch.cookmaid.ui.recipe.list
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
@@ -23,11 +21,13 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import cookmaid.composeapp.generated.resources.Res
 import cookmaid.composeapp.generated.resources.common_added_to_meal_plan
+import cookmaid.composeapp.generated.resources.ic_add
 import cookmaid.composeapp.generated.resources.common_added_to_shopping_list
 import cookmaid.composeapp.generated.resources.recipe_list_add
 import io.github.fgrutsch.cookmaid.ui.common.SuccessSnackbarHost
 import io.github.fgrutsch.cookmaid.ui.common.resolve
 import org.jetbrains.compose.resources.getString
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.rememberResourceEnvironment
 import io.github.fgrutsch.cookmaid.ui.mealplan.DayPickerDialog
 import io.github.fgrutsch.cookmaid.ui.mealplan.DayPickerViewModel
@@ -101,7 +101,7 @@ fun RecipeListScreen(
         },
         floatingActionButton = {
             FloatingActionButton(onClick = onAddRecipe) {
-                Icon(Icons.Default.Add, contentDescription = addRecipeMsg)
+                Icon(painterResource(Res.drawable.ic_add), contentDescription = addRecipeMsg)
             }
         },
     ) { padding ->

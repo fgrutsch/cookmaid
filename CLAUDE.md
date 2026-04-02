@@ -13,7 +13,7 @@ package of `io.github.fgrutsch.cookmaid`.
 
 ```shell
 # Build Android app
-./gradlew :composeApp:assembleDebug
+./gradlew :androidApp:assembleDebug
 
 # Run server (Ktor on port 8080)
 ./gradlew :server:run
@@ -38,21 +38,23 @@ package of `io.github.fgrutsch.cookmaid`.
 
 ## Architecture
 
-Three Gradle modules:
+Four Gradle modules:
 
 - **`shared/`** — Multiplatform library (targets: Android, JVM, WasmJS).
   Data models, DTOs, request/response types shared across all platforms.
-- **`composeApp/`** — Compose Multiplatform UI (targets: Android, WasmJS).
-  Depends on `shared`. Platform entry points: `MainActivity.kt` (Android),
-  `main.kt` (Web via `ComposeViewport`).
+- **`composeApp/`** — Compose Multiplatform UI library (targets: Android, WasmJS).
+  Depends on `shared`. Web entry point: `main.kt` (via `ComposeViewport`).
+- **`androidApp/`** — Android application entry point. Depends on `composeApp`.
+  Contains `MainActivity.kt`, manifest, resources, product flavors, buildConfig.
 - **`server/`** — Ktor backend (JVM only). Depends on `shared`.
   Entry point: `Application.kt` (`embeddedServer` with Netty on port 8080).
 
 ## Tech Stack
 
-- Kotlin 2.3.10, Compose Multiplatform 1.10.2, Ktor 3.4.1
-- Exposed 1.1.1 (ORM), Flyway (migrations), PostgreSQL
-- Koin 4.1.1 (DI), kotlinx.serialization, kotlinx.datetime
+- Kotlin, Compose Multiplatform, Ktor
+  (see `gradle/libs.versions.toml` for exact versions)
+- Exposed (ORM), Flyway (migrations), PostgreSQL
+- Koin (DI), kotlinx.serialization, kotlinx.datetime
 - Detekt (linting), Kover (coverage), Testcontainers (integration tests)
 - Gradle with version catalog (`gradle/libs.versions.toml`)
 - Android: minSdk 24, targetSdk 36
@@ -99,6 +101,15 @@ Three Gradle modules:
   `wasmJsProcessResources` copies them to build output automatically —
   no Gradle or webpack config needed. `index.html` supports Gradle
   `expand()` for variable substitution.
+
+## Version Catalog (`libs.versions.toml`)
+
+- Grouped by domain: Android, Compose, Kotlin, Ktor, DI, Database,
+  Auth, Testing, Tooling, Logging, Misc. Alphabetical within groups.
+  Same grouping across `[versions]`, `[libraries]`, `[bundles]`, `[plugins]`.
+- Only pin direct dependencies. Don't catalog transitive-only libraries.
+- When removing a dep from `build.gradle.kts`, also remove the matching
+  library entry (and version key if unused) from the catalog.
 
 ## KDoc
 

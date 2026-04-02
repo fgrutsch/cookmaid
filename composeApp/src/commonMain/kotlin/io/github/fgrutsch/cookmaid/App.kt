@@ -35,6 +35,8 @@ import io.github.fgrutsch.cookmaid.ui.auth.AuthViewModel
 import io.github.fgrutsch.cookmaid.ui.auth.LoginScreen
 import io.github.fgrutsch.cookmaid.ui.auth.OidcConfig
 import io.github.fgrutsch.cookmaid.ui.auth.UserProfile
+import io.github.fgrutsch.cookmaid.ui.common.LocalAppLocale
+import io.github.fgrutsch.cookmaid.ui.common.resolve
 import io.github.fgrutsch.cookmaid.ui.mealplan.MealPlanScreen
 import io.github.fgrutsch.cookmaid.ui.mealplan.MealPlanViewModel
 import io.github.fgrutsch.cookmaid.ui.recipe.detail.RecipeDetailScreen
@@ -48,11 +50,11 @@ import io.github.fgrutsch.cookmaid.ui.settings.SettingsViewModel
 import io.github.fgrutsch.cookmaid.ui.shopping.ShoppingListScreen
 import io.github.fgrutsch.cookmaid.ui.shopping.ShoppingListViewModel
 import io.github.fgrutsch.cookmaid.ui.theme.AppTheme
+import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.KoinApplication
 import org.koin.compose.getKoin
-import io.github.fgrutsch.cookmaid.ui.common.LocalAppLocale
-import io.github.fgrutsch.cookmaid.ui.common.resolve
 import org.koin.compose.koinInject
+import org.koin.dsl.koinConfiguration
 import org.koin.dsl.module
 import org.publicvalue.multiplatform.oidc.flows.CodeAuthFlowFactory
 import org.publicvalue.multiplatform.oidc.tokenstore.TokenStore
@@ -78,9 +80,7 @@ fun App(
         single<TokenStore> { tokenStore }
     }
 
-    KoinApplication(application = {
-        modules(allModules + platformModule)
-    }) {
+    KoinApplication(koinConfiguration { modules(allModules + platformModule) }) {
         val settingsViewModel = koinInject<SettingsViewModel>()
         val settingsState by settingsViewModel.state.collectAsState()
 
@@ -160,7 +160,7 @@ private fun BottomNavigationBar(
                 selected = selectedTab == tab,
                 onClick = { onTabSelected(tab) },
                 icon = {
-                    Icon(tab.icon, contentDescription = tab.labelRes.resolve())
+                    Icon(painterResource(tab.icon), contentDescription = tab.labelRes.resolve())
                 },
                 label = { Text(tab.labelRes.resolve()) },
             )

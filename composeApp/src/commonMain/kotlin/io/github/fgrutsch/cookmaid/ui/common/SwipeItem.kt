@@ -4,9 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -20,6 +17,9 @@ import androidx.compose.ui.unit.dp
 import cookmaid.composeapp.generated.resources.Res
 import cookmaid.composeapp.generated.resources.common_delete
 import cookmaid.composeapp.generated.resources.common_edit
+import cookmaid.composeapp.generated.resources.ic_delete
+import cookmaid.composeapp.generated.resources.ic_edit
+import org.jetbrains.compose.resources.painterResource
 import io.github.fgrutsch.cookmaid.ui.common.resolve
 
 /**
@@ -63,7 +63,7 @@ fun SwipeItem(
                         contentAlignment = Alignment.CenterEnd,
                     ) {
                         Icon(
-                            Icons.Default.Delete,
+                            painterResource(Res.drawable.ic_delete),
                             contentDescription = Res.string.common_delete.resolve(),
                             tint = MaterialTheme.colorScheme.onErrorContainer,
                         )
@@ -79,7 +79,7 @@ fun SwipeItem(
                             contentAlignment = Alignment.CenterStart,
                         ) {
                             Icon(
-                                Icons.Default.Edit,
+                                painterResource(Res.drawable.ic_edit),
                                 contentDescription = Res.string.common_edit.resolve(),
                                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
                             )
