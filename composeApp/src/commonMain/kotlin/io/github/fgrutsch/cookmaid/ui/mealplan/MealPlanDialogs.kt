@@ -13,9 +13,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
@@ -46,6 +43,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cookmaid.composeapp.generated.resources.Res
 import cookmaid.composeapp.generated.resources.common_add
+import cookmaid.composeapp.generated.resources.ic_keyboard_arrow_left
+import cookmaid.composeapp.generated.resources.ic_keyboard_arrow_right
 import cookmaid.composeapp.generated.resources.common_cancel
 import cookmaid.composeapp.generated.resources.common_previous_week
 import cookmaid.composeapp.generated.resources.common_next_week
@@ -73,6 +72,7 @@ import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
 import io.github.fgrutsch.cookmaid.ui.common.formatShortDate
 import kotlin.time.Clock
 import io.github.fgrutsch.cookmaid.ui.common.resolve
+import org.jetbrains.compose.resources.painterResource
 import kotlin.uuid.Uuid
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.DayOfWeek
@@ -417,7 +417,7 @@ private fun DayPickerWeekNavigation(
     ) {
         IconButton(onClick = onPrevious) {
             Icon(
-                Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                painterResource(Res.drawable.ic_keyboard_arrow_left),
                 contentDescription = Res.string.common_previous_week.resolve(),
             )
         }
@@ -428,7 +428,7 @@ private fun DayPickerWeekNavigation(
         )
         IconButton(onClick = onNext) {
             Icon(
-                Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                painterResource(Res.drawable.ic_keyboard_arrow_right),
                 contentDescription = Res.string.common_next_week.resolve(),
             )
         }

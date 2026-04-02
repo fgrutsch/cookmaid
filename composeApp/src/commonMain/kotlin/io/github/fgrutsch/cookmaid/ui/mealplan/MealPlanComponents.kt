@@ -16,13 +16,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.automirrored.filled.MenuBook
-import androidx.compose.material.icons.automirrored.filled.Notes
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -43,6 +36,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cookmaid.composeapp.generated.resources.Res
 import cookmaid.composeapp.generated.resources.common_add_to_shopping_list
+import cookmaid.composeapp.generated.resources.ic_add
+import cookmaid.composeapp.generated.resources.ic_keyboard_arrow_left
+import cookmaid.composeapp.generated.resources.ic_keyboard_arrow_right
+import cookmaid.composeapp.generated.resources.ic_menu_book
+import cookmaid.composeapp.generated.resources.ic_more_vert
+import cookmaid.composeapp.generated.resources.ic_notes
 import cookmaid.composeapp.generated.resources.common_next_week
 import cookmaid.composeapp.generated.resources.common_options
 import cookmaid.composeapp.generated.resources.common_previous_week
@@ -65,6 +64,8 @@ import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import io.github.fgrutsch.cookmaid.ui.common.resolve
 import kotlinx.datetime.plus
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.painterResource
 import kotlin.uuid.Uuid
 
 internal val urlPattern = Regex("^https?://\\S+$", RegexOption.IGNORE_CASE)
@@ -135,7 +136,7 @@ internal fun WeekNavigationBar(
     ) {
         IconButton(onClick = onPrevious) {
             Icon(
-                Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                painterResource(Res.drawable.ic_keyboard_arrow_left),
                 contentDescription = Res.string.common_previous_week.resolve(),
             )
         }
@@ -146,7 +147,7 @@ internal fun WeekNavigationBar(
         )
         IconButton(onClick = onNext) {
             Icon(
-                Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                painterResource(Res.drawable.ic_keyboard_arrow_right),
                 contentDescription = Res.string.common_next_week.resolve(),
             )
         }
@@ -190,7 +191,10 @@ internal fun DayCard(
                     )
                 }
                 IconButton(onClick = onAddItem) {
-                    Icon(Icons.Default.Add, contentDescription = Res.string.meal_plan_add_item.resolve())
+                    Icon(
+                        painterResource(Res.drawable.ic_add),
+                        contentDescription = Res.string.meal_plan_add_item.resolve(),
+                    )
                 }
             }
 
@@ -226,12 +230,12 @@ internal fun MealPlanItemRow(
             .padding(start = 16.dp, top = 8.dp, bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        val icon = when (item) {
-            is MealPlanItem.Recipe -> Icons.AutoMirrored.Filled.MenuBook
-            is MealPlanItem.Note -> Icons.AutoMirrored.Filled.Notes
+        val icon: DrawableResource = when (item) {
+            is MealPlanItem.Recipe -> Res.drawable.ic_menu_book
+            is MealPlanItem.Note -> Res.drawable.ic_notes
         }
         Icon(
-            icon,
+            painterResource(icon),
             contentDescription = null,
             modifier = Modifier.size(24.dp),
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -250,7 +254,10 @@ internal fun MealPlanItemRow(
         if (item is MealPlanItem.Recipe) {
             Box {
                 IconButton(onClick = { showMenu = true }) {
-                    Icon(Icons.Default.MoreVert, contentDescription = Res.string.common_options.resolve())
+                    Icon(
+                        painterResource(Res.drawable.ic_more_vert),
+                        contentDescription = Res.string.common_options.resolve(),
+                    )
                 }
                 DropdownMenu(
                     expanded = showMenu,

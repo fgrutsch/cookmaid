@@ -1,8 +1,5 @@
 package io.github.fgrutsch.cookmaid.ui.recipe.edit
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -21,10 +18,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import cookmaid.composeapp.generated.resources.Res
 import cookmaid.composeapp.generated.resources.common_back
+import cookmaid.composeapp.generated.resources.ic_arrow_back
+import cookmaid.composeapp.generated.resources.ic_check
 import cookmaid.composeapp.generated.resources.common_save
 import cookmaid.composeapp.generated.resources.recipe_add_title
 import cookmaid.composeapp.generated.resources.recipe_edit_title
 import io.github.fgrutsch.cookmaid.ui.common.resolve
+import org.jetbrains.compose.resources.painterResource
 
 /**
  * Form screen for creating or editing a recipe.
@@ -72,14 +72,17 @@ fun AddRecipeScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
+                            painterResource(Res.drawable.ic_arrow_back),
                             contentDescription = Res.string.common_back.resolve(),
                         )
                     }
                 },
                 actions = {
                     IconButton(onClick = { onEvent(AddRecipeEvent.Save) }) {
-                        Icon(Icons.Default.Check, contentDescription = Res.string.common_save.resolve())
+                        Icon(
+                            painterResource(Res.drawable.ic_check),
+                            contentDescription = Res.string.common_save.resolve(),
+                        )
                     }
                 },
             )

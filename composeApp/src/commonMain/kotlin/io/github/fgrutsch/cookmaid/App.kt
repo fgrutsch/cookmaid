@@ -48,6 +48,7 @@ import io.github.fgrutsch.cookmaid.ui.settings.SettingsViewModel
 import io.github.fgrutsch.cookmaid.ui.shopping.ShoppingListScreen
 import io.github.fgrutsch.cookmaid.ui.shopping.ShoppingListViewModel
 import io.github.fgrutsch.cookmaid.ui.theme.AppTheme
+import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.KoinApplication
 import org.koin.compose.getKoin
 import io.github.fgrutsch.cookmaid.ui.common.LocalAppLocale
@@ -160,7 +161,7 @@ private fun BottomNavigationBar(
                 selected = selectedTab == tab,
                 onClick = { onTabSelected(tab) },
                 icon = {
-                    Icon(tab.icon, contentDescription = tab.labelRes.resolve())
+                    Icon(painterResource(tab.icon), contentDescription = tab.labelRes.resolve())
                 },
                 label = { Text(tab.labelRes.resolve()) },
             )

@@ -14,11 +14,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
@@ -46,6 +41,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import cookmaid.composeapp.generated.resources.Res
 import cookmaid.composeapp.generated.resources.common_add
+import cookmaid.composeapp.generated.resources.ic_add
+import cookmaid.composeapp.generated.resources.ic_close
+import cookmaid.composeapp.generated.resources.ic_remove
+import cookmaid.composeapp.generated.resources.ic_send
 import cookmaid.composeapp.generated.resources.common_cancel
 import cookmaid.composeapp.generated.resources.common_quantity
 import cookmaid.composeapp.generated.resources.common_remove
@@ -63,6 +62,7 @@ import cookmaid.composeapp.generated.resources.recipe_edit_tag_name_label
 import io.github.fgrutsch.cookmaid.catalog.Item
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
 import io.github.fgrutsch.cookmaid.ui.common.resolve
+import org.jetbrains.compose.resources.painterResource
 
 @Composable
 internal fun AddRecipeContent(
@@ -202,7 +202,10 @@ internal fun StepsSection(
                 headlineContent = { Text("${index + 1}. $step") },
                 trailingContent = {
                     IconButton(onClick = { onRemoveStep(index) }) {
-                        Icon(Icons.Default.Close, contentDescription = Res.string.common_remove.resolve())
+                        Icon(
+                            painterResource(Res.drawable.ic_close),
+                            contentDescription = Res.string.common_remove.resolve(),
+                        )
                     }
                 },
             )
@@ -218,7 +221,7 @@ internal fun StepsSection(
                 if (stepInput.isNotBlank()) {
                     IconButton(onClick = onAddStep) {
                         Icon(
-                            Icons.AutoMirrored.Filled.Send,
+                            painterResource(Res.drawable.ic_send),
                             contentDescription = Res.string.recipe_edit_add_step.resolve(),
                         )
                     }
@@ -255,7 +258,7 @@ internal fun TagsSection(
                 )
             }
             IconButton(onClick = onShowNewTagDialog) {
-                Icon(Icons.Default.Add, contentDescription = Res.string.common_add.resolve())
+                Icon(painterResource(Res.drawable.ic_add), contentDescription = Res.string.common_add.resolve())
             }
         }
     }
@@ -293,7 +296,7 @@ internal fun IngredientRow(
             modifier = Modifier.width(80.dp),
         )
         IconButton(onClick = onRemove) {
-            Icon(Icons.Default.Close, contentDescription = Res.string.common_remove.resolve())
+            Icon(painterResource(Res.drawable.ic_close), contentDescription = Res.string.common_remove.resolve())
         }
     }
 }
@@ -351,7 +354,7 @@ internal fun IngredientAddField(
             modifier = Modifier.width(80.dp),
         )
         IconButton(onClick = onAddFreeText) {
-            Icon(Icons.AutoMirrored.Filled.Send, contentDescription = Res.string.common_add.resolve())
+            Icon(painterResource(Res.drawable.ic_send), contentDescription = Res.string.common_add.resolve())
         }
     }
 }
@@ -382,7 +385,7 @@ internal fun ServingsSelector(
                 onClick = { onValueChange(if (current > 1) current - 1 else null) },
                 enabled = current > 0,
             ) {
-                Icon(Icons.Default.Remove, contentDescription = Res.string.common_remove.resolve())
+                Icon(painterResource(Res.drawable.ic_remove), contentDescription = Res.string.common_remove.resolve())
             }
             Text(
                 text = if (current > 0) current.toString() else "–",
@@ -391,7 +394,7 @@ internal fun ServingsSelector(
                 textAlign = TextAlign.Center,
             )
             IconButton(onClick = { onValueChange(current + 1) }) {
-                Icon(Icons.Default.Add, contentDescription = Res.string.common_add.resolve())
+                Icon(painterResource(Res.drawable.ic_add), contentDescription = Res.string.common_add.resolve())
             }
         }
     }

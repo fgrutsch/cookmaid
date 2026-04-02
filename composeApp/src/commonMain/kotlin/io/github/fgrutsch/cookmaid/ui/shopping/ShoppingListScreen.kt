@@ -12,9 +12,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DeleteSweep
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -43,6 +40,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cookmaid.composeapp.generated.resources.Res
 import cookmaid.composeapp.generated.resources.common_uncategorized
+import cookmaid.composeapp.generated.resources.ic_delete_sweep
+import cookmaid.composeapp.generated.resources.ic_more_vert
 import cookmaid.composeapp.generated.resources.shopping_checked_count
 import cookmaid.composeapp.generated.resources.shopping_delete_checked
 import cookmaid.composeapp.generated.resources.shopping_delete_list
@@ -57,6 +56,7 @@ import io.github.fgrutsch.cookmaid.shopping.ShoppingItem
 import io.github.fgrutsch.cookmaid.shopping.ShoppingList
 import io.github.fgrutsch.cookmaid.ui.common.SwipeItem
 import io.github.fgrutsch.cookmaid.ui.common.resolve
+import org.jetbrains.compose.resources.painterResource
 import kotlin.uuid.Uuid
 
 /**
@@ -199,7 +199,10 @@ private fun ShoppingListTopBar(
         ),
         actions = {
             IconButton(onClick = onShowMenu) {
-                Icon(Icons.Default.MoreVert, contentDescription = Res.string.shopping_list_options.resolve())
+                Icon(
+                    painterResource(Res.drawable.ic_more_vert),
+                    contentDescription = Res.string.shopping_list_options.resolve(),
+                )
             }
             DropdownMenu(
                 expanded = showMenu,
@@ -354,7 +357,7 @@ private fun CheckedSectionHeader(checkedCount: Int, onDeleteChecked: () -> Unit)
         )
         IconButton(onClick = onDeleteChecked) {
             Icon(
-                Icons.Default.DeleteSweep,
+                painterResource(Res.drawable.ic_delete_sweep),
                 contentDescription = Res.string.shopping_delete_checked.resolve(),
                 tint = MaterialTheme.colorScheme.outline,
             )

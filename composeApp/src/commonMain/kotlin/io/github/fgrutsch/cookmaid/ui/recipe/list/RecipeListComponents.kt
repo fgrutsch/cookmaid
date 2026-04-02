@@ -15,12 +15,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Casino
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -53,6 +47,11 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import cookmaid.composeapp.generated.resources.Res
 import cookmaid.composeapp.generated.resources.common_add_to_meal_plan
+import cookmaid.composeapp.generated.resources.ic_casino
+import cookmaid.composeapp.generated.resources.ic_close
+import cookmaid.composeapp.generated.resources.ic_more_vert
+import cookmaid.composeapp.generated.resources.ic_refresh
+import cookmaid.composeapp.generated.resources.ic_search
 import cookmaid.composeapp.generated.resources.common_add_to_shopping_list
 import cookmaid.composeapp.generated.resources.common_close
 import cookmaid.composeapp.generated.resources.common_options
@@ -67,6 +66,7 @@ import cookmaid.composeapp.generated.resources.recipe_card_summary
 import cookmaid.composeapp.generated.resources.recipe_list_view_details
 import io.github.fgrutsch.cookmaid.recipe.Recipe
 import io.github.fgrutsch.cookmaid.ui.common.resolve
+import org.jetbrains.compose.resources.painterResource
 import kotlin.uuid.Uuid
 
 internal const val PAGINATION_THRESHOLD = 5
@@ -113,14 +113,23 @@ internal fun RecipeListTopBar(
         actions = {
             if (searchActive) {
                 IconButton(onClick = onCloseSearch) {
-                    Icon(Icons.Default.Close, contentDescription = Res.string.recipe_list_close_search.resolve())
+                    Icon(
+                        painterResource(Res.drawable.ic_close),
+                        contentDescription = Res.string.recipe_list_close_search.resolve(),
+                    )
                 }
             } else {
                 IconButton(onClick = onOpenSearch) {
-                    Icon(Icons.Default.Search, contentDescription = Res.string.common_search.resolve())
+                    Icon(
+                        painterResource(Res.drawable.ic_search),
+                        contentDescription = Res.string.common_search.resolve(),
+                    )
                 }
                 IconButton(onClick = onRandomRecipe) {
-                    Icon(Icons.Default.Casino, contentDescription = Res.string.recipe_list_random.resolve())
+                    Icon(
+                        painterResource(Res.drawable.ic_casino),
+                        contentDescription = Res.string.recipe_list_random.resolve(),
+                    )
                 }
             }
         },
@@ -275,7 +284,7 @@ internal fun RecipeCardMenu(
 ) {
     Box {
         IconButton(onClick = onShowMenu) {
-            Icon(Icons.Default.MoreVert, contentDescription = Res.string.common_options.resolve())
+            Icon(painterResource(Res.drawable.ic_more_vert), contentDescription = Res.string.common_options.resolve())
         }
         DropdownMenu(expanded = showMenu, onDismissRequest = onDismissMenu) {
             if (hasIngredients) {
@@ -311,7 +320,10 @@ internal fun RandomRecipeDialog(
             ) {
                 Text(recipe.name, modifier = Modifier.weight(1f))
                 IconButton(onClick = onReroll) {
-                    Icon(Icons.Default.Refresh, contentDescription = Res.string.recipe_list_reroll.resolve())
+                    Icon(
+                        painterResource(Res.drawable.ic_refresh),
+                        contentDescription = Res.string.recipe_list_reroll.resolve(),
+                    )
                 }
             }
         },

@@ -4,8 +4,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
@@ -25,10 +23,12 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextDecoration
 import cookmaid.composeapp.generated.resources.Res
 import cookmaid.composeapp.generated.resources.common_add
+import cookmaid.composeapp.generated.resources.ic_send
 import cookmaid.composeapp.generated.resources.shopping_add_item
 import io.github.fgrutsch.cookmaid.catalog.Item
 import io.github.fgrutsch.cookmaid.shopping.ShoppingItem
 import io.github.fgrutsch.cookmaid.ui.common.resolve
+import org.jetbrains.compose.resources.painterResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -57,7 +57,10 @@ internal fun AddItemField(
             trailingIcon = {
                 if (query.isNotBlank()) {
                     IconButton(onClick = onAddFreeText) {
-                        Icon(Icons.AutoMirrored.Filled.Send, contentDescription = Res.string.common_add.resolve())
+                        Icon(
+                            painterResource(Res.drawable.ic_send),
+                            contentDescription = Res.string.common_add.resolve(),
+                        )
                     }
                 }
             },
