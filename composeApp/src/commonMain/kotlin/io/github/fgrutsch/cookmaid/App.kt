@@ -4,21 +4,8 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.NavBackStack
@@ -29,12 +16,9 @@ import androidx.navigation3.ui.NavDisplay
 import io.github.fgrutsch.cookmaid.navigation.Route
 import io.github.fgrutsch.cookmaid.navigation.TopLevelRoute
 import io.github.fgrutsch.cookmaid.navigation.navConfig
-import io.github.fgrutsch.cookmaid.ui.auth.AuthEvent
-import io.github.fgrutsch.cookmaid.ui.auth.AuthState
-import io.github.fgrutsch.cookmaid.ui.auth.AuthViewModel
-import io.github.fgrutsch.cookmaid.ui.auth.LoginScreen
-import io.github.fgrutsch.cookmaid.ui.auth.OidcConfig
-import io.github.fgrutsch.cookmaid.ui.auth.UserProfile
+import io.github.fgrutsch.cookmaid.ui.auth.*
+import io.github.fgrutsch.cookmaid.ui.common.LocalAppLocale
+import io.github.fgrutsch.cookmaid.ui.common.resolve
 import io.github.fgrutsch.cookmaid.ui.mealplan.MealPlanScreen
 import io.github.fgrutsch.cookmaid.ui.mealplan.MealPlanViewModel
 import io.github.fgrutsch.cookmaid.ui.recipe.detail.RecipeDetailScreen
@@ -51,9 +35,8 @@ import io.github.fgrutsch.cookmaid.ui.theme.AppTheme
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.KoinApplication
 import org.koin.compose.getKoin
-import io.github.fgrutsch.cookmaid.ui.common.LocalAppLocale
-import io.github.fgrutsch.cookmaid.ui.common.resolve
 import org.koin.compose.koinInject
+import org.koin.dsl.koinConfiguration
 import org.koin.dsl.module
 import org.publicvalue.multiplatform.oidc.flows.CodeAuthFlowFactory
 import org.publicvalue.multiplatform.oidc.tokenstore.TokenStore
@@ -79,9 +62,7 @@ fun App(
         single<TokenStore> { tokenStore }
     }
 
-    KoinApplication(application = {
-        modules(allModules + platformModule)
-    }) {
+    KoinApplication(koinConfiguration { modules(allModules + platformModule) }) {
         val settingsViewModel = koinInject<SettingsViewModel>()
         val settingsState by settingsViewModel.state.collectAsState()
 
