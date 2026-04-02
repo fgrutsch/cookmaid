@@ -13,7 +13,7 @@ package of `io.github.fgrutsch.cookmaid`.
 
 ```shell
 # Build Android app
-./gradlew :composeApp:assembleDebug
+./gradlew :androidApp:assembleDebug
 
 # Run server (Ktor on port 8080)
 ./gradlew :server:run
@@ -38,13 +38,14 @@ package of `io.github.fgrutsch.cookmaid`.
 
 ## Architecture
 
-Three Gradle modules:
+Four Gradle modules:
 
 - **`shared/`** — Multiplatform library (targets: Android, JVM, WasmJS).
   Data models, DTOs, request/response types shared across all platforms.
-- **`composeApp/`** — Compose Multiplatform UI (targets: Android, WasmJS).
-  Depends on `shared`. Platform entry points: `MainActivity.kt` (Android),
-  `main.kt` (Web via `ComposeViewport`).
+- **`composeApp/`** — Compose Multiplatform UI library (targets: Android, WasmJS).
+  Depends on `shared`. Web entry point: `main.kt` (via `ComposeViewport`).
+- **`androidApp/`** — Android application entry point. Depends on `composeApp`.
+  Contains `MainActivity.kt`, manifest, resources, product flavors, buildConfig.
 - **`server/`** — Ktor backend (JVM only). Depends on `shared`.
   Entry point: `Application.kt` (`embeddedServer` with Netty on port 8080).
 
