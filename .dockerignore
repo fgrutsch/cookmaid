@@ -1,0 +1,13 @@
+.git
+.github
+.gradle
+.idea
+*.iml
+local.properties
+sandbox/
+docs/
+androidApp/build/
+composeApp/build/
+server/build/
+shared/build/
+build/

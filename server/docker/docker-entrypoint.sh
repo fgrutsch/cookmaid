@@ -1,8 +1,8 @@
 #!/bin/sh
 set -e
 
-# Replace Gradle expand() placeholders in index.html with environment variables.
-# The production build leaves empty strings; this fills them at container start.
+# Substitute OIDC environment variables into index.html at container startup.
+# The production WasmJS build leaves these as empty strings; this fills them in.
 envsubst '$OIDC_DISCOVERY_URI $OIDC_CLIENT_ID $OIDC_SCOPE' \
     < /app/web/index.html \
     > /app/web/index.html.tmp \
