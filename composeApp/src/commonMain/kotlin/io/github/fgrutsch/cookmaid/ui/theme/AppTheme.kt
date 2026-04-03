@@ -18,9 +18,9 @@ fun AppTheme(
     isDark: Boolean = false,
     content: @Composable () -> Unit,
 ) {
+    SystemBarAppearance(isDark = isDark)
     DynamicMaterialTheme(
         seedColor = SeedColor,
-//        primary = Color(0xFFDD7E34),
         isDark = isDark,
         style = PaletteStyle.Fidelity,
         animate = true,

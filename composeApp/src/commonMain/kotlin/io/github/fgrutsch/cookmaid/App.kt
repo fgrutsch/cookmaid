@@ -2,6 +2,7 @@ package io.github.fgrutsch.cookmaid
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
@@ -126,6 +127,7 @@ private fun MainContent(
     var selectedTab by remember { mutableStateOf(TopLevelRoute.Shopping) }
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0),
         bottomBar = {
             BottomNavigationBar(
                 selectedTab = selectedTab,
