@@ -17,9 +17,11 @@ import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.config.*
+import io.ktor.server.http.content.*
 import io.ktor.server.netty.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.routing.*
+import java.io.File
 import org.koin.dsl.module
 import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
@@ -55,7 +57,11 @@ private fun Application.configureHttp() {
 }
 
 private fun Application.configureRouting() {
+    val webDir = System.getenv("WEB_DIR") ?: "web"
     routing {
+        staticFiles("/", File(webDir)) {
+            default("index.html")
+        }
         route("/api") {
             authenticate(AUTH_JWT) {
                 userRoutes()
