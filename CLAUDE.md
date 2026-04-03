@@ -15,11 +15,18 @@ package of `io.github.fgrutsch.cookmaid`.
 # Build Android app
 ./gradlew :androidApp:assembleDebug
 
-# Run server (Ktor on port 8080)
+# Run server (Ktor on port 8081)
 ./gradlew :server:run
 
-# Run web app (Wasm)
+# Run web app (Wasm, dev)
 ./gradlew :composeApp:wasmJsBrowserDevelopmentRun
+
+# Build web app (Wasm, production)
+./gradlew :composeApp:wasmJsBrowserProductionWebpack
+# Output: composeApp/build/dist/wasmJs/productionExecutable/
+
+# Build Docker image (server + WasmJS bundled)
+docker build -t cookmaid .
 
 # Run all tests
 ./gradlew test
@@ -47,7 +54,7 @@ Four Gradle modules:
 - **`androidApp/`** — Android application entry point. Depends on `composeApp`.
   Contains `MainActivity.kt`, manifest, resources, product flavors, buildConfig.
 - **`server/`** — Ktor backend (JVM only). Depends on `shared`.
-  Entry point: `Application.kt` (`embeddedServer` with Netty on port 8080).
+  Entry point: `Application.kt` (`embeddedServer` with Netty on port 8081).
 
 ## Tech Stack
 
@@ -83,6 +90,12 @@ Four Gradle modules:
   with a shared `set_updated_at()` trigger.
 - **Ktor testing**: Integration tests use `testApplication { }`;
   unit tests use Koin + Testcontainers + `runTest`.
+- **Static file serving**: `staticFiles("/", File(WEB_DIR))` serves the
+  WasmJS web app. Must be registered **before** the `/api` route.
+  `WEB_DIR` env var points to the assets dir; defaults to `"web"` (missing
+  dir is a no-op — API routes still work, used for tests).
+- **Distribution**: `:server:installDist` produces `server/build/install/server/`
+  (`bin/` + `lib/`) — no fat-JAR plugin needed, used by the Docker image.
 
 ### ComposeApp module
 
@@ -101,6 +114,24 @@ Four Gradle modules:
   `wasmJsProcessResources` copies them to build output automatically —
   no Gradle or webpack config needed. `index.html` supports Gradle
   `expand()` for variable substitution.
+
+## Docker
+
+The server is packaged as a multi-stage image — Ktor serves both the API and
+the WasmJS web app as static files.
+
+- **Build stage**: `gradle:8-jdk21-alpine` — `:server:installDist` + `wasmJsBrowserProductionWebpack`
+- **Runtime stage**: `eclipse-temurin:21-jre-alpine` — non-root user `cookmaid`
+- **Entrypoint**: `server/docker/docker-entrypoint.sh` — runs `envsubst` on
+  `index.html` to inject `OIDC_DISCOVERY_URI`, `OIDC_CLIENT_ID`, `OIDC_SCOPE`
+  at container startup (left empty by the Gradle build, filled at runtime)
+- **Port**: 8081
+
+Required env vars at runtime: `DATABASE_URL`, `DATABASE_USER`, `DATABASE_PASSWORD`,
+`OIDC_ISSUER`, `OIDC_JWKS_URL`, `OIDC_DISCOVERY_URI`, `OIDC_CLIENT_ID`, `OIDC_SCOPE`.
+
+CI: the `docker` job in `.github/workflows/ci.yml` runs after all other jobs pass
+and pushes to GHCR on `main` only.
 
 ## Version Catalog (`libs.versions.toml`)
 
