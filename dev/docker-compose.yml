@@ -22,22 +22,20 @@ services:
     image: nginx:1.29.6-alpine
     restart: unless-stopped
     ports:
-      - "443:443"
+      - "8082:8082"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./idp.localhost.pem:/etc/nginx/certs/idp.localhost.pem:ro
-      - ./idp.localhost-key.pem:/etc/nginx/certs/idp.localhost-key.pem:ro
     depends_on:
       pocket-id:
         condition: service_healthy
 
   pocket-id:
-    image: ghcr.io/pocket-id/pocket-id:v2.4.0
+    image: ghcr.io/pocket-id/pocket-id:v2.5.0
     restart: unless-stopped
     ports:
       - "1411:1411"
     environment:
-      APP_URL: https://idp.localhost
+      APP_URL: http://localhost:8082
       ENCRYPTION_KEY: 9gsZlxKb0bGfgkFEiczMeC8PkqiWTP1DPry9kZ7U/3U=
       TRUST_PROXY: "true"
       DB_CONNECTION_STRING: postgres://cookmaid:cookmaid@postgres:5432/pocketid

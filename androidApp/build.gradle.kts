@@ -1,7 +1,13 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+}
+
+private val localProps = Properties().apply {
+    rootProject.file("local.properties").takeIf { it.exists() }?.reader()?.use { load(it) }
 }
 
 android {
@@ -23,17 +29,17 @@ android {
     productFlavors {
         create("dev") {
             dimension = "environment"
-            buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:8081\"")
-            buildConfigField("String", "OIDC_DISCOVERY_URI", "\"http://10.0.2.2:1411/.well-known/openid-configuration\"")
-            buildConfigField("String", "OIDC_CLIENT_ID", "\"\"")
-            buildConfigField("String", "OIDC_SCOPE", "\"openid profile email offline_access\"")
+            buildConfigField("String", "BASE_URL", """"http://localhost:8081"""")
+            buildConfigField("String", "OIDC_DISCOVERY_URI", """"${localProps.getProperty("oidc.discoveryUri")}"""")
+            buildConfigField("String", "OIDC_CLIENT_ID", """"${localProps.getProperty("oidc.clientId")}"""")
+            buildConfigField("String", "OIDC_SCOPE", """"${localProps.getProperty("oidc.scope")}"""")
         }
         create("prod") {
             dimension = "environment"
-            buildConfigField("String", "BASE_URL", "\"https://api.cookmaid.io\"")
-            buildConfigField("String", "OIDC_DISCOVERY_URI", "\"\"")
-            buildConfigField("String", "OIDC_CLIENT_ID", "\"\"")
-            buildConfigField("String", "OIDC_SCOPE", "\"openid profile email offline_access\"")
+            buildConfigField("String", "BASE_URL", """"https://cookmaid.fgrutsch.dev"""")
+            buildConfigField("String", "OIDC_DISCOVERY_URI", """"https://idp.fgrutsch.dev/.well-known/openid-configuration"""")
+            buildConfigField("String", "OIDC_CLIENT_ID", """""""")
+            buildConfigField("String", "OIDC_SCOPE", """"openid profile email offline_access"""")
         }
     }
     packaging {
@@ -56,6 +62,16 @@ kotlin {
     compilerOptions {
         freeCompilerArgs.add("-Xskip-prerelease-check")
     }
+}
+
+tasks.register<Exec>("adbReverse") {
+    val adb = "${localProps.getProperty("sdk.dir")}/platform-tools/adb"
+    commandLine("sh", "-c", "$adb reverse tcp:8081 tcp:8081 && $adb reverse tcp:8082 tcp:8082")
+    isIgnoreExitValue = true
+}
+
+tasks.matching { it.name.startsWith("installDev") }.configureEach {
+    finalizedBy("adbReverse")
 }
 
 dependencies {
