@@ -31,9 +31,6 @@ jobs:
       - uses: jdx/mise-action@v2
       - uses: gradle/actions/setup-gradle@v4
 
-      - name: Build
-        run: ./gradlew :server:build
-
       - name: Test
         run: ./gradlew :server:test
 
@@ -73,8 +70,8 @@ jobs:
       - uses: jdx/mise-action@v2
       - uses: gradle/actions/setup-gradle@v4
 
-      - name: Build WasmJS
-        run: ./gradlew :composeApp:compileKotlinWasmJs
+      - name: Test
+        run: ./gradlew :composeApp:allTests
 
   docker:
     name: Docker
