@@ -62,8 +62,8 @@ jobs:
       - name: Build
         run: ./gradlew :androidApp:assembleDebug
 
-  web:
-    name: Web
+  composeApp:
+    name: ComposeApp
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -76,7 +76,7 @@ jobs:
   docker:
     name: Docker
     runs-on: ubuntu-latest
-    needs: [detekt, server, shared, android, web]
+    needs: [detekt, server, shared, android, composeApp]
     permissions:
       contents: read
       packages: write

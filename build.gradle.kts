@@ -61,5 +61,7 @@ tasks.register("detektAll") {
         ":shared:detektMainJvm",
         ":shared:detektTestJvm",
         ":composeApp:detektMainAndroid",
+        ":composeApp:detektCommonTestSourceSet",
+        ":composeApp:detektWasmJsMainSourceSet",
     )
 }
