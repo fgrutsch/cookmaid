@@ -18,16 +18,36 @@ allprojects {
     version = rootProject.scmVersion.version
 }
 
+val dockerPrereqs = listOf(":server:installDist", ":composeApp:wasmJsBrowserProductionWebpack")
+val dockerPlatforms = "linux/amd64,linux/arm64"
+
 tasks.register<Exec>("buildDockerImage") {
     group = "docker"
-    description = "Build the cookmaid Docker image for all architectures."
-    dependsOn(":server:installDist", ":composeApp:wasmJsBrowserProductionWebpack")
+    description = "Build the cookmaid Docker image for all architectures (no push)."
+    dependsOn(dockerPrereqs)
     commandLine(
         "docker", "buildx", "build",
-        "--platform", "linux/amd64,linux/arm64",
+        "--platform", dockerPlatforms,
         "-f", "docker/Dockerfile",
         "-t", "cookmaid:${rootProject.version}",
         "-t", "cookmaid:latest",
+        ".",
+    )
+}
+
+tasks.register<Exec>("pushDockerImage") {
+    group = "docker"
+    description = "Build and push the cookmaid Docker image. Requires -Pdocker.registry=<registry>."
+    dependsOn(dockerPrereqs)
+    val registry = findProperty("docker.registry")?.toString() ?: ""
+    val version = rootProject.version.toString()
+    commandLine(
+        "docker", "buildx", "build",
+        "--platform", dockerPlatforms,
+        "--push",
+        "-f", "docker/Dockerfile",
+        "-t", "$registry:$version",
+        "-t", "$registry:latest",
         ".",
     )
 }
