@@ -90,10 +90,12 @@ Four Gradle modules:
   with a shared `set_updated_at()` trigger.
 - **Ktor testing**: Integration tests use `testApplication { }`;
   unit tests use Koin + Testcontainers + `runTest`.
-- **Static file serving**: `staticFiles("/", File(WEB_DIR))` serves the
+- **Static file serving**: `staticFiles("/", File(webDir))` serves the
   WasmJS web app. Must be registered **before** the `/api` route.
-  `WEB_DIR` env var points to the assets dir; defaults to `"web"` (missing
-  dir is a no-op — API routes still work, used for tests).
+  Ktor config key is `web.dir` (populated from `WEB_DIR` env var, defaults to
+  `"web"`). Missing dir is a no-op — API routes still work, used for tests.
+  Integration tests using `MapApplicationConfig` must include `"web.dir" to "web"`
+  or `ApplicationConfigurationException` is thrown at startup.
 - **Distribution**: `:server:installDist` produces `server/build/install/server/`
   (`bin/` + `lib/`) — no fat-JAR plugin needed, used by the Docker image.
 
@@ -145,6 +147,9 @@ version tags (`v*`) only.
 - Only pin direct dependencies. Don't catalog transitive-only libraries.
 - When removing a dep from `build.gradle.kts`, also remove the matching
   library entry (and version key if unused) from the catalog.
+- Plugin alias keys must be **camelCase** (e.g., `axionRelease`, not
+  `axion-release`) — the Kotlin DSL generates `libs.plugins.axionRelease`
+  and hyphenated keys produce no accessor, causing unresolved reference errors.
 
 ## KDoc
 
