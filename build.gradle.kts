@@ -18,7 +18,7 @@ allprojects {
     version = rootProject.scmVersion.version
 }
 
-val dockerPrereqs = listOf(":server:installDist", ":composeApp:wasmJsBrowserProductionWebpack")
+val dockerPrereqs = listOf(":server:installDist", ":composeApp:wasmJsBrowserDistribution")
 val dockerPlatforms = "linux/amd64,linux/arm64"
 
 tasks.register<Exec>("buildDockerImage") {

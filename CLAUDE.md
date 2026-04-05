@@ -22,7 +22,7 @@ package of `io.github.fgrutsch.cookmaid`.
 ./gradlew :composeApp:wasmJsBrowserDevelopmentRun
 
 # Build web app (Wasm, production)
-./gradlew :composeApp:wasmJsBrowserProductionWebpack
+./gradlew :composeApp:wasmJsBrowserDistribution
 # Output: composeApp/build/dist/wasmJs/productionExecutable/
 
 # Build Docker image (server + WasmJS bundled)
@@ -120,7 +120,7 @@ Four Gradle modules:
 The server is packaged as a multi-stage image — Ktor serves both the API and
 the WasmJS web app as static files.
 
-- **Build stage**: `gradle:8-jdk21-alpine` — `:server:installDist` + `wasmJsBrowserProductionWebpack`
+- **Build stage**: `gradle:8-jdk21-alpine` — `:server:installDist` + `wasmJsBrowserDistribution`
 - **Runtime stage**: `eclipse-temurin:21-jre-alpine` — non-root user `cookmaid`
 - **Entrypoint**: `server/docker/docker-entrypoint.sh` — runs `envsubst` on
   `index.html` to inject `OIDC_DISCOVERY_URI`, `OIDC_CLIENT_ID`, `OIDC_SCOPE`
