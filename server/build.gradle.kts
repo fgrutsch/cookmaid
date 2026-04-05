@@ -8,7 +8,6 @@ plugins {
 }
 
 group = "io.github.fgrutsch.cookmaid"
-version = rootProject.version
 
 kotlin {
     compilerOptions {
@@ -31,13 +30,6 @@ tasks.register<Exec>("buildDockerImage") {
     dependsOn(tasks.named("installDist"), ":composeApp:wasmJsBrowserProductionWebpack")
     workingDir(rootProject.projectDir)
     commandLine("docker", "build", "-t", "cookmaid:${project.version}", "-t", "cookmaid:latest", ".")
-}
-
-tasks.register("printVersion") {
-    group = "help"
-    description = "Print the project version."
-    val version = project.version.toString()
-    doLast { println(version) }
 }
 
 kover {
