@@ -1,6 +1,3 @@
-# syntax=docker/dockerfile:1
-# Pre-build artifacts before running docker build:
-#   ./gradlew :server:installDist :composeApp:wasmJsBrowserProductionWebpack
 FROM eclipse-temurin:21-jre-alpine
 RUN apk add --no-cache gettext && \
     addgroup -S cookmaid && adduser -S cookmaid -G cookmaid
@@ -8,7 +5,7 @@ RUN apk add --no-cache gettext && \
 WORKDIR /app
 COPY server/build/install/server/ .
 COPY composeApp/build/dist/wasmJs/productionExecutable/ /app/web/
-COPY server/docker/docker-entrypoint.sh /docker-entrypoint.sh
+COPY docker/docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh && chown -R cookmaid:cookmaid /app
 
 USER cookmaid
