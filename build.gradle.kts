@@ -23,10 +23,11 @@ val dockerPlatforms = "linux/amd64,linux/arm64"
 
 tasks.register<Exec>("buildDockerImage") {
     group = "docker"
-    description = "Build the cookmaid Docker image for the local architecture (no push)."
+    description = "Build the cookmaid Docker image for the local architecture and load it into the daemon."
     dependsOn(dockerPrereqs)
     commandLine(
-        "docker", "build",
+        "docker", "buildx", "build",
+        "--load",
         "-f", "docker/Dockerfile",
         "-t", "cookmaid:${rootProject.version}",
         "-t", "cookmaid:latest",
