@@ -116,6 +116,14 @@ Four Gradle modules:
   `wasmJsProcessResources` copies them to build output automatically —
   no Gradle or webpack config needed. `index.html` supports Gradle
   `expand()` for variable substitution.
+- **WasmJS external declarations**: JS interop `external object` / `external class`
+  names must match the JS runtime name and cannot follow Kotlin conventions.
+  Suppress detekt at the declaration site:
+  `@Suppress("ClassNaming")` on the object, `@Suppress("ObjectPropertyNaming")`
+  on properties with non-standard names (e.g. `__customLocale`).
+- **Test fakes — exception type**: Fakes that simulate failure throw
+  `IllegalStateException`, not `RuntimeException` (detekt `TooGenericExceptionThrown`).
+- **Test fakes — no-op overrides**: Express empty overrides as `= Unit`, not `{}`.
 
 ## Docker
 
