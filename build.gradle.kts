@@ -1,6 +1,7 @@
 plugins {
     // this is necessary to avoid the plugins to be loaded multiple times
     // in each subproject's classloader
+    alias(libs.plugins.axionRelease)
     alias(libs.plugins.androidApplication) apply false
     alias(libs.plugins.androidMultiplatformLibrary) apply false
     alias(libs.plugins.composeMultiplatform) apply false
@@ -13,6 +14,44 @@ plugins {
     alias(libs.plugins.kover) apply false
 }
 
+allprojects {
+    version = rootProject.scmVersion.version
+}
+
+val dockerPrereqs = listOf(":server:installDist", ":composeApp:wasmJsBrowserDistribution")
+val dockerPlatforms = "linux/amd64,linux/arm64"
+
+tasks.register<Exec>("buildDockerImage") {
+    group = "docker"
+    description = "Build the cookmaid Docker image for the local architecture and load it into the daemon."
+    dependsOn(dockerPrereqs)
+    commandLine(
+        "docker", "buildx", "build",
+        "--load",
+        "-f", "docker/Dockerfile",
+        "-t", "cookmaid:${rootProject.version}",
+        "-t", "cookmaid:latest",
+        ".",
+    )
+}
+
+tasks.register<Exec>("pushDockerImage") {
+    group = "docker"
+    description = "Build and push the cookmaid Docker image. Requires -Pdocker.registry=<registry>."
+    dependsOn(dockerPrereqs)
+    val registry = findProperty("docker.registry")?.toString() ?: ""
+    val version = rootProject.version.toString()
+    commandLine(
+        "docker", "buildx", "build",
+        "--platform", dockerPlatforms,
+        "--push",
+        "-f", "docker/Dockerfile",
+        "-t", "$registry:$version",
+        "-t", "$registry:latest",
+        ".",
+    )
+}
+
 tasks.register("detektAll") {
     description = "Runs detekt with type resolution on all modules"
     group = "verification"
@@ -22,5 +61,7 @@ tasks.register("detektAll") {
         ":shared:detektMainJvm",
         ":shared:detektTestJvm",
         ":composeApp:detektMainAndroid",
+        ":composeApp:detektCommonTestSourceSet",
+        ":composeApp:detektWasmJsMainSourceSet",
     )
 }

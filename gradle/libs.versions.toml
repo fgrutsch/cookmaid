@@ -39,6 +39,7 @@ junit5 = "5.13.0"
 testcontainers = "1.21.4"
 
 # Tooling
+axionRelease = "1.21.1"
 detekt = "2.0.0-alpha.2"
 kover = "0.9.8"
 
@@ -155,5 +156,6 @@ kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", vers
 ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
 
 # Tooling
+axionRelease = { id = "pl.allegro.tech.build.axion-release", version.ref = "axionRelease" }
 detekt = { id = "dev.detekt", version.ref = "detekt" }
 kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }

@@ -8,7 +8,6 @@ plugins {
 }
 
 group = "io.github.fgrutsch.cookmaid"
-version = "1.0.0"
 
 kotlin {
     compilerOptions {

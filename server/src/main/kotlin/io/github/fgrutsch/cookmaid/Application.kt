@@ -13,6 +13,7 @@ import io.github.fgrutsch.cookmaid.shopping.shoppingModule
 import io.github.fgrutsch.cookmaid.shopping.shoppingRoutes
 import io.github.fgrutsch.cookmaid.user.userModule
 import io.github.fgrutsch.cookmaid.user.userRoutes
+import io.github.fgrutsch.cookmaid.web.configureStaticFiles
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -32,6 +33,7 @@ fun Application.module() {
     configureDI()
     configureAuth()
     configureHttp()
+    configureStaticFiles()
     configureRouting()
 }
 

@@ -15,11 +15,18 @@ package of `io.github.fgrutsch.cookmaid`.
 # Build Android app
 ./gradlew :androidApp:assembleDebug
 
-# Run server (Ktor on port 8080)
+# Run server (Ktor on port 8081)
 ./gradlew :server:run
 
-# Run web app (Wasm)
+# Run web app (Wasm, dev)
 ./gradlew :composeApp:wasmJsBrowserDevelopmentRun
+
+# Build web app (Wasm, production)
+./gradlew :composeApp:wasmJsBrowserDistribution
+# Output: composeApp/build/dist/wasmJs/productionExecutable/
+
+# Build Docker image (server + WasmJS bundled)
+./gradlew buildDockerImage
 
 # Run all tests
 ./gradlew test
@@ -47,7 +54,7 @@ Four Gradle modules:
 - **`androidApp/`** — Android application entry point. Depends on `composeApp`.
   Contains `MainActivity.kt`, manifest, resources, product flavors, buildConfig.
 - **`server/`** — Ktor backend (JVM only). Depends on `shared`.
-  Entry point: `Application.kt` (`embeddedServer` with Netty on port 8080).
+  Entry point: `Application.kt` (`embeddedServer` with Netty on port 8081).
 
 ## Tech Stack
 
@@ -83,6 +90,14 @@ Four Gradle modules:
   with a shared `set_updated_at()` trigger.
 - **Ktor testing**: Integration tests use `testApplication { }`;
   unit tests use Koin + Testcontainers + `runTest`.
+- **Static file serving**: `staticFiles("/", File(webDir))` serves the
+  WasmJS web app. Must be registered **before** the `/api` route.
+  Ktor config key is `web.dir` (populated from `WEB_DIR` env var, defaults to
+  `"web"`). Missing dir is a no-op — API routes still work, used for tests.
+  Integration tests using `MapApplicationConfig` must include `"web.dir" to "web"`
+  or `ApplicationConfigurationException` is thrown at startup.
+- **Distribution**: `:server:installDist` produces `server/build/install/server/`
+  (`bin/` + `lib/`) — no fat-JAR plugin needed, used by the Docker image.
 
 ### ComposeApp module
 
@@ -101,6 +116,36 @@ Four Gradle modules:
   `wasmJsProcessResources` copies them to build output automatically —
   no Gradle or webpack config needed. `index.html` supports Gradle
   `expand()` for variable substitution.
+- **WasmJS external declarations**: JS interop `external object` / `external class`
+  names must match the JS runtime name and cannot follow Kotlin conventions.
+  Suppress detekt at the declaration site:
+  `@Suppress("ClassNaming")` on the object, `@Suppress("ObjectPropertyNaming")`
+  on properties with non-standard names (e.g. `__customLocale`).
+- **Test fakes — exception type**: Fakes that simulate failure throw
+  `IllegalStateException`, not `RuntimeException` (detekt `TooGenericExceptionThrown`).
+- **Test fakes — no-op overrides**: Express empty overrides as `= Unit`, not `{}`.
+
+## Docker
+
+Ktor serves both the API and the WasmJS web app as static files from a single
+runtime image. Artifacts are built by Gradle on the host, then COPYed in.
+
+- **Runtime image**: `eclipse-temurin:21-jre-alpine` — non-root user `cookmaid`
+- **Entrypoint**: `docker/docker-entrypoint.sh` — runs `envsubst` on
+  `index.html` to inject `OIDC_DISCOVERY_URI`, `OIDC_CLIENT_ID`, `OIDC_SCOPE`
+  at container startup (left empty by the Gradle build, filled at runtime)
+- **Port**: 8081
+
+Build locally:
+```shell
+./gradlew buildDockerImage   # builds artifacts + docker buildx build --load
+```
+
+Required env vars at runtime: `DATABASE_URL`, `DATABASE_USER`, `DATABASE_PASSWORD`,
+`OIDC_ISSUER`, `OIDC_JWKS_URL`, `OIDC_DISCOVERY_URI`, `OIDC_CLIENT_ID`, `OIDC_SCOPE`.
+
+CI: the `docker` job runs after all other jobs pass and pushes to GHCR on
+version tags (`v*`) only.
 
 ## Version Catalog (`libs.versions.toml`)
 
@@ -110,6 +155,9 @@ Four Gradle modules:
 - Only pin direct dependencies. Don't catalog transitive-only libraries.
 - When removing a dep from `build.gradle.kts`, also remove the matching
   library entry (and version key if unused) from the catalog.
+- Plugin alias keys must be **camelCase** (e.g., `axionRelease`, not
+  `axion-release`) — the Kotlin DSL generates `libs.plugins.axionRelease`
+  and hyphenated keys produce no accessor, causing unresolved reference errors.
 
 ## KDoc
 

@@ -5,7 +5,9 @@ import androidx.compose.runtime.ProvidedValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.text.intl.Locale
 
+@Suppress("ClassNaming")
 external object window {
+    @Suppress("ObjectPropertyNaming")
     var __customLocale: String?
 }
 
