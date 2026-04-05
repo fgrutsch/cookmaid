@@ -13,14 +13,14 @@ class FakeAuthHandler : AuthHandler {
     var failMessage: String = "Auth failed"
 
     override suspend fun tryAutoLogin(): AuthResult {
-        if (shouldFail) throw RuntimeException(failMessage)
+        if (shouldFail) throw IllegalStateException(failMessage)
         return resultToReturn
     }
 
     override suspend fun login(): AuthResult {
-        if (shouldFail) throw RuntimeException(failMessage)
+        if (shouldFail) throw IllegalStateException(failMessage)
         return resultToReturn
     }
 
-    override suspend fun logout() {}
+    override suspend fun logout() = Unit
 }
