@@ -18,6 +18,20 @@ allprojects {
     version = rootProject.scmVersion.version
 }
 
+tasks.register<Exec>("buildDockerImage") {
+    group = "docker"
+    description = "Build the cookmaid Docker image for all architectures."
+    dependsOn(":server:installDist", ":composeApp:wasmJsBrowserProductionWebpack")
+    commandLine(
+        "docker", "buildx", "build",
+        "--platform", "linux/amd64,linux/arm64",
+        "-f", "docker/Dockerfile",
+        "-t", "cookmaid:${rootProject.version}",
+        "-t", "cookmaid:latest",
+        ".",
+    )
+}
+
 tasks.register("detektAll") {
     description = "Runs detekt with type resolution on all modules"
     group = "verification"

@@ -24,14 +24,6 @@ tasks.test {
     useJUnitPlatform()
 }
 
-tasks.register<Exec>("buildDockerImage") {
-    group = "docker"
-    description = "Build the cookmaid Docker image."
-    dependsOn(tasks.named("installDist"), ":composeApp:wasmJsBrowserProductionWebpack")
-    workingDir(rootProject.projectDir)
-    commandLine("docker", "build", "-f", "docker/Dockerfile", "-t", "cookmaid:${project.version}", "-t", "cookmaid:latest", ".")
-}
-
 kover {
     reports {
         verify {
