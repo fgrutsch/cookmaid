@@ -39,6 +39,7 @@ junit5 = "5.13.0"
 testcontainers = "1.21.4"
 
 # Tooling
+axion-release = "1.21.1"
 detekt = "2.0.0-alpha.2"
 kover = "0.9.8"
 

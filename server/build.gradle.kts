@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "io.github.fgrutsch.cookmaid"
-version = "1.0.0"
+version = rootProject.version
 
 kotlin {
     compilerOptions {
@@ -36,7 +36,8 @@ tasks.register<Exec>("buildDockerImage") {
 tasks.register("printVersion") {
     group = "help"
     description = "Print the project version."
-    doLast { println(project.version) }
+    val version = project.version.toString()
+    doLast { println(version) }
 }
 
 kover {
