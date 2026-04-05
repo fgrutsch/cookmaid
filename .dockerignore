@@ -8,8 +8,8 @@ sandbox/
 docs/
 androidApp/build/
 shared/build/
-composeApp/build/
-!composeApp/build/dist/
-server/build/
-!server/build/install/
+composeApp/build/**
+!composeApp/build/dist/**
+server/build/**
+!server/build/install/**
 build/
