@@ -26,7 +26,7 @@ package of `io.github.fgrutsch.cookmaid`.
 # Output: composeApp/build/dist/wasmJs/productionExecutable/
 
 # Build Docker image (server + WasmJS bundled)
-docker build -t cookmaid .
+./gradlew buildDockerImage
 
 # Run all tests
 ./gradlew test
@@ -117,21 +117,25 @@ Four Gradle modules:
 
 ## Docker
 
-The server is packaged as a multi-stage image — Ktor serves both the API and
-the WasmJS web app as static files.
+Ktor serves both the API and the WasmJS web app as static files from a single
+runtime image. Artifacts are built by Gradle on the host, then COPYed in.
 
-- **Build stage**: `gradle:8-jdk21-alpine` — `:server:installDist` + `wasmJsBrowserDistribution`
-- **Runtime stage**: `eclipse-temurin:21-jre-alpine` — non-root user `cookmaid`
-- **Entrypoint**: `server/docker/docker-entrypoint.sh` — runs `envsubst` on
+- **Runtime image**: `eclipse-temurin:21-jre-alpine` — non-root user `cookmaid`
+- **Entrypoint**: `docker/docker-entrypoint.sh` — runs `envsubst` on
   `index.html` to inject `OIDC_DISCOVERY_URI`, `OIDC_CLIENT_ID`, `OIDC_SCOPE`
   at container startup (left empty by the Gradle build, filled at runtime)
 - **Port**: 8081
 
+Build locally:
+```shell
+./gradlew buildDockerImage   # builds artifacts + docker buildx build --load
+```
+
 Required env vars at runtime: `DATABASE_URL`, `DATABASE_USER`, `DATABASE_PASSWORD`,
 `OIDC_ISSUER`, `OIDC_JWKS_URL`, `OIDC_DISCOVERY_URI`, `OIDC_CLIENT_ID`, `OIDC_SCOPE`.
 
-CI: the `docker` job in `.github/workflows/ci.yml` runs after all other jobs pass
-and pushes to GHCR on `main` only.
+CI: the `docker` job runs after all other jobs pass and pushes to GHCR on
+version tags (`v*`) only.
 
 ## Version Catalog (`libs.versions.toml`)
 
