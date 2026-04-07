@@ -2,20 +2,22 @@ name-template: 'v$RESOLVED_VERSION'
 tag-template: 'v$RESOLVED_VERSION'
 version-resolver:
   major:
-    labels: ['breaking-change']
+    labels: ['breaking']
   minor:
-    labels: ['feature', 'enhancement']
+    labels: ['feature']
   patch:
-    labels: ['fix', 'bugfix', 'bug', 'chore', 'refactor', 'docs']
+    labels: ['bug', 'chore', 'documentation']
   default: patch
 
 categories:
   - title: '✨ Features'
-    labels: ['feature', 'enhancement']
+    labels: ['feature']
   - title: '🐛 Bug Fixes'
-    labels: ['fix', 'bugfix', 'bug']
+    labels: ['bug']
   - title: '🔧 Maintenance'
-    labels: ['chore', 'refactor', 'docs', 'dependencies']
+    labels: ['chore', 'documentation']
+
+exclude-labels: ['lgtm', 'duplicate', 'wontfix']
 
 change-template: '- $TITLE by @$AUTHOR in #$NUMBER'
 change-title-escapes: '\<*_&'
