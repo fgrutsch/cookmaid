@@ -144,8 +144,11 @@ Build locally:
 Required env vars at runtime: `DATABASE_URL`, `DATABASE_USER`, `DATABASE_PASSWORD`,
 `OIDC_ISSUER`, `OIDC_JWKS_URL`, `OIDC_DISCOVERY_URI`, `OIDC_CLIENT_ID`, `OIDC_SCOPE`.
 
-CI: the `docker` job runs after all other jobs pass and pushes to GHCR on
-version tags (`v*`) only.
+CI: `ci.yml` builds the Docker image on every push/PR (no `needs:` gate —
+Gradle `buildDockerImage` task's own `dependsOn` handles prerequisites).
+`release.yml` runs on `v*` tags and pushes to GHCR. Multi-platform push
+requires `driver: docker-container` on `setup-buildx-action` — the default
+`docker` driver does not support `--push` with multi-platform manifests.
 
 ## Version Catalog (`libs.versions.toml`)
 
