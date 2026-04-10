@@ -114,8 +114,15 @@ Four Gradle modules:
   `ClickableText`) for clickable links. Open via `LocalUriHandler`.
 - **WasmJS static assets**: Place in `composeApp/src/wasmJsMain/resources/`.
   `wasmJsProcessResources` copies them to build output automatically —
-  no Gradle or webpack config needed. `index.html` supports Gradle
-  `expand()` for variable substitution.
+  no Gradle or webpack config needed. `index.html` uses Gradle `expand()`
+  for build-time substitution from `local.properties`. Two-environment contract:
+  local dev (`local.properties` present) → `expand()` runs, substituting OIDC values
+  at build time; CI/production (`local.properties` absent) → task exits early via
+  `return@named`, leaving `${VAR}` placeholders intact for `envsubst` at container
+  startup. Guard pattern: `val f = rootProject.file("local.properties").takeIf { it.exists() } ?: return@named`.
+  Never pass `Properties.getProperty()` results to `expand()` without guaranteeing
+  non-null — Gradle silently writes the literal string `"null"` for null values,
+  which breaks `envsubst` silently.
 - **WasmJS external declarations**: JS interop `external object` / `external class`
   names must match the JS runtime name and cannot follow Kotlin conventions.
   Suppress detekt at the declaration site:
@@ -133,7 +140,9 @@ runtime image. Artifacts are built by Gradle on the host, then COPYed in.
 - **Runtime image**: `eclipse-temurin:21-jre-alpine` — non-root user `cookmaid`
 - **Entrypoint**: `docker/docker-entrypoint.sh` — runs `envsubst` on
   `index.html` to inject `OIDC_DISCOVERY_URI`, `OIDC_CLIENT_ID`, `OIDC_SCOPE`
-  at container startup (left empty by the Gradle build, filled at runtime)
+  at container startup. CI builds leave `${VAR}` placeholders intact (no
+  `local.properties`); `envsubst` and `expand()` are mutually exclusive per
+  variable — never pass a runtime-injected placeholder to Gradle `expand()`.
 - **Port**: 8081
 
 Build locally:
