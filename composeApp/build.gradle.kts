@@ -73,9 +73,12 @@ kotlin {
 }
 
 tasks.named<Copy>("wasmJsProcessResources") {
-    val localProps = Properties().apply {
-        rootProject.file("local.properties").takeIf { it.exists() }?.reader()?.use { load(it) }
-    }
+    // local.properties is absent in CI/production — early-exit to leave ${VAR} placeholders
+    // intact for docker-entrypoint.sh envsubst. Without this guard, getProperty() returns
+    // null and Gradle writes the literal string "null" into index.html, breaking envsubst.
+    val localPropsFile = rootProject.file("local.properties").takeIf { it.exists() } ?: return@named
+    val localProps = Properties().apply { localPropsFile.reader().use { load(it) } }
+
     filesMatching("index.html") {
         expand(
             "OIDC_DISCOVERY_URI" to localProps.getProperty("oidc.discoveryUri"),
