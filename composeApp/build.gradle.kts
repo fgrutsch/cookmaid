@@ -73,10 +73,8 @@ kotlin {
 }
 
 tasks.named<Copy>("wasmJsProcessResources") {
-    val localProps = Properties().apply {
-        rootProject.file("local.properties").takeIf { it.exists() }?.reader()?.use { load(it) }
-    }
-    if (localProps.isEmpty) return@named // no local.properties → leave placeholders for envsubst
+    val localPropsFile = rootProject.file("local.properties").takeIf { it.exists() } ?: return@named
+    val localProps = Properties().apply { localPropsFile.reader().use { load(it) } }
 
     filesMatching("index.html") {
         expand(
