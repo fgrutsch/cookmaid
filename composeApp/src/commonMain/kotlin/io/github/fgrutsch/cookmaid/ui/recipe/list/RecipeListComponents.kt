@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
@@ -304,6 +305,7 @@ internal fun RecipeCardMenu(
 @Composable
 internal fun RandomRecipeDialog(
     recipe: Recipe,
+    isLoading: Boolean,
     onView: () -> Unit,
     onReroll: () -> Unit,
     onAddToShoppingList: (() -> Unit)?,
@@ -319,11 +321,15 @@ internal fun RandomRecipeDialog(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(recipe.name, modifier = Modifier.weight(1f))
-                IconButton(onClick = onReroll) {
-                    Icon(
-                        painterResource(Res.drawable.ic_refresh),
-                        contentDescription = Res.string.recipe_list_reroll.resolve(),
-                    )
+                IconButton(onClick = onReroll, enabled = !isLoading) {
+                    if (isLoading) {
+                        CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+                    } else {
+                        Icon(
+                            painterResource(Res.drawable.ic_refresh),
+                            contentDescription = Res.string.recipe_list_reroll.resolve(),
+                        )
+                    }
                 }
             }
         },

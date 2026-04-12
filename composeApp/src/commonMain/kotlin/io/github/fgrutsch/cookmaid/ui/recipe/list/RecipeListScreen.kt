@@ -125,6 +125,7 @@ fun RecipeListScreen(
     state.randomRecipe?.let { recipe ->
         RandomRecipeDialog(
             recipe = recipe,
+            isLoading = state.isLoadingRandom,
             onView = {
                 onEvent(RecipeListEvent.ClearRandomRecipe)
                 onRecipeClick(recipe.id)

@@ -120,16 +120,38 @@ class RecipeListViewModelTest : BaseViewModelTest() {
         advanceUntilIdle()
 
         assertNotNull(viewModel.state.value.randomRecipe)
+        assertFalse(viewModel.state.value.isLoadingRandom)
     }
 
     @Test
-    fun `roll random recipe with empty list does nothing`() = viewModelTest {
+    fun `roll random recipe with empty list returns null`() = viewModelTest {
         val viewModel = createLoadedViewModel()
 
         viewModel.onEvent(RecipeListEvent.RollRandomRecipe)
         advanceUntilIdle()
 
         assertNull(viewModel.state.value.randomRecipe)
+        assertFalse(viewModel.state.value.isLoadingRandom)
+    }
+
+    @Test
+    fun `roll random recipe respects tag filter`() = viewModelTest {
+        val viewModel = createLoadedViewModel(
+            recipes = listOf(
+                recipe("Pasta", tags = listOf("Italian")),
+                recipe("Tacos", tags = listOf("Mexican")),
+            ),
+            tags = listOf("Italian", "Mexican"),
+        )
+
+        viewModel.onEvent(RecipeListEvent.SelectTag("Italian"))
+        advanceUntilIdle()
+        viewModel.onEvent(RecipeListEvent.RollRandomRecipe)
+        advanceUntilIdle()
+
+        val random = viewModel.state.value.randomRecipe
+        assertNotNull(random)
+        assertTrue(random.tags.contains("Italian"))
     }
 
     @Test

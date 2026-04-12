@@ -13,11 +13,12 @@ import org.jetbrains.exposed.v1.core.JoinType
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.Table
 import org.jetbrains.exposed.v1.core.TextColumnType
-import org.jetbrains.exposed.v1.core.IColumnType
 import org.jetbrains.exposed.v1.core.LessOp
+import org.jetbrains.exposed.v1.core.NeqOp
 import org.jetbrains.exposed.v1.core.Op
 import org.jetbrains.exposed.v1.core.QueryBuilder
 import org.jetbrains.exposed.v1.core.QueryParameter
+import org.jetbrains.exposed.v1.core.Random
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.like
@@ -96,6 +97,17 @@ interface RecipeRepository {
      * @param id the recipe to delete.
      */
     suspend fun delete(id: Uuid)
+
+    /**
+     * Returns a random recipe for [userId], optionally filtered by [tag].
+     *
+     * @param userId the owner of the recipes.
+     * @param tag optional tag filter.
+     * @param excludeId optional recipe ID to exclude (for avoiding repeats).
+     * @param locale the language code for catalog item names.
+     * @return a random recipe, or null if no recipes match.
+     */
+    suspend fun findRandom(userId: UserId, tag: String?, excludeId: Uuid?, locale: SupportedLocale): Recipe?
 
     /**
      * Returns true if [userId] owns the recipe identified by [recipeId].
@@ -248,6 +260,57 @@ class PostgresRecipeRepository : RecipeRepository {
         RecipesTable.selectAll()
             .where { (RecipesTable.id eq recipeId) and (RecipesTable.userId eq userId.value) }
             .count() > 0
+    }
+
+    override suspend fun findRandom(
+        userId: UserId,
+        tag: String?,
+        excludeId: Uuid?,
+        locale: SupportedLocale,
+    ): Recipe? = suspendTransaction {
+        fun queryRandom(withExclusion: Boolean): Recipe? {
+            var condition: Op<Boolean> = RecipesTable.userId eq userId.value
+
+            if (!tag.isNullOrBlank()) {
+                condition = condition and object : Op<Boolean>() {
+                    override fun toQueryBuilder(queryBuilder: QueryBuilder) {
+                        queryBuilder {
+                            append(RecipesTable.tags)
+                            append(" @> ARRAY[")
+                            registerArgument(TextColumnType(), tag.trim())
+                            append("]::text[]")
+                        }
+                    }
+                }
+            }
+
+            if (withExclusion && excludeId != null) {
+                condition = condition and NeqOp(
+                    RecipesTable.id,
+                    QueryParameter(excludeId, RecipesTable.id.columnType),
+                )
+            }
+
+            val row = RecipesTable.selectAll()
+                .where(condition)
+                .orderBy(Random())
+                .limit(1)
+                .singleOrNull() ?: return null
+
+            val id = row[RecipesTable.id]
+            return Recipe(
+                id = id,
+                name = row[RecipesTable.name],
+                description = row[RecipesTable.description],
+                ingredients = loadIngredients(id, locale),
+                steps = row[RecipesTable.steps],
+                tags = row[RecipesTable.tags],
+                servings = row[RecipesTable.servings],
+            )
+        }
+
+        queryRandom(withExclusion = true)
+            ?: if (excludeId != null) queryRandom(withExclusion = false) else null
     }
 
     private fun loadIngredients(recipeId: Uuid, locale: SupportedLocale): List<RecipeIngredient> {

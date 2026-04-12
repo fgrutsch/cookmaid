@@ -131,4 +131,125 @@ class RecipeRoutesTest : BaseIntegrationTest() {
         assertEquals(1, finalRecipes.items.size)
         assertEquals("Bolognese Pasta", finalRecipes.items.first().name)
     }
+
+    @Test
+    fun `GET recipes random returns 401 without token`() = integrationTest {
+        val response = client.get("/api/recipes/random")
+
+        assertEquals(HttpStatusCode.Unauthorized, response.status)
+    }
+
+    @Test
+    fun `GET recipes random returns 404 when no recipes`() = integrationTest {
+        val token = TestJwt.generateToken("random-empty-user")
+        val client = jsonClient()
+
+        client.post("/api/users/me") { bearerAuth(token) }
+
+        val response = client.get("/api/recipes/random") { bearerAuth(token) }
+        assertEquals(HttpStatusCode.NotFound, response.status)
+    }
+
+    @Test
+    fun `GET recipes random returns a recipe`() = integrationTest {
+        val token = TestJwt.generateToken("random-user")
+        val client = jsonClient()
+
+        client.post("/api/users/me") { bearerAuth(token) }
+        val created = client.post("/api/recipes") {
+            bearerAuth(token)
+            contentType(ContentType.Application.Json)
+            setBody(CreateRecipeRequest(name = "Random Test Recipe"))
+        }.body<Recipe>()
+
+        val response = client.get("/api/recipes/random") { bearerAuth(token) }
+        assertEquals(HttpStatusCode.OK, response.status)
+        val recipe = response.body<Recipe>()
+        assertEquals(created.id, recipe.id)
+        assertEquals("Random Test Recipe", recipe.name)
+    }
+
+    @Test
+    fun `GET recipes random with excludeId returns different recipe when possible`() = integrationTest {
+        val token = TestJwt.generateToken("random-exclude-user")
+        val client = jsonClient()
+
+        client.post("/api/users/me") { bearerAuth(token) }
+        val recipe1 = client.post("/api/recipes") {
+            bearerAuth(token)
+            contentType(ContentType.Application.Json)
+            setBody(CreateRecipeRequest(name = "Recipe A"))
+        }.body<Recipe>()
+        val recipe2 = client.post("/api/recipes") {
+            bearerAuth(token)
+            contentType(ContentType.Application.Json)
+            setBody(CreateRecipeRequest(name = "Recipe B"))
+        }.body<Recipe>()
+
+        val response = client.get("/api/recipes/random?excludeId=${recipe1.id}") {
+            bearerAuth(token)
+        }
+        assertEquals(HttpStatusCode.OK, response.status)
+        val result = response.body<Recipe>()
+        assertEquals(recipe2.id, result.id)
+    }
+
+    @Test
+    fun `GET recipes random with excludeId falls back when only one recipe`() = integrationTest {
+        val token = TestJwt.generateToken("random-fallback-user")
+        val client = jsonClient()
+
+        client.post("/api/users/me") { bearerAuth(token) }
+        val only = client.post("/api/recipes") {
+            bearerAuth(token)
+            contentType(ContentType.Application.Json)
+            setBody(CreateRecipeRequest(name = "Only Recipe"))
+        }.body<Recipe>()
+
+        val response = client.get("/api/recipes/random?excludeId=${only.id}") {
+            bearerAuth(token)
+        }
+        assertEquals(HttpStatusCode.OK, response.status)
+        val result = response.body<Recipe>()
+        assertEquals(only.id, result.id)
+    }
+
+    @Test
+    fun `GET recipes random with tag filter`() = integrationTest {
+        val token = TestJwt.generateToken("random-tag-user")
+        val client = jsonClient()
+
+        client.post("/api/users/me") { bearerAuth(token) }
+        client.post("/api/recipes") {
+            bearerAuth(token)
+            contentType(ContentType.Application.Json)
+            setBody(CreateRecipeRequest(name = "Italian Dish", tags = listOf("Italian")))
+        }.body<Recipe>()
+        client.post("/api/recipes") {
+            bearerAuth(token)
+            contentType(ContentType.Application.Json)
+            setBody(CreateRecipeRequest(name = "Mexican Dish", tags = listOf("Mexican")))
+        }.body<Recipe>()
+
+        val response = client.get("/api/recipes/random?tag=Italian") { bearerAuth(token) }
+        assertEquals(HttpStatusCode.OK, response.status)
+        val result = response.body<Recipe>()
+        assertEquals("Italian Dish", result.name)
+    }
+
+    @Test
+    fun `GET recipes random with tag returns 404 when no match`() = integrationTest {
+        val token = TestJwt.generateToken("random-notag-user")
+        val client = jsonClient()
+
+        client.post("/api/users/me") { bearerAuth(token) }
+        client.post("/api/recipes") {
+            bearerAuth(token)
+            contentType(ContentType.Application.Json)
+            setBody(CreateRecipeRequest(name = "Untagged Recipe"))
+        }
+
+        val response = client.get("/api/recipes/random?tag=NonExistent") { bearerAuth(token) }
+        assertEquals(HttpStatusCode.NotFound, response.status)
+    }
 }
