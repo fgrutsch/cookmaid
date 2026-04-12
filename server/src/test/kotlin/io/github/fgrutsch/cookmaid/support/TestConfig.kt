@@ -9,5 +9,6 @@ val testConfig: ApplicationConfig = MapApplicationConfig(
     "database.password" to TestPostgres.password,
     "oidc.issuer" to TestJwt.issuer,
     "oidc.jwks-url" to TestJwt.jwksUrl,
+    "oidc.client-id" to TestJwt.AUDIENCE,
     "web.dir" to "web",
 )

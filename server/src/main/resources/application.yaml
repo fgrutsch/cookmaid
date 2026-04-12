@@ -14,6 +14,7 @@ database:
 oidc:
   issuer: ${OIDC_ISSUER:http://localhost:8082}
   jwks-url: ${OIDC_JWKS_URL:http://localhost:1411/.well-known/jwks.json}
+  client-id: ${OIDC_CLIENT_ID}
 
 web:
   dir: ${WEB_DIR:web}

@@ -35,11 +35,13 @@ object TestJwt {
 
     val issuer: String = "http://localhost:$port"
     val jwksUrl: String = "$issuer/.well-known/jwks.json"
+    const val AUDIENCE: String = "test-client-id"
 
-    fun generateToken(subject: String): String {
+    fun generateToken(subject: String, audience: String = AUDIENCE): String {
         val claims = JWTClaimsSet.Builder()
             .subject(subject)
             .issuer(issuer)
+            .audience(audience)
             .expirationTime(Date(System.currentTimeMillis() + 60_000))
             .build()
 

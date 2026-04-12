@@ -20,6 +20,17 @@ class UserRoutesTest : BaseIntegrationTest() {
     }
 
     @Test
+    fun `POST users me returns 401 with wrong audience`() = integrationTest {
+        val token = TestJwt.generateToken("test-subject", audience = "wrong-client")
+
+        val response = client.post("/api/users/me") {
+            bearerAuth(token)
+        }
+
+        assertEquals(HttpStatusCode.Unauthorized, response.status)
+    }
+
+    @Test
     fun `POST users me creates and returns user`() = integrationTest {
         val token = TestJwt.generateToken("test-subject")
 
