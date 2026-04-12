@@ -15,6 +15,7 @@ const val AUTH_JWT = "jwt-auth"
 fun Application.configureAuth() {
     val issuer = environment.config.property("oidc.issuer").getString()
     val jwksUrl = environment.config.property("oidc.jwks-url").getString()
+    val clientId = environment.config.property("oidc.client-id").getString()
 
     val jwkProvider = JwkProviderBuilder(URI(jwksUrl).toURL())
         .cached(10, 24, TimeUnit.HOURS)
@@ -27,6 +28,7 @@ fun Application.configureAuth() {
 
             verifier(jwkProvider, issuer) {
                 acceptLeeway(3)
+                withAudience(clientId)
             }
 
             validate { credential ->
