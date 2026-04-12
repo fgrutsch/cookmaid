@@ -85,6 +85,11 @@ Four Gradle modules:
   (`find`, `findTags`, `isOwner`) over verbose ones (`findByUserId`).
 - **Ownership checks**: Services check `repository.isOwner(userId, id)`
   and return 404 (not 403) to avoid leaking resource existence.
+- **JWT authentication**: `AuthModule.kt` validates issuer, JWKS signature,
+  and audience. Config keys: `oidc.issuer`, `oidc.jwks-url`, `oidc.client-id`
+  (all from env vars). `oidc.client-id` has no default — server fails fast
+  if absent. Use `property()` (not `propertyOrNull()`) for security-critical
+  config to prevent silent misconfiguration.
 - **Flyway migrations**: `server/src/main/resources/db/migration/V*__*.sql`
 - **Timestamps**: All tables (except catalog) have `created_at`/`updated_at`
   with a shared `set_updated_at()` trigger.

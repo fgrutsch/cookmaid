@@ -60,8 +60,9 @@ oidc.scope=openid profile email offline_access
 These are injected into the WasmJS web app at build time via Gradle's
 `expand()` in `wasmJsProcessResources`.
 
-The server reads its OIDC config from `application.yaml` with defaults
-pointing to the local PocketID instance.
+The server reads its OIDC config from `application.yaml`. `oidc.issuer`
+and `oidc.jwks-url` default to the local PocketID instance;
+`oidc.client-id` (env `OIDC_CLIENT_ID`) has no default and must be set.
 
 ### 4. Run
 
