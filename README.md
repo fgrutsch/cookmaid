@@ -1,4 +1,6 @@
-<img src="docs/images/cookmaid_logo.png" alt="drawing" width="250"/>
+<div align="center">
+<img src="docs/images/cookmaid_logo.png" alt="Cookmaid logo" width="250"/>
+</div>
 
 # Cookmaid
 
@@ -6,29 +8,32 @@ An app for managing shopping lists, recipes and meal planning.
 
 ## Tech Stack
 
-- Kotlin 2.3.10
-- Compose Multiplatform 1.10.2 (Android, WasmJS)
-- Ktor 3.4.1 (Server)
-- Exposed 1.1.1 (Database ORM)
-- PostgreSQL (Database)
-- Flyway 12.1.0 (Migrations)
-- Koin 4.1.1 (Dependency Injection)
+- Kotlin + Compose Multiplatform (Android, WasmJS)
+- Ktor server (JVM)
+- Exposed ORM + Flyway migrations on PostgreSQL
+- Koin for DI, kotlinx.serialization + kotlinx.datetime
+- OIDC auth via PocketID
+
+Pinned versions live in [`gradle/libs.versions.toml`](gradle/libs.versions.toml).
 
 ## Project Structure
 
-- **`shared/`** — Multiplatform library with business logic (Android, JVM, WasmJS)
-- **`composeApp/`** — Compose Multiplatform UI (Android, WasmJS)
-- **`server/`** — Ktor backend (JVM)
+- **`shared/`** — Multiplatform library (Android, JVM, WasmJS). Data models
+  and DTOs shared across client and server.
+- **`composeApp/`** — Compose Multiplatform UI library (Android, WasmJS).
+  Web build ships as an installable Progressive Web App (manifest, service
+  worker, maskable icons for Android adaptive masks, `apple-touch-icon` for iOS).
+- **`androidApp/`** — Android application entry point. Depends on `composeApp`.
+- **`server/`** — Ktor backend (JVM). Serves API + WasmJS static files.
 - **`dev/`** — Docker Compose setup for local infrastructure
+- **`docker/`** — Production Dockerfile + entrypoint
 
 ## Local Development Setup
 
 ### Prerequisites
 
-- JDK 11+
+- JDK 17+ (runtime container uses JDK 21)
 - Docker & Docker Compose
-- [mkcert](https://github.com/FiloSottile/mkcert) — run `mkcert -install`
-  once to trust the local CA (dev TLS certs are committed in `dev/`)
 
 ### 1. Start Infrastructure
 
@@ -39,12 +44,11 @@ docker compose up -d
 
 This starts:
 - **PostgreSQL** on port 5432 (databases: `cookmaid`, `pocketid`)
-- **PocketID** (OIDC provider) on port 1411
-- **nginx** reverse proxy with HTTPS on port 443
+- **PocketID** (OIDC provider) fronted by **nginx** on http://localhost:8082
 
 ### 2. Configure PocketID
 
-Open https://idp.localhost and create an OIDC client for the app.
+Open http://localhost:8082 and create an OIDC client for the app.
 Note the client ID for the next step.
 
 ### 3. Configure local.properties
@@ -52,17 +56,20 @@ Note the client ID for the next step.
 Add OIDC settings to `local.properties` (gitignored):
 
 ```properties
-oidc.discoveryUri=https://idp.localhost/.well-known/openid-configuration
+oidc.discoveryUri=http://localhost:8082/.well-known/openid-configuration
 oidc.clientId=<your-client-id>
 oidc.scope=openid profile email offline_access
 ```
 
 These are injected into the WasmJS web app at build time via Gradle's
-`expand()` in `wasmJsProcessResources`.
+`expand()` in `wasmJsProcessResources`. `:server:run` also picks up
+`oidc.clientId` from the same file and sets it as `OIDC_CLIENT_ID`, so
+no manual env export is needed for local runs.
 
 The server reads its OIDC config from `application.yaml`. `oidc.issuer`
 and `oidc.jwks-url` default to the local PocketID instance;
-`oidc.client-id` (env `OIDC_CLIENT_ID`) has no default and must be set.
+`oidc.client-id` has no default — `:server:run` reads it from
+`local.properties`, production reads it from the `OIDC_CLIENT_ID` env var.
 
 ### 4. Run
 
@@ -74,7 +81,7 @@ and `oidc.jwks-url` default to the local PocketID instance;
 ./gradlew :composeApp:wasmJsBrowserDevelopmentRun
 
 # Build Android app
-./gradlew :composeApp:assembleDebug
+./gradlew :androidApp:assembleDebug
 ```
 
 ### 5. Run Tests
@@ -85,5 +92,6 @@ and `oidc.jwks-url` default to the local PocketID instance;
 
 # Per module
 ./gradlew :server:test
+./gradlew :shared:allTests
 ./gradlew :composeApp:allTests
 ```

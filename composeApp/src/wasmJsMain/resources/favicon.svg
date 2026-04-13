@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="cookmaid">
+  <rect width="512" height="512" rx="112" ry="112" fill="#2D3E50"/>
+  <text x="50%" y="50%"
+        text-anchor="middle"
+        dominant-baseline="central"
+        font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Inter, Roboto, sans-serif"
+        font-weight="800"
+        font-size="220"
+        letter-spacing="8"
+        fill="#ffffff">CM</text>
+</svg>

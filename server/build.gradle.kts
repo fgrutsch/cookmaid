@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.kotlinJvm)
     alias(libs.plugins.ktor)
@@ -18,6 +20,14 @@ application {
     mainClass.set("io.github.fgrutsch.cookmaid.ApplicationKt")
     val isDevelopment: Boolean = project.ext.has("development")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
+}
+
+// Inject OIDC_CLIENT_ID from local.properties so `:server:run` works
+// without exporting env vars. Same file the WasmJS build already reads.
+tasks.named<JavaExec>("run") {
+    val localPropsFile = rootProject.file("local.properties").takeIf { it.exists() } ?: return@named
+    val localProps = Properties().apply { localPropsFile.reader().use { load(it) } }
+    localProps.getProperty("oidc.clientId")?.let { environment("OIDC_CLIENT_ID", it) }
 }
 
 tasks.test {

@@ -1,6 +1,6 @@
 {
-  "name": "cookmaid",
-  "short_name": "cookmaid",
+  "name": "Cookmaid",
+  "short_name": "Cookmaid",
   "description": "An app for managing shopping lists, recipes and meal planning",
   "start_url": "/",
   "display": "standalone",
@@ -10,12 +10,20 @@
     {
       "src": "/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
