@@ -92,7 +92,12 @@ Four Gradle modules:
   and audience. Config keys: `oidc.issuer`, `oidc.jwks-url`, `oidc.client-id`
   (all from env vars). `oidc.client-id` has no default — server fails fast
   if absent. Use `property()` (not `propertyOrNull()`) for security-critical
-  config to prevent silent misconfiguration.
+  config to prevent silent misconfiguration. For local runs, `:server:run`
+  is hooked in `server/build.gradle.kts` to read `oidc.clientId` from
+  `local.properties` and inject it as `OIDC_CLIENT_ID`, so devs don't need
+  to export env vars. Same early-exit guard as `wasmJsProcessResources`:
+  `takeIf { it.exists() } ?: return@named` — CI/production has no
+  `local.properties` and reads the env var directly.
 - **Flyway migrations**: `server/src/main/resources/db/migration/V*__*.sql`
 - **Timestamps**: All tables (except catalog) have `created_at`/`updated_at`
   with a shared `set_updated_at()` trigger.
@@ -131,6 +136,18 @@ Four Gradle modules:
   Never pass `Properties.getProperty()` results to `expand()` without guaranteeing
   non-null — Gradle silently writes the literal string `"null"` for null values,
   which breaks `envsubst` silently.
+- **PWA icons** (`composeApp/src/wasmJsMain/resources/icon-{192,512,1024}.png`):
+  solid white background, no transparency, content within the inner 80%
+  (maskable safe zone — Android adaptive masks crop the outer 20%).
+  `manifest.json` uses `"purpose": "any maskable"` so one asset serves both
+  non-masked and adaptive-icon contexts. Regenerate from
+  `docs/images/cookmaid_icon.png` (keep this source as PNG):
+  `magick docs/images/cookmaid_icon.png -resize 410x410 -background white -gravity center -extent 512x512 icon-512.png`
+  (inner resize = `0.8 * canvas`). `favicon.svg` is an inline `<text>` monogram
+  on `#2D3E50`. `apple-touch-icon.png` is 180×180, edge-to-edge, no alpha —
+  iOS does not adaptive-mask, and transparent apple-touch icons get filled
+  black. iOS reads the manifest (15.4+) for standalone mode, name, and
+  `display` — no `apple-mobile-web-app-*` meta tags needed.
 - **WasmJS external declarations**: JS interop `external object` / `external class`
   names must match the JS runtime name and cannot follow Kotlin conventions.
   Suppress detekt at the declaration site:
