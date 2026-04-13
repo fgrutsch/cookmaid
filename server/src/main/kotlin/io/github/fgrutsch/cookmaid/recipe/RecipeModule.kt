@@ -13,7 +13,7 @@ import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
 import org.koin.ktor.ext.inject
-import kotlin.time.Instant
+import kotlin.uuid.Uuid
 
 val recipeModule = module {
     singleOf(::PostgresRecipeRepository) bind RecipeRepository::class
@@ -40,6 +40,13 @@ fun Route.recipeRoutes() {
 
         get("/tags") {
             call.respond(TagsResponse(items = service.findTags(call.userId())))
+        }
+
+        get("/random") {
+            val tag = call.request.queryParameters["tag"]
+            val excludeId = call.request.queryParameters["excludeId"]?.let { Uuid.parse(it) }
+            val recipe = service.findRandom(call.userId(), tag, excludeId, call.locale())
+            if (recipe != null) call.respond(recipe) else call.respond(HttpStatusCode.NotFound)
         }
 
         post {

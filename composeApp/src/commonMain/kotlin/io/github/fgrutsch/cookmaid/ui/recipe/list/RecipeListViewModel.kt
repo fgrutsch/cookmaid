@@ -136,11 +136,16 @@ class RecipeListViewModel(
     }
 
     private fun rollRandomRecipe() {
-        val recipes = state.value.recipes
-        if (recipes.isEmpty()) return
-        val current = state.value.randomRecipe
-        val candidates = if (recipes.size > 1) recipes.filter { it.id != current?.id } else recipes
-        updateState { copy(randomRecipe = candidates.random()) }
+        launch {
+            updateState { copy(isLoadingRandom = true) }
+            val current = state.value.randomRecipe
+            val tag = state.value.selectedTag
+            val recipe = repository.fetchRandom(
+                tag = tag,
+                excludeId = current?.id?.toString(),
+            )
+            updateState { copy(randomRecipe = recipe, isLoadingRandom = false) }
+        }
     }
 
     private fun deleteRecipe(id: Uuid) {
@@ -174,7 +179,7 @@ class RecipeListViewModel(
     }
 
     override fun onError(e: Exception) {
-        updateState { copy(isLoading = false, isRefreshing = false, isLoadingMore = false) }
+        updateState { copy(isLoading = false, isRefreshing = false, isLoadingMore = false, isLoadingRandom = false) }
         sendEffect(RecipeListEffect.Error("Something went wrong. Please try again."))
     }
 

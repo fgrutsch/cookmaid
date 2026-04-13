@@ -85,6 +85,9 @@ Four Gradle modules:
   (`find`, `findTags`, `isOwner`) over verbose ones (`findByUserId`).
 - **Ownership checks**: Services check `repository.isOwner(userId, id)`
   and return 404 (not 403) to avoid leaking resource existence.
+- **Route ordering**: Register literal routes (e.g., `get("/random")`)
+  **before** parameterized routes (`route("/{id}")`) — Ktor matches the
+  first route that fits, and a path parameter will swallow literal segments.
 - **JWT authentication**: `AuthModule.kt` validates issuer, JWKS signature,
   and audience. Config keys: `oidc.issuer`, `oidc.jwks-url`, `oidc.client-id`
   (all from env vars). `oidc.client-id` has no default — server fails fast
@@ -133,6 +136,11 @@ Four Gradle modules:
   Suppress detekt at the declaration site:
   `@Suppress("ClassNaming")` on the object, `@Suppress("ObjectPropertyNaming")`
   on properties with non-standard names (e.g. `__customLocale`).
+- **Full-dataset operations are server-side**: Features requiring the
+  complete dataset (random selection, aggregation, global search) must be
+  server endpoints. The client's paginated in-memory list is a partial view.
+  Code smell: `.random()`, `.filter()`, `.count()` on a list populated by
+  a paginated API call.
 - **Test fakes — exception type**: Fakes that simulate failure throw
   `IllegalStateException`, not `RuntimeException` (detekt `TooGenericExceptionThrown`).
 - **Test fakes — no-op overrides**: Express empty overrides as `= Unit`, not `{}`.

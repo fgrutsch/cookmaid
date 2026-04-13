@@ -70,6 +70,17 @@ class FakeRecipeRepository : RecipeRepository {
         }.toMutableList()
     }
 
+    override suspend fun fetchRandom(tag: String?, excludeId: String?): Recipe? {
+        var filtered = recipes.toList()
+        if (!tag.isNullOrBlank()) {
+            filtered = filtered.filter { tag in it.tags }
+        }
+        if (!excludeId.isNullOrBlank()) {
+            filtered = filtered.filter { it.id.toString() != excludeId }
+        }
+        return filtered.randomOrNull()
+    }
+
     override suspend fun delete(id: Uuid) {
         recipes.removeAll { it.id == id }
     }
