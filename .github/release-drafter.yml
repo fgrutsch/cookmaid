@@ -17,7 +17,7 @@ categories:
   - title: '🔧 Maintenance'
     labels: ['chore', 'documentation']
 
-exclude-labels: ['lgtm', 'duplicate', 'wontfix']
+exclude-labels: ['duplicate', 'wontfix']
 
 change-template: '- $TITLE by @$AUTHOR in #$NUMBER'
 change-title-escapes: '\<*_&'
