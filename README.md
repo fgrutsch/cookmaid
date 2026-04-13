@@ -1,5 +1,5 @@
-<div style="text-align: center;">
-<img src="docs/images/cookmaid_logo.png" alt="drawing" width="250"/>
+<div align="center">
+<img src="docs/images/cookmaid_logo.png" alt="Cookmaid logo" width="250"/>
 </div>
 
 # Cookmaid
