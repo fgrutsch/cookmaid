@@ -247,7 +247,10 @@ internal fun MealPlanItemRow(
                 is MealPlanItem.Note -> item.name
             },
             modifier = Modifier.weight(1f),
-            maxLines = 1,
+            maxLines = when (item) {
+                is MealPlanItem.Recipe -> 1
+                is MealPlanItem.Note -> 2
+            },
             overflow = TextOverflow.Ellipsis,
             style = MaterialTheme.typography.bodyLarge,
         )
