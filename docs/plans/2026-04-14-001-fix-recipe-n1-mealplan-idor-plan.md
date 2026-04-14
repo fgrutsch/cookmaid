@@ -73,7 +73,7 @@ by batch-loading ingredients with `inList`, and close an IDOR gap in
 
 ## Implementation Units
 
-- [ ] **Unit 1: Batch-load ingredients in RecipeRepository.find()**
+- [x] **Unit 1: Batch-load ingredients in RecipeRepository.find()**
 
   **Goal:** Replace per-recipe `loadIngredients()` with a single batch query
   in `find()`. Skip `loadIngredients()` in `create()`.
@@ -118,7 +118,7 @@ by batch-loading ingredients with `inList`, and close an IDOR gap in
   - New tests verify batch loading returns correct ingredients per recipe
   - `create()` returns ingredients matching input data without re-querying
 
-- [ ] **Unit 2: Validate recipe ownership in MealPlanService.create()**
+- [x] **Unit 2: Validate recipe ownership in MealPlanService.create()**
 
   **Goal:** Add `RecipeRepository` to `MealPlanService`, check `isOwner()`
   before creating a meal plan item with a non-null `recipeId`.
@@ -155,7 +155,7 @@ by batch-loading ingredients with `inList`, and close an IDOR gap in
   - All existing `MealPlanServiceTest` tests pass
   - New ownership test uses two distinct users (createUser with different subjects)
 
-- [ ] **Unit 3: Integration test for cross-user recipe IDOR**
+- [x] **Unit 3: Integration test for cross-user recipe IDOR**
 
   **Goal:** Route-layer integration test proving cross-user recipe reference
   returns 404.
