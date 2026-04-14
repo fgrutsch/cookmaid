@@ -21,6 +21,7 @@ import org.jetbrains.exposed.v1.core.QueryParameter
 import org.jetbrains.exposed.v1.core.Random
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.core.like
 import org.jetbrains.exposed.v1.core.lowerCase
 import org.jetbrains.exposed.v1.datetime.timestamp
@@ -170,13 +171,20 @@ class PostgresRecipeRepository : RecipeRepository {
         val hasMore = rows.size > limit
         val pageRows = rows.take(limit)
 
+        val recipeIds = pageRows.map { it[RecipesTable.id] }
+        val ingredientsByRecipe = if (recipeIds.isEmpty()) {
+            emptyMap()
+        } else {
+            loadIngredientsBatch(recipeIds, locale)
+        }
+
         val items = pageRows.map { row ->
             val id = row[RecipesTable.id]
             Recipe(
                 id = id,
                 name = row[RecipesTable.name],
                 description = row[RecipesTable.description],
-                ingredients = loadIngredients(id, locale),
+                ingredients = ingredientsByRecipe[id].orEmpty(),
                 steps = row[RecipesTable.steps],
                 tags = row[RecipesTable.tags],
                 servings = row[RecipesTable.servings],
@@ -232,7 +240,7 @@ class PostgresRecipeRepository : RecipeRepository {
             id = recipeId,
             name = row[RecipesTable.name],
             description = row[RecipesTable.description],
-            ingredients = loadIngredients(recipeId, locale),
+            ingredients = data.ingredients,
             steps = row[RecipesTable.steps],
             tags = row[RecipesTable.tags],
             servings = row[RecipesTable.servings],
@@ -338,6 +346,40 @@ class PostgresRecipeRepository : RecipeRepository {
                     item = item,
                     quantity = row[RecipeIngredientsTable.quantity],
                 )
+            }
+    }
+
+    private fun loadIngredientsBatch(
+        recipeIds: List<Uuid>,
+        locale: SupportedLocale,
+    ): Map<Uuid, List<RecipeIngredient>> {
+        val joined = RecipeIngredientsTable
+            .join(CatalogItemsTable, JoinType.LEFT, RecipeIngredientsTable.catalogItemId, CatalogItemsTable.id)
+            .join(ItemCategoriesTable, JoinType.LEFT, CatalogItemsTable.categoryId, ItemCategoriesTable.id)
+
+        return joined.selectAll()
+            .where { RecipeIngredientsTable.recipeId inList recipeIds }
+            .groupBy { it[RecipeIngredientsTable.recipeId] }
+            .mapValues { (_, rows) ->
+                rows.map { row ->
+                    val catalogItemId = row[RecipeIngredientsTable.catalogItemId]
+                    val item: Item = if (catalogItemId != null) {
+                        Item.Catalog(
+                            id = catalogItemId,
+                            name = resolveItemName(row, locale),
+                            category = ItemCategory(
+                                id = row[ItemCategoriesTable.id],
+                                name = resolveCategoryName(row, locale),
+                            ),
+                        )
+                    } else {
+                        Item.FreeText(name = requireNotNull(row[RecipeIngredientsTable.freeTextName]))
+                    }
+                    RecipeIngredient(
+                        item = item,
+                        quantity = row[RecipeIngredientsTable.quantity],
+                    )
+                }
             }
     }
 

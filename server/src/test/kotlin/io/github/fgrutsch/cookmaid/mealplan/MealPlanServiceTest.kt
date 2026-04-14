@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.uuid.Uuid
 
@@ -37,7 +38,7 @@ class MealPlanServiceTest : BaseTest() {
         val service = getKoin().get<MealPlanService>()
         val userId = createUser()
 
-        val item = service.create(userId, monday, recipeId = null, note = "Quick lunch")
+        val item = requireNotNull(service.create(userId, monday, recipeId = null, note = "Quick lunch"))
 
         assertNotNull(item.id)
         assertTrue(item is MealPlanItem.Note)
@@ -51,12 +52,30 @@ class MealPlanServiceTest : BaseTest() {
         val userId = createUser()
         val recipeId = createRecipe(userId)
 
-        val item = service.create(userId, tuesday, recipeId = recipeId, note = null)
+        val item = requireNotNull(service.create(userId, tuesday, recipeId = recipeId, note = null))
 
         assertTrue(item is MealPlanItem.Recipe)
         assertEquals(recipeId, item.recipeId)
         assertEquals("Test Recipe", item.recipeName)
         assertEquals(tuesday, item.day)
+    }
+
+    @Test
+    fun `create fails for another users recipe`() = runTest {
+        val service = getKoin().get<MealPlanService>()
+        val owner = createUser("owner")
+        val other = createUser("other")
+        val recipeId = createRecipe(owner)
+
+        assertNull(service.create(other, monday, recipeId = recipeId, note = null))
+    }
+
+    @Test
+    fun `create fails for non-existent recipe`() = runTest {
+        val service = getKoin().get<MealPlanService>()
+        val userId = createUser()
+
+        assertNull(service.create(userId, monday, recipeId = Uuid.random(), note = null))
     }
 
     @Test
@@ -102,7 +121,7 @@ class MealPlanServiceTest : BaseTest() {
     fun `update note`() = runTest {
         val service = getKoin().get<MealPlanService>()
         val userId = createUser()
-        val item = service.create(userId, monday, recipeId = null, note = "Old note")
+        val item = requireNotNull(service.create(userId, monday, recipeId = null, note = "Old note"))
 
         val result = service.update(userId, item.id, day = null, note = "New note")
 
@@ -116,7 +135,7 @@ class MealPlanServiceTest : BaseTest() {
         val service = getKoin().get<MealPlanService>()
         val userId = createUser("owner")
         val otherUserId = createUser("other")
-        val item = service.create(userId, monday, recipeId = null, note = "My note")
+        val item = requireNotNull(service.create(userId, monday, recipeId = null, note = "My note"))
 
         assertFalse(service.update(otherUserId, item.id, day = null, note = "Hacked"))
     }
@@ -125,7 +144,7 @@ class MealPlanServiceTest : BaseTest() {
     fun `delete removes item`() = runTest {
         val service = getKoin().get<MealPlanService>()
         val userId = createUser()
-        val item = service.create(userId, monday, recipeId = null, note = "To delete")
+        val item = requireNotNull(service.create(userId, monday, recipeId = null, note = "To delete"))
 
         assertTrue(service.delete(userId, item.id))
         assertTrue(service.find(userId, monday, monday).isEmpty())
@@ -136,7 +155,7 @@ class MealPlanServiceTest : BaseTest() {
         val service = getKoin().get<MealPlanService>()
         val userId = createUser("owner")
         val otherUserId = createUser("other")
-        val item = service.create(userId, monday, recipeId = null, note = "My item")
+        val item = requireNotNull(service.create(userId, monday, recipeId = null, note = "My item"))
 
         assertFalse(service.delete(otherUserId, item.id))
     }
