@@ -62,9 +62,11 @@ Four Gradle modules:
   (see `gradle/libs.versions.toml` for exact versions)
 - Exposed (ORM), Flyway (migrations), PostgreSQL
 - Koin (DI), kotlinx.serialization, kotlinx.datetime
+- BuildKonfig (compile-time build config for KMP)
 - Detekt (linting), Kover (coverage), Testcontainers (integration tests)
 - Gradle with version catalog (`gradle/libs.versions.toml`)
-- Android: minSdk 24, targetSdk 36
+- Android: minSdk 24, targetSdk 36. `versionCode` derived from semver
+  (`major*10000 + minor*100 + patch`); `versionName` is `project.version`.
 
 ## Key Patterns
 
@@ -125,17 +127,31 @@ Four Gradle modules:
   `DayPickerDialog` (has its own `DayPickerViewModel`).
 - **URL handling**: Use `LinkAnnotation.Clickable` (not deprecated
   `ClickableText`) for clickable links. Open via `LocalUriHandler`.
+- **BuildKonfig**: Exposes compile-time constants to common code via
+  `BuildKonfig` object in package `io.github.fgrutsch.cookmaid`. Configured
+  in `composeApp/build.gradle.kts` under `buildkonfig { }`. Use `const = true`
+  on `buildConfigField` to generate `const val` (avoids detekt `MayBeConstant`).
 - **WasmJS static assets**: Place in `composeApp/src/wasmJsMain/resources/`.
-  `wasmJsProcessResources` copies them to build output automatically —
-  no Gradle or webpack config needed. `index.html` uses Gradle `expand()`
-  for build-time substitution from `local.properties`. Two-environment contract:
+  `wasmJsProcessResources` copies them to build output and performs build-time
+  substitutions: `expand()` for OIDC config in `index.html`, `filter {}` for
+  `__APP_VERSION__` in `service-worker.js`. Two-environment contract:
   local dev (`local.properties` present) → `expand()` runs, substituting OIDC values
   at build time; CI/production (`local.properties` absent) → task exits early via
   `return@named`, leaving `${VAR}` placeholders intact for `envsubst` at container
   startup. Guard pattern: `val f = rootProject.file("local.properties").takeIf { it.exists() } ?: return@named`.
   Never pass `Properties.getProperty()` results to `expand()` without guaranteeing
   non-null — Gradle silently writes the literal string `"null"` for null values,
-  which breaks `envsubst` silently.
+  which breaks `envsubst` silently. Use `__PLACEHOLDER__` convention with `filter {}`
+  for non-OIDC substitutions to avoid conflicts with `${}` (Groovy templates / envsubst).
+- **Content-hashed JS bundles**: Production WasmJS builds produce
+  `app.[contenthash].js` via `composeApp/webpack.config.d/output.js` (production
+  mode only — dev keeps `composeApp.js`). The `wasmJsBrowserDistribution` task
+  has a `doLast` that rewrites the `<script>` src in `index.html` to match the
+  hashed filename. Webpack config snippets in `webpack.config.d/` are auto-merged
+  by the Kotlin Gradle plugin; the `config` object is pre-defined.
+- **Service worker versioning**: `service-worker.js` cache name uses
+  `__APP_VERSION__` placeholder, replaced at build time. Each release
+  invalidates stale caches via the `activate` handler.
 - **PWA icons** (`composeApp/src/wasmJsMain/resources/icon-{192,512,1024}.png`):
   solid white background, no transparency, content within the inner 80%
   (maskable safe zone — Android adaptive masks crop the outer 20%).

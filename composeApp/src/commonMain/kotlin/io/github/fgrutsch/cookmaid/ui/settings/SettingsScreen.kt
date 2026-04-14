@@ -33,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import cookmaid.composeapp.generated.resources.Res
@@ -42,6 +43,7 @@ import cookmaid.composeapp.generated.resources.settings_language
 import cookmaid.composeapp.generated.resources.settings_profile_picture
 import cookmaid.composeapp.generated.resources.settings_sign_out
 import cookmaid.composeapp.generated.resources.settings_title
+import io.github.fgrutsch.cookmaid.BuildKonfig
 import io.github.fgrutsch.cookmaid.ui.auth.UserProfile
 import io.github.fgrutsch.cookmaid.ui.common.resolve
 import org.jetbrains.compose.resources.painterResource
@@ -75,6 +77,7 @@ fun SettingsScreen(viewModel: SettingsViewModel, userProfile: UserProfile, onLog
             locale = state.locale,
             onLocaleSelected = { viewModel.onEvent(SettingsEvent.SetLocale(it)) },
             onLogout = onLogout,
+            appVersion = BuildKonfig.APP_VERSION,
             modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp),
         )
     }
@@ -88,6 +91,7 @@ private fun SettingsContent(
     locale: SupportedLocale?,
     onLocaleSelected: (SupportedLocale?) -> Unit,
     onLogout: () -> Unit,
+    appVersion: String,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -118,6 +122,16 @@ private fun SettingsContent(
         ) {
             Text(Res.string.settings_sign_out.resolve())
         }
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        Text(
+            text = "v$appVersion",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center,
+        )
     }
 }
 

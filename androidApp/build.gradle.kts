@@ -21,8 +21,9 @@ android {
         applicationId = "io.github.fgrutsch.cookmaid"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "1.0"
+        val parts = project.version.toString().split("-")[0].split(".")
+        versionCode = parts[0].toInt() * 10000 + parts[1].toInt() * 100 + parts[2].toInt()
+        versionName = project.version.toString()
         addManifestPlaceholders(mapOf("oidcRedirectScheme" to "cookmaid"))
     }
     flavorDimensions += "environment"
@@ -38,7 +39,7 @@ android {
             dimension = "environment"
             buildConfigField("String", "BASE_URL", """"https://cookmaid.fgrutsch.dev"""")
             buildConfigField("String", "OIDC_DISCOVERY_URI", """"https://idp.fgrutsch.dev/.well-known/openid-configuration"""")
-            buildConfigField("String", "OIDC_CLIENT_ID", """""""")
+            buildConfigField("String", "OIDC_CLIENT_ID", """"4b0e486c-0dd2-40f4-8f5b-98a4ec815686"""")
             buildConfigField("String", "OIDC_SCOPE", """"openid profile email offline_access"""")
         }
     }
