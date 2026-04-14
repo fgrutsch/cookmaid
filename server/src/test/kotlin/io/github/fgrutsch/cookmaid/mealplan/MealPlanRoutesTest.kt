@@ -1,5 +1,7 @@
 package io.github.fgrutsch.cookmaid.mealplan
 
+import io.github.fgrutsch.cookmaid.recipe.CreateRecipeRequest
+import io.github.fgrutsch.cookmaid.recipe.Recipe as RecipeDto
 import io.github.fgrutsch.cookmaid.support.BaseIntegrationTest
 import io.github.fgrutsch.cookmaid.support.TestJwt
 import io.ktor.client.call.body
@@ -60,9 +62,9 @@ class MealPlanRoutesTest : BaseIntegrationTest() {
         val createRecipeResponse = client.post("/api/recipes") {
             bearerAuth(token)
             contentType(ContentType.Application.Json)
-            setBody(io.github.fgrutsch.cookmaid.recipe.CreateRecipeRequest(name = "Pasta"))
+            setBody(CreateRecipeRequest(name = "Pasta"))
         }
-        val recipe = createRecipeResponse.body<io.github.fgrutsch.cookmaid.recipe.Recipe>()
+        val recipe = createRecipeResponse.body<RecipeDto>()
 
         val createRecipeItemResponse = client.post("/api/meal-plan") {
             bearerAuth(token)
@@ -118,9 +120,9 @@ class MealPlanRoutesTest : BaseIntegrationTest() {
         val createRecipeResponse = client.post("/api/recipes") {
             bearerAuth(tokenA)
             contentType(ContentType.Application.Json)
-            setBody(io.github.fgrutsch.cookmaid.recipe.CreateRecipeRequest(name = "Secret Pasta"))
+            setBody(CreateRecipeRequest(name = "Secret Pasta"))
         }
-        val recipe = createRecipeResponse.body<io.github.fgrutsch.cookmaid.recipe.Recipe>()
+        val recipe = createRecipeResponse.body<RecipeDto>()
 
         // User B tries to reference User A's recipe in their meal plan
         val crossUserResponse = client.post("/api/meal-plan") {
