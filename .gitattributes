@@ -1,0 +1,4 @@
+# compound-engineering pipeline artifacts — ephemeral, cleaned up on merge
+docs/plans/** linguist-generated
+docs/solutions/** linguist-generated
+docs/brainstorms/** linguist-generated
