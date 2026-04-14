@@ -177,6 +177,10 @@ Four Gradle modules:
 - **Test fakes — exception type**: Fakes that simulate failure throw
   `IllegalStateException`, not `RuntimeException` (detekt `TooGenericExceptionThrown`).
 - **Test fakes — no-op overrides**: Express empty overrides as `= Unit`, not `{}`.
+- **Multi-line `OutlinedTextField`**: Use `singleLine = false, maxLines = N`
+  (add `minLines` for a minimum height). Remove `keyboardOptions`/`keyboardActions`
+  with `ImeAction.Done` — it conflicts with Enter-for-newline. Trim whitespace
+  in the ViewModel, not the field. Reference: `AddRecipeComponents.kt` description field.
 
 ## Docker
 
