@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cookmaid-v1';
+const CACHE_NAME = 'cookmaid-__APP_VERSION__';
 
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', event => {

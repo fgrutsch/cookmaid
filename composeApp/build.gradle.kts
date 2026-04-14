@@ -1,3 +1,4 @@
+import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.Properties
@@ -8,6 +9,7 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinx.serialization)
+    alias(libs.plugins.buildkonfig)
     alias(libs.plugins.detekt)
 }
 
@@ -72,7 +74,21 @@ kotlin {
     }
 }
 
+buildkonfig {
+    packageName = "io.github.fgrutsch.cookmaid"
+    defaultConfigs {
+        buildConfigField(STRING, "APP_VERSION", project.version.toString(), const = true)
+    }
+}
+
 tasks.named<Copy>("wasmJsProcessResources") {
+    val appVersion = project.version.toString()
+
+    // Replace the version placeholder in the service worker cache name.
+    filesMatching("service-worker.js") {
+        filter { it.replace("__APP_VERSION__", appVersion) }
+    }
+
     // local.properties is absent in CI/production — early-exit to leave ${VAR} placeholders
     // intact for docker-entrypoint.sh envsubst. Without this guard, getProperty() returns
     // null and Gradle writes the literal string "null" into index.html, breaking envsubst.
@@ -85,5 +101,17 @@ tasks.named<Copy>("wasmJsProcessResources") {
             "OIDC_CLIENT_ID" to localProps.getProperty("oidc.clientId"),
             "OIDC_SCOPE" to localProps.getProperty("oidc.scope"),
         )
+    }
+}
+
+tasks.named<Sync>("wasmJsBrowserDistribution") {
+    doLast {
+        val distDir = destinationDir
+        val jsFile = distDir.listFiles()?.firstOrNull { it.name.matches(Regex("^app\\.[a-f0-9]+\\.js$")) }
+            ?: error("No app.[hash].js found in $distDir")
+
+        // Rewrite the JS bundle reference in index.html.
+        val indexHtml = File(distDir, "index.html")
+        indexHtml.writeText(indexHtml.readText().replace("composeApp.js", jsFile.name))
     }
 }
