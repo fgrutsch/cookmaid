@@ -91,6 +91,55 @@ class PostgresRecipeRepositoryTest : BaseTest() {
     }
 
     @Test
+    fun `find returns correct ingredients per recipe via batch loading`() = runTest {
+        val repo = getKoin().get<RecipeRepository>()
+        val catalogRepo = getKoin().get<CatalogItemRepository>()
+        val userId = createUser()
+        val catalogItem = catalogRepo.findAll(SupportedLocale.EN).first()
+
+        repo.create(userId, data(
+            name = "Recipe A",
+            ingredients = listOf(
+                RecipeIngredient(Item.FreeText("Flour"), "200g"),
+                RecipeIngredient(catalogItem, "100g"),
+            ),
+        ), SupportedLocale.EN)
+        repo.create(userId, data(
+            name = "Recipe B",
+            ingredients = listOf(RecipeIngredient(Item.FreeText("Sugar"), "50g")),
+        ), SupportedLocale.EN)
+
+        val page = repo.find(userId, cursor = null, limit = 20, search = null, tag = null, locale = SupportedLocale.EN)
+
+        assertEquals(2, page.items.size)
+        val recipeA = page.items.first { it.name == "Recipe A" }
+        val recipeB = page.items.first { it.name == "Recipe B" }
+
+        assertEquals(2, recipeA.ingredients.size)
+        val freeTextIngredient = recipeA.ingredients.first { it.item is Item.FreeText }
+        assertEquals("Flour", freeTextIngredient.item.name)
+        assertEquals("200g", freeTextIngredient.quantity)
+        val catalogIngredient = recipeA.ingredients.first { it.item is Item.Catalog }
+        assertEquals(catalogItem.name, catalogIngredient.item.name)
+        assertEquals("100g", catalogIngredient.quantity)
+
+        assertEquals(1, recipeB.ingredients.size)
+        assertEquals("Sugar", recipeB.ingredients.first().item.name)
+    }
+
+    @Test
+    fun `find returns empty ingredients for recipes without ingredients`() = runTest {
+        val repo = getKoin().get<RecipeRepository>()
+        val userId = createUser()
+        repo.create(userId, data(name = "Empty Recipe"), SupportedLocale.EN)
+
+        val page = repo.find(userId, cursor = null, limit = 20, search = null, tag = null, locale = SupportedLocale.EN)
+
+        assertEquals(1, page.items.size)
+        assertTrue(page.items.first().ingredients.isEmpty())
+    }
+
+    @Test
     fun `find returns empty for user with no recipes`() = runTest {
         val repo = getKoin().get<RecipeRepository>()
         val userId = createUser()
