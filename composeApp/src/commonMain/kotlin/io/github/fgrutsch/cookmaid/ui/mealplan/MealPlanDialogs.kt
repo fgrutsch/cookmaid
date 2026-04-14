@@ -104,7 +104,6 @@ fun AddMealPlanItemDialog(
     val options = listOf(Res.string.meal_plan_tab_recipe.resolve(), Res.string.meal_plan_tab_note.resolve())
 
     var noteName by remember { mutableStateOf("") }
-    val keyboardController = LocalSoftwareKeyboardController.current
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -133,10 +132,9 @@ fun AddMealPlanItemDialog(
                         value = noteName,
                         onValueChange = { noteName = it },
                         label = { Text(Res.string.meal_plan_note_label.resolve()) },
-                        singleLine = true,
+                        singleLine = false,
+                        maxLines = 5,
                         modifier = Modifier.fillMaxWidth(),
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                        keyboardActions = KeyboardActions(onDone = { keyboardController?.hide() }),
                     )
                 }
             }
@@ -169,7 +167,6 @@ fun EditNoteDialog(
     onDismiss: () -> Unit,
 ) {
     var name by remember { mutableStateOf(currentName) }
-    val keyboardController = LocalSoftwareKeyboardController.current
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -179,10 +176,9 @@ fun EditNoteDialog(
                 value = name,
                 onValueChange = { name = it },
                 label = { Text(Res.string.meal_plan_note_label.resolve()) },
-                singleLine = true,
+                singleLine = false,
+                maxLines = 5,
                 modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(onDone = { keyboardController?.hide() }),
             )
         },
         confirmButton = {
