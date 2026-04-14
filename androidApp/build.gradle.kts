@@ -21,7 +21,7 @@ android {
         applicationId = "io.github.fgrutsch.cookmaid"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        val parts = project.version.toString().split(".")
+        val parts = project.version.toString().split("-")[0].split(".")
         versionCode = parts[0].toInt() * 10000 + parts[1].toInt() * 100 + parts[2].toInt()
         versionName = project.version.toString()
         addManifestPlaceholders(mapOf("oidcRedirectScheme" to "cookmaid"))
