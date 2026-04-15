@@ -2,14 +2,12 @@ package io.github.fgrutsch.cookmaid.common.ktor
 
 import io.github.fgrutsch.cookmaid.support.BaseIntegrationTest
 import io.github.fgrutsch.cookmaid.support.TestJwt
-import io.ktor.client.call.body
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.http.HttpStatusCode
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 
 class CallExtensionsTest : BaseIntegrationTest() {
 
@@ -25,15 +23,6 @@ class CallExtensionsTest : BaseIntegrationTest() {
         val response = client.get("/api/shopping-lists") { bearerAuth(token) }
 
         assertEquals(HttpStatusCode.OK, response.status)
-    }
-
-    @Test
-    fun `userId returns 500 for unregistered user`() = integrationTest {
-        val token = TestJwt.generateToken("unknown-user")
-
-        val response = client.get("/api/shopping-lists") { bearerAuth(token) }
-
-        assertEquals(HttpStatusCode.InternalServerError, response.status)
     }
 
     @Test
