@@ -16,7 +16,8 @@ private val UserIdKey = AttributeKey<UserId>("userId")
  * Extracts the authenticated [UserId] from the JWT principal, caching it on the call attributes.
  *
  * @return the authenticated user's id.
- * @throws IllegalStateException if the JWT principal is missing or the user is not found.
+ * @throws IllegalArgumentException if the JWT principal is missing.
+ * @throws UserNotRegisteredException if the authenticated subject has no matching user row.
  */
 suspend fun ApplicationCall.userId(): UserId {
     val cached = attributes.getOrNull(UserIdKey)
@@ -24,7 +25,7 @@ suspend fun ApplicationCall.userId(): UserId {
 
     val subject = requireNotNull(principal<JWTPrincipal>()) { "JWT principal missing" }.payload.subject
     val userService = application.get<UserService>()
-    val userId = userService.findIdByOidcSubject(subject) ?: error("User not found for subject: $subject")
+    val userId = userService.findIdByOidcSubject(subject) ?: throw UserNotRegisteredException()
     attributes.put(UserIdKey, userId)
     return userId
 }

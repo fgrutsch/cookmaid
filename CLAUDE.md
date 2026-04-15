@@ -121,6 +121,15 @@ Four Gradle modules:
   unit tests use Koin + Testcontainers + `runTest`. Multi-user tests:
   generate tokens with `TestJwt.generateToken(subject)` using distinct
   subjects, and register each via `POST /api/users/me` before testing.
+- **StatusPages error handling**: `Application.configureStatusPages()` maps
+  exceptions to HTTP responses. Do **not** throw raw exceptions with
+  user/internal data in the message — the catch-all responds 500 with empty
+  body, but a typed handler higher up the chain will leak the message if you
+  define one. Use a dedicated exception class (see
+  `common/ktor/Errors.kt` for `UserNotRegisteredException`). Path-param
+  parsing in `RouteExtensions` (`uuid()`, `localDate()`) throws
+  `IllegalArgumentException` — mapped to 400. `Parameters.getOrFail` throws
+  `MissingRequestParameterException` — also 400.
 - **Static file serving**: `staticFiles("/", File(webDir))` serves the
   WasmJS web app. Must be registered **before** the `/api` route.
   Ktor config key is `web.dir` (populated from `WEB_DIR` env var, defaults to

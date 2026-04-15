@@ -86,6 +86,7 @@ ktor-serverConfigYaml = { module = "io.ktor:ktor-server-config-yaml-jvm", versio
 ktor-serverContentNegotiation = { module = "io.ktor:ktor-server-content-negotiation-jvm", version.ref = "ktor" }
 ktor-serverCore = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor" }
 ktor-serverNetty = { module = "io.ktor:ktor-server-netty-jvm", version.ref = "ktor" }
+ktor-serverStatusPages = { module = "io.ktor:ktor-server-status-pages-jvm", version.ref = "ktor" }
 ktor-serverTestHost = { module = "io.ktor:ktor-server-test-host-jvm", version.ref = "ktor" }
 
 # DI
@@ -133,7 +134,7 @@ koin-test = ["koin-test", "koin-test-junit5"]
 
 # Ktor
 ktor-client = ["ktor-clientCore", "ktor-clientContentNegotiation", "ktor-clientAuth", "ktor-serializationJsonMultiplatform"]
-ktor-server = ["ktor-serverCore", "ktor-serverNetty", "ktor-serverAuthJwt", "ktor-serverConfigYaml", "ktor-serverContentNegotiation", "ktor-serializationJson"]
+ktor-server = ["ktor-serverCore", "ktor-serverNetty", "ktor-serverAuthJwt", "ktor-serverConfigYaml", "ktor-serverContentNegotiation", "ktor-serverStatusPages", "ktor-serializationJson"]
 ktor-server-test = ["ktor-serverTestHost", "ktor-clientContentNegotiation", "ktor-serializationJson"]
 
 # Auth
