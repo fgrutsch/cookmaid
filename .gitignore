@@ -19,4 +19,5 @@ captures
 node_modules/
 dev/postgres-data/
 .claude/
+.context/
 sandbox/
