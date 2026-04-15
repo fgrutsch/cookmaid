@@ -148,4 +148,24 @@ class ShoppingRoutesTest : BaseIntegrationTest() {
         assertEquals(1, finalLists.size)
         assertTrue(finalLists.first().default)
     }
+
+    @Test
+    fun `GET items on another users list returns 404`() = integrationTest {
+        val ownerToken = TestJwt.generateToken("shopping-owner")
+        val otherToken = TestJwt.generateToken("shopping-other")
+        val client = jsonClient()
+
+        client.post("/api/users/me") { bearerAuth(ownerToken) }
+        client.post("/api/users/me") { bearerAuth(otherToken) }
+
+        val ownerLists = client.get("/api/shopping-lists") {
+            bearerAuth(ownerToken)
+        }.body<List<ShoppingList>>()
+        val ownerListId = ownerLists.first().id
+
+        val response = client.get("/api/shopping-lists/$ownerListId/items") {
+            bearerAuth(otherToken)
+        }
+        assertEquals(HttpStatusCode.NotFound, response.status)
+    }
 }

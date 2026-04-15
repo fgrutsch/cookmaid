@@ -68,10 +68,10 @@ class ShoppingListService(
      * @param userId the expected owner.
      * @param listId the shopping list whose items to retrieve.
      * @param locale the language code for catalog item names.
-     * @return the items in the list, or an empty list if not owned.
+     * @return the items in the list, or null if not owned.
      */
-    suspend fun findItemsByListId(userId: UserId, listId: Uuid, locale: SupportedLocale): List<ShoppingItem> {
-        if (!repository.isListOwner(userId, listId)) return emptyList()
+    suspend fun findItemsByListId(userId: UserId, listId: Uuid, locale: SupportedLocale): List<ShoppingItem>? {
+        if (!repository.isListOwner(userId, listId)) return null
         return repository.findItemsByListId(listId, locale)
     }
 

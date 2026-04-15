@@ -62,7 +62,12 @@ private fun Route.shoppingItemRoutes(service: ShoppingListService) {
     route("/items") {
         get {
             val listId = call.parameters.uuid("listId")
-            call.respond(service.findItemsByListId(call.userId(), listId, call.locale()))
+            val items = service.findItemsByListId(call.userId(), listId, call.locale())
+            if (items == null) {
+                call.respond(HttpStatusCode.NotFound)
+            } else {
+                call.respond(items)
+            }
         }
         post {
             val listId = call.parameters.uuid("listId")

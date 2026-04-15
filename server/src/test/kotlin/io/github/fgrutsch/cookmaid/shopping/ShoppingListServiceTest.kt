@@ -119,11 +119,12 @@ class ShoppingListServiceTest : BaseTest() {
 
         val items = service.findItemsByListId(userId, list.id, SupportedLocale.EN)
 
+        assertNotNull(items)
         assertEquals(1, items.size)
     }
 
     @Test
-    fun `findItemsByListId returns empty for another users list`() = runTest {
+    fun `findItemsByListId returns null for another users list`() = runTest {
         val service = getKoin().get<ShoppingListService>()
         val repo = getKoin().get<ShoppingListRepository>()
         val (_, list) = createUserWithList("user-1")
@@ -132,6 +133,17 @@ class ShoppingListServiceTest : BaseTest() {
 
         val items = service.findItemsByListId(otherUserId, list.id, SupportedLocale.EN)
 
+        assertNull(items)
+    }
+
+    @Test
+    fun `findItemsByListId returns empty list for owned list with no items`() = runTest {
+        val service = getKoin().get<ShoppingListService>()
+        val (userId, list) = createUserWithList()
+
+        val items = service.findItemsByListId(userId, list.id, SupportedLocale.EN)
+
+        assertNotNull(items)
         assertTrue(items.isEmpty())
     }
 
