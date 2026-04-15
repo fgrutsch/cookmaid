@@ -17,6 +17,10 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import kotlin.uuid.Uuid
 
+/**
+ * HTTP client for recipe endpoints. Interface-based so repository tests
+ * can substitute a fake without constructing the full [ApiClient].
+ */
 interface RecipeClient {
     suspend fun fetchPage(cursor: String?, limit: Int, search: String?, tag: String?): RecipePage
     suspend fun fetchById(id: Uuid): Recipe

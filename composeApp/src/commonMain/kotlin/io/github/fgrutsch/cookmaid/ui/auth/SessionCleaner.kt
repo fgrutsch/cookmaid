@@ -8,6 +8,7 @@ import io.github.fgrutsch.cookmaid.ui.recipe.list.RecipeListViewModel
 import io.github.fgrutsch.cookmaid.ui.shopping.ApiShoppingListRepository
 import io.github.fgrutsch.cookmaid.ui.shopping.ShoppingListViewModel
 import io.ktor.client.HttpClient
+import kotlinx.coroutines.CancellationException
 import org.publicvalue.multiplatform.oidc.ktor.clearTokens
 import org.publicvalue.multiplatform.oidc.tokenstore.TokenStore
 import org.publicvalue.multiplatform.oidc.tokenstore.removeTokens
@@ -67,6 +68,9 @@ class SessionCleaner(
     private suspend fun runStep(block: suspend () -> Unit) {
         try {
             block()
+        } catch (e: CancellationException) {
+            // Honor structured concurrency — never swallow cancellation.
+            throw e
         } catch (
             @Suppress("TooGenericExceptionCaught") e: Exception
         ) {

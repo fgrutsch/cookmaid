@@ -59,18 +59,24 @@ class AuthViewModel(
     }
 
     private fun logout() {
-        // Reset identity first, *before* the SessionCleaner runs. Otherwise
-        // any composable observing AuthState during the cleanup window sees
-        // the previous user's identity while the data layer is being erased.
-        updateState { copy(user = null, profile = UserProfile()) }
+        // Reset identity and transition to Unauthenticated *before* the
+        // SessionCleaner runs. Otherwise any composable observing AuthState
+        // during the cleanup window would see the previous user's identity —
+        // or worse, the invariant `status == Authenticated` with `user == null`
+        // while the data layer is being erased.
+        updateState {
+            copy(
+                status = AuthState.Status.Unauthenticated,
+                user = null,
+                profile = UserProfile(),
+                loginError = null,
+            )
+        }
         launch {
+            // Best-effort cleanup; SessionCleaner.clearAll() never throws
+            // except for CancellationException, which the MviViewModel.launch
+            // path already re-throws to honor structured concurrency.
             authHandler.logout()
-            updateState {
-                copy(
-                    status = AuthState.Status.Unauthenticated,
-                    loginError = null,
-                )
-            }
         }
     }
 }
