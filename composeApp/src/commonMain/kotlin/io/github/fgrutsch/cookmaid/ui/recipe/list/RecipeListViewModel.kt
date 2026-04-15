@@ -124,7 +124,6 @@ class RecipeListViewModel(
             updateState { copy(searchActive = true) }
         } else {
             updateState { copy(searchActive = false, searchQuery = "") }
-            searchQueryFlow.value = ""
             fetchFirstPage()
         }
     }

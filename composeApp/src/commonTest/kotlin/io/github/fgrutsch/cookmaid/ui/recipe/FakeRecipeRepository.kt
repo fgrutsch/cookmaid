@@ -10,8 +10,10 @@ class FakeRecipeRepository : RecipeRepository {
     var recipes: MutableList<Recipe> = mutableListOf()
     var tags: List<String> = emptyList()
     var pageSize: Int = 20
+    var fetchPageCallCount: Int = 0
 
     override suspend fun fetchPage(cursor: String?, limit: Int, search: String?, tag: String?): RecipePage {
+        fetchPageCallCount++
         var filtered = recipes.toList()
         if (!search.isNullOrBlank()) {
             filtered = filtered.filter { it.name.lowercase().contains(search.lowercase()) }
