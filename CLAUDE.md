@@ -67,6 +67,11 @@ Four Gradle modules:
 - Gradle with version catalog (`gradle/libs.versions.toml`)
 - Android: minSdk 24, targetSdk 36. `versionCode` derived from semver
   (`major*10000 + minor*100 + patch`); `versionName` is `project.version`.
+- Android backup: `android:allowBackup="false"` in `AndroidManifest.xml` — the
+  DataStore-backed OIDC token store must never land in `adb backup` or
+  Google Drive restores. If backup is ever re-enabled, pair it with
+  `android:dataExtractionRules` (API 31+) AND `android:fullBackupContent`
+  (API <31) that explicitly exclude the credential store.
 
 ## Key Patterns
 
