@@ -187,6 +187,18 @@ class ShoppingListViewModel(
         sendEffect(ShoppingListEffect.Error("Something went wrong. Please try again."))
     }
 
+    /**
+     * Resets state to its initial value. Called by `SessionCleaner` on logout
+     * to drop the previous user's lists, items, selection, and suggestions.
+     * This VM has no `.drop(1)` barrier on `searchQueryFlow`, so the empty
+     * emit flows to `catalogItemRepository.search("")`, which short-circuits
+     * on blank queries and returns an empty list without a network call.
+     */
+    fun resetState() {
+        updateState { ShoppingListState() }
+        searchQueryFlow.update { "" }
+    }
+
     companion object {
         private const val SEARCH_DEBOUNCE_MILLIS = 150L
     }

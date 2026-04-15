@@ -182,6 +182,20 @@ class RecipeListViewModel(
         sendEffect(RecipeListEffect.Error("Something went wrong. Please try again."))
     }
 
+    /**
+     * Resets state to its initial value. Called by `SessionCleaner` on logout
+     * to drop the previous user's recipes, tags, search query, and random
+     * recipe. The internal `searchQueryFlow` is also reset to empty; because
+     * `.drop(1)` only skips the *initial* value, this emit flows through the
+     * debounce chain and triggers a first-page fetch, which will 401 (tokens
+     * are cleared earlier in the logout sequence) and land in [onError].
+     * [onError] does not overwrite list fields.
+     */
+    fun resetState() {
+        updateState { RecipeListState() }
+        searchQueryFlow.value = ""
+    }
+
     companion object {
         private const val SEARCH_DEBOUNCE_MILLIS = 300L
     }

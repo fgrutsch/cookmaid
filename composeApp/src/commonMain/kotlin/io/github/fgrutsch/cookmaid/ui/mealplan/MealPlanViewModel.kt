@@ -169,6 +169,18 @@ class MealPlanViewModel(
         updateState { copy(isLoading = false) }
         sendEffect(MealPlanEffect.Error("Something went wrong. Please try again."))
     }
+
+    /**
+     * Resets state to its initial value, re-computing `currentWeekStart` from
+     * the system clock so the reset matches fresh-VM construction. Called by
+     * `SessionCleaner` on logout to drop the previous user's week, days,
+     * items, and recipe search results.
+     */
+    fun resetState() {
+        updateState {
+            MealPlanState(currentWeekStart = mondayOfWeek(Clock.System.todayIn(TimeZone.currentSystemDefault())))
+        }
+    }
 }
 
 private fun groupIntoDays(weekStart: LocalDate, items: List<MealPlanItem>): List<MealPlanDay> {

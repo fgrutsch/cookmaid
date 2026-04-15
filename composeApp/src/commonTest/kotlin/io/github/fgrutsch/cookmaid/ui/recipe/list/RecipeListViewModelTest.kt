@@ -241,6 +241,35 @@ class RecipeListViewModelTest : BaseViewModelTest() {
         assertFalse(viewModel.state.value.isLoadingMore)
     }
 
+    @Test
+    fun `resetState returns state to initial`() = viewModelTest {
+        val viewModel = createLoadedViewModel(
+            recipes = listOf(recipe("Pasta", tags = listOf("Italian"))),
+            tags = listOf("Italian"),
+        )
+        viewModel.onEvent(RecipeListEvent.UpdateSearchQuery("pa"))
+        viewModel.onEvent(RecipeListEvent.SelectTag("Italian"))
+        viewModel.onEvent(RecipeListEvent.RollRandomRecipe)
+        advanceUntilIdle()
+        // Sanity: state is non-initial.
+        assertFalse(viewModel.state.value.recipes.isEmpty())
+        assertEquals("pa", viewModel.state.value.searchQuery)
+        assertEquals("Italian", viewModel.state.value.selectedTag)
+        assertNotNull(viewModel.state.value.randomRecipe)
+
+        viewModel.resetState()
+        advanceUntilIdle() // lets the searchQueryFlow re-emit settle
+
+        // state values we care about match a fresh RecipeListState(), ignoring
+        // any list/loading field the debounce-triggered refetch may have re-populated.
+        val s = viewModel.state.value
+        assertEquals("", s.searchQuery)
+        assertFalse(s.searchActive)
+        assertNull(s.selectedTag)
+        assertNull(s.randomRecipe)
+        assertFalse(s.isLoadingRandom)
+    }
+
     companion object {
         private fun recipe(
             name: String,

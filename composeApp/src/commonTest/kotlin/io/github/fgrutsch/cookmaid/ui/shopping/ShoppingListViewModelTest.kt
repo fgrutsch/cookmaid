@@ -214,7 +214,27 @@ class ShoppingListViewModelTest : BaseViewModelTest() {
         assertEquals(1, viewModel.state.value.checkedItems.size)
     }
 
+    @Test
+    fun `resetState returns state to initial`() = viewModelTest {
+        val items = listOf(
+            ShoppingItem(id = Uuid.random(), item = Item.FreeText("Milk"), quantity = null),
+        )
+        val viewModel = createLoadedViewModel(items = items)
+        viewModel.onEvent(ShoppingListEvent.UpdateSearchQuery("milk"))
+        advanceUntilIdle()
+        // Sanity: state is non-initial.
+        assertEquals(LIST_ID, viewModel.state.value.selectedListId)
+        assertEquals(1, viewModel.state.value.items.size)
+
+        viewModel.resetState()
+        advanceUntilIdle()
+
+        val s = viewModel.state.value
+        assertEquals(ShoppingListViewModelInitial, s)
+    }
+
     companion object {
         private val LIST_ID = Uuid.parse("00000000-0000-0000-0000-000000000001")
+        private val ShoppingListViewModelInitial = ShoppingListState()
     }
 }
