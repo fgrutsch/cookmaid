@@ -65,4 +65,11 @@ class ApiMealPlanRepository(
     override suspend fun delete(id: Uuid) {
         client.delete(id)
     }
+
+    /**
+     * No-op today — no in-memory cache exists. Exists so `SessionCleaner`
+     * registers every user-scoped repository and future cache additions
+     * have an obvious home.
+     */
+    fun clear() = Unit
 }
