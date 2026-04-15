@@ -130,6 +130,15 @@ Four Gradle modules:
 - **MVI pattern**: Each screen has `State`, `Event`, `Effect` types +
   `MviViewModel` base class. ViewModels use `launch {}` for coroutines
   and `updateState {}` for state mutations.
+- **Debounced MutableStateFlow inputs**: When a `MutableStateFlow` drives a
+  debounced side-effect (e.g. `searchQueryFlow` in `RecipeListViewModel`),
+  do **not** also mutate the flow from a synchronous handler that calls the
+  same side-effect directly — it double-fires (one sync, one debounced).
+  Let the flow serve only the typing/input path; synchronous actions (close
+  search, clear filter, select tag) call the side-effect directly and read
+  from `state.value`. `selectTag()` is the canonical shape; `setSearchActive()`
+  was the pitfall. Regression-test with a call-count counter on the repository
+  fake, not state-only assertions.
 - **Koin DI**: ViewModels injected via `koinInject<T>()` in composables
   or `getKoin()` in navigation entries.
 - **Repository pattern**: `ApiXxxRepository` wraps `XxxClient` (Ktor HTTP).

@@ -182,6 +182,37 @@ class RecipeListViewModelTest : BaseViewModelTest() {
     }
 
     @Test
+    fun `closing search triggers exactly one recipe fetch`() = viewModelTest {
+        val viewModel = createLoadedViewModel(recipes = listOf(recipe("Pasta")))
+
+        // Baseline: one fetch from the initial load.
+        val baseline = fakeRecipeRepo.fetchPageCallCount
+
+        viewModel.onEvent(RecipeListEvent.UpdateSearchQuery("pa"))
+        advanceUntilIdle() // let the debounced search fetch resolve
+        val afterSearch = fakeRecipeRepo.fetchPageCallCount
+
+        viewModel.onEvent(RecipeListEvent.SetSearchActive(false))
+        advanceUntilIdle() // flushes any lurking debounce timer as well
+
+        val afterClose = fakeRecipeRepo.fetchPageCallCount - afterSearch
+        assertEquals(1, afterClose)
+        // Sanity check: typing did trigger a fetch between baseline and close.
+        assertTrue(afterSearch > baseline)
+    }
+
+    @Test
+    fun `typing search query triggers one fetch after debounce`() = viewModelTest {
+        val viewModel = createLoadedViewModel(recipes = listOf(recipe("Pasta")))
+        val baseline = fakeRecipeRepo.fetchPageCallCount
+
+        viewModel.onEvent(RecipeListEvent.UpdateSearchQuery("pa"))
+        advanceUntilIdle()
+
+        assertEquals(1, fakeRecipeRepo.fetchPageCallCount - baseline)
+    }
+
+    @Test
     fun `add ingredients to shopping list sends effect`() = viewModelTest {
         fakeShoppingRepo.lists = mutableListOf(ShoppingList(id = Uuid.random(), name = "Groceries", default = true))
         val viewModel = createLoadedViewModel()
