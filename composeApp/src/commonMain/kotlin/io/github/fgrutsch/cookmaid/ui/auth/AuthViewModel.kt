@@ -59,13 +59,15 @@ class AuthViewModel(
     }
 
     private fun logout() {
+        // Reset identity first, *before* the SessionCleaner runs. Otherwise
+        // any composable observing AuthState during the cleanup window sees
+        // the previous user's identity while the data layer is being erased.
+        updateState { copy(user = null, profile = UserProfile()) }
         launch {
             authHandler.logout()
             updateState {
                 copy(
                     status = AuthState.Status.Unauthenticated,
-                    user = null,
-                    profile = UserProfile(),
                     loginError = null,
                 )
             }

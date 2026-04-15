@@ -3,9 +3,7 @@ package io.github.fgrutsch.cookmaid.ui.auth
 import io.github.fgrutsch.cookmaid.ui.user.UserClient
 import org.publicvalue.multiplatform.oidc.OpenIdConnectClient
 import org.publicvalue.multiplatform.oidc.flows.CodeAuthFlowFactory
-import org.publicvalue.multiplatform.oidc.ktor.clearTokens
 import org.publicvalue.multiplatform.oidc.tokenstore.TokenStore
-import org.publicvalue.multiplatform.oidc.tokenstore.removeTokens
 import org.publicvalue.multiplatform.oidc.tokenstore.saveTokens
 
 class OidcAuthHandler(
@@ -13,7 +11,7 @@ class OidcAuthHandler(
     private val authFlowFactory: CodeAuthFlowFactory,
     private val tokenStore: TokenStore,
     private val userClient: UserClient,
-    private val apiClient: ApiClient,
+    private val sessionCleaner: SessionCleaner,
 ) : AuthHandler {
 
     override suspend fun tryAutoLogin(): AuthResult {
@@ -34,7 +32,6 @@ class OidcAuthHandler(
     }
 
     override suspend fun logout() {
-        tokenStore.removeTokens()
-        apiClient.httpClient.clearTokens()
+        sessionCleaner.clearAll()
     }
 }

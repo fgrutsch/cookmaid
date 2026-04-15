@@ -6,7 +6,7 @@ import org.koin.dsl.bind
 import org.koin.dsl.module
 
 val mealPlanModule = module {
-    singleOf(::MealPlanClient)
+    singleOf(::ApiMealPlanClient) bind MealPlanClient::class
     singleOf(::ApiMealPlanRepository) bind MealPlanRepository::class
     singleOf(::MealPlanViewModel)
     factoryOf(::DayPickerViewModel)

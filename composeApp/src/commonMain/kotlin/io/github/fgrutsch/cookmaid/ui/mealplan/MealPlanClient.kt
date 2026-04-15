@@ -16,31 +16,38 @@ import io.ktor.http.contentType
 import kotlinx.datetime.LocalDate
 import kotlin.uuid.Uuid
 
-class MealPlanClient(
+interface MealPlanClient {
+    suspend fun fetchItems(from: LocalDate, to: LocalDate): List<MealPlanItem>
+    suspend fun create(request: CreateMealPlanItemRequest): MealPlanItem
+    suspend fun update(id: Uuid, request: UpdateMealPlanItemRequest)
+    suspend fun delete(id: Uuid)
+}
+
+class ApiMealPlanClient(
     private val apiClient: ApiClient,
-) {
+) : MealPlanClient {
     private val base = "/api/meal-plan"
 
-    suspend fun fetchItems(from: LocalDate, to: LocalDate): List<MealPlanItem> =
+    override suspend fun fetchItems(from: LocalDate, to: LocalDate): List<MealPlanItem> =
         apiClient.httpClient.get(base) {
             parameter("from", from.toString())
             parameter("to", to.toString())
         }.body()
 
-    suspend fun create(request: CreateMealPlanItemRequest): MealPlanItem =
+    override suspend fun create(request: CreateMealPlanItemRequest): MealPlanItem =
         apiClient.httpClient.post(base) {
             contentType(ContentType.Application.Json)
             setBody(request)
         }.body()
 
-    suspend fun update(id: Uuid, request: UpdateMealPlanItemRequest) {
+    override suspend fun update(id: Uuid, request: UpdateMealPlanItemRequest) {
         apiClient.httpClient.put("$base/$id") {
             contentType(ContentType.Application.Json)
             setBody(request)
         }
     }
 
-    suspend fun delete(id: Uuid) {
+    override suspend fun delete(id: Uuid) {
         apiClient.httpClient.delete("$base/$id")
     }
 }
