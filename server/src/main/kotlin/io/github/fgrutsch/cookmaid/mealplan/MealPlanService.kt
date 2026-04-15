@@ -1,5 +1,6 @@
 package io.github.fgrutsch.cookmaid.mealplan
 
+import io.github.fgrutsch.cookmaid.recipe.RecipeRepository
 import io.github.fgrutsch.cookmaid.user.UserId
 import kotlinx.datetime.LocalDate
 import kotlin.uuid.Uuid
@@ -8,6 +9,7 @@ import kotlin.uuid.Uuid
  * Orchestrates meal plan CRUD operations with ownership checks.
  */
 class MealPlanService(
+    private val recipeRepository: RecipeRepository,
     private val repository: MealPlanRepository,
 ) {
 
@@ -28,11 +30,12 @@ class MealPlanService(
      *
      * @param userId the owner of the meal plan.
      * @param day the date for the item.
-     * @param recipeId optional recipe reference.
+     * @param recipeId optional recipe reference; must belong to [userId] if non-null.
      * @param note optional free-text note.
-     * @return the created meal plan item.
+     * @return the created meal plan item, or null if [recipeId] does not belong to [userId].
      */
-    suspend fun create(userId: UserId, day: LocalDate, recipeId: Uuid?, note: String?): MealPlanItem {
+    suspend fun create(userId: UserId, day: LocalDate, recipeId: Uuid?, note: String?): MealPlanItem? {
+        if (recipeId != null && !recipeRepository.isOwner(userId, recipeId)) return null
         return repository.create(userId, day, recipeId, note)
     }
 

@@ -87,6 +87,10 @@ Four Gradle modules:
   (`find`, `findTags`, `isOwner`) over verbose ones (`findByUserId`).
 - **Ownership checks**: Services check `repository.isOwner(userId, id)`
   and return 404 (not 403) to avoid leaking resource existence.
+  When a service accepts a foreign resource ID (e.g., `recipeId` on a
+  meal plan item), inject the foreign repository and call its `isOwner()`
+  before persisting. Service returns `T?` (null = failure) or `Boolean`;
+  route maps null/false to 404.
 - **Route ordering**: Register literal routes (e.g., `get("/random")`)
   **before** parameterized routes (`route("/{id}")`) — Ktor matches the
   first route that fits, and a path parameter will swallow literal segments.
@@ -103,8 +107,15 @@ Four Gradle modules:
 - **Flyway migrations**: `server/src/main/resources/db/migration/V*__*.sql`
 - **Timestamps**: All tables (except catalog) have `created_at`/`updated_at`
   with a shared `set_updated_at()` trigger.
+- **Batch loading**: When loading child entities for a page of parents
+  (e.g., ingredients per recipe), batch with Exposed's `inList` in a
+  single query instead of per-entity calls. Guard with early return if
+  the ID list is empty. Single-entity lookups (`findById`) can keep the
+  per-row variant.
 - **Ktor testing**: Integration tests use `testApplication { }`;
-  unit tests use Koin + Testcontainers + `runTest`.
+  unit tests use Koin + Testcontainers + `runTest`. Multi-user tests:
+  generate tokens with `TestJwt.generateToken(subject)` using distinct
+  subjects, and register each via `POST /api/users/me` before testing.
 - **Static file serving**: `staticFiles("/", File(webDir))` serves the
   WasmJS web app. Must be registered **before** the `/api` route.
   Ktor config key is `web.dir` (populated from `WEB_DIR` env var, defaults to

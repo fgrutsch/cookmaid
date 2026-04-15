@@ -31,7 +31,11 @@ fun Route.mealPlanRoutes() {
         post {
             val body = call.receive<CreateMealPlanItemRequest>()
             val item = service.create(call.userId(), body.day, body.recipeId, body.note)
-            call.respond(HttpStatusCode.Created, item)
+            if (item == null) {
+                call.respond(HttpStatusCode.NotFound)
+            } else {
+                call.respond(HttpStatusCode.Created, item)
+            }
         }
 
         route("/{id}") {
