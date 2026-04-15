@@ -14,6 +14,11 @@ val catalogModule = module {
     singleOf(::PostgresCatalogItemRepository) bind CatalogItemRepository::class
 }
 
+/**
+ * Catalog routes talk to the repository directly: the catalog is a global,
+ * read-only, authz-free table. Introduce a `CatalogItemService` if/when any
+ * of those stop being true (admin mutations, per-user favorites, auditing).
+ */
 fun Route.catalogRoutes() {
     val itemRepository by inject<CatalogItemRepository>()
 
