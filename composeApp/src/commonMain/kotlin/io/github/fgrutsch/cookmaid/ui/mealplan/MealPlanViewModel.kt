@@ -19,6 +19,7 @@ import kotlinx.datetime.todayIn
 import kotlin.time.Clock
 import kotlin.uuid.Uuid
 
+@Suppress("TooManyFunctions") // 15 methods; resetState is the last one and owned by SessionCleaner
 class MealPlanViewModel(
     private val mealPlanRepository: MealPlanRepository,
     private val recipeRepository: RecipeRepository,

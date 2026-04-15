@@ -30,6 +30,7 @@ import org.publicvalue.multiplatform.oidc.tokenstore.removeTokens
  * one implementation and one consumer ([OidcAuthHandler]). Tests that
  * want to skip cleanup can inject a no-op subclass.
  */
+@Suppress("LongParameterList") // inherent to the aggregator pattern: the cleaner owns every user-scoped singleton
 class SessionCleaner(
     private val tokenStore: TokenStore,
     private val httpClient: HttpClient,
@@ -69,6 +70,9 @@ class SessionCleaner(
         } catch (
             @Suppress("TooGenericExceptionCaught") e: Exception
         ) {
+            // No central logger yet; surface the failure for debug builds.
+            // See #73 for rationale — best-effort cleanup must stay visible.
+            @Suppress("PrintStackTrace")
             e.printStackTrace()
         }
     }

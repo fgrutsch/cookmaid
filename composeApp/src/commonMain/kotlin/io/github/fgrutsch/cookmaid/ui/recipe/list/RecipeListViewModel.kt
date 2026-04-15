@@ -17,6 +17,7 @@ import kotlinx.datetime.LocalDate
 import kotlin.uuid.Uuid
 
 @OptIn(FlowPreview::class)
+@Suppress("TooManyFunctions") // 15 methods; resetState is the last one and owned by SessionCleaner
 class RecipeListViewModel(
     private val repository: RecipeRepository,
     private val shoppingListRepository: ShoppingListRepository,

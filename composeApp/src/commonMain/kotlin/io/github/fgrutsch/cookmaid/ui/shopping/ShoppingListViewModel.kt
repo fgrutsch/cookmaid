@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.update
 import kotlin.uuid.Uuid
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
+@Suppress("TooManyFunctions") // 15 methods; resetState is the last one and owned by SessionCleaner
 class ShoppingListViewModel(
     private val repository: ShoppingListRepository,
     private val catalogItemRepository: CatalogItemRepository,
