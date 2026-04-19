@@ -113,6 +113,21 @@ class AuthViewModelTest : BaseViewModelTest() {
     }
 
     @Test
+    fun `logout stays unauthenticated when handler throws`() = viewModelTest {
+        val user = User(id = Uuid.random(), oidcSubject = "sub-1")
+        fakeHandler.resultToReturn = AuthResult(user, UserProfile())
+        val viewModel = createInitializedViewModel()
+
+        fakeHandler.shouldFailOnLogout = true
+        viewModel.onEvent(AuthEvent.Logout)
+        advanceUntilIdle()
+
+        val state = viewModel.state.value
+        assertEquals(AuthState.Status.Unauthenticated, state.status)
+        assertNull(state.user)
+    }
+
+    @Test
     fun `login clears previous error`() = viewModelTest {
         fakeHandler.shouldFail = true
         fakeHandler.failMessage = "Old error"
