@@ -1,6 +1,7 @@
 package io.github.fgrutsch.cookmaid.ui.auth
 
 import io.github.fgrutsch.cookmaid.ui.common.MviViewModel
+import kotlinx.coroutines.CancellationException
 
 class AuthViewModel(
     private val authHandler: AuthHandler,
@@ -59,11 +60,9 @@ class AuthViewModel(
     }
 
     private fun logout() {
-        // Reset identity and transition to Unauthenticated *before* the
-        // SessionCleaner runs. Otherwise any composable observing AuthState
-        // during the cleanup window would see the previous user's identity —
-        // or worse, the invariant `status == Authenticated` with `user == null`
-        // while the data layer is being erased.
+        // Flip identity to Unauthenticated synchronously so the Koin session
+        // reset keyed on `user.id` in App.kt fires immediately — before any
+        // observer sees `status == Authenticated && user == null`.
         updateState {
             copy(
                 status = AuthState.Status.Unauthenticated,
@@ -73,10 +72,20 @@ class AuthViewModel(
             )
         }
         launch {
-            // Best-effort cleanup; SessionCleaner.clearAll() never throws
-            // except for CancellationException, which the MviViewModel.launch
-            // path already re-throws to honor structured concurrency.
-            authHandler.logout()
+            try {
+                authHandler.logout()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (
+                @Suppress("TooGenericExceptionCaught") e: Exception
+            ) {
+                // Token/transport cleanup failed. State is already Unauthenticated
+                // so the UI is safe, but stale tokens may persist on disk and
+                // auto-login as the previous user on next app start. Log loudly
+                // so the failure is diagnosable instead of silently swallowed by
+                // MviViewModel.onError.
+                e.printStackTrace()
+            }
         }
     }
 }

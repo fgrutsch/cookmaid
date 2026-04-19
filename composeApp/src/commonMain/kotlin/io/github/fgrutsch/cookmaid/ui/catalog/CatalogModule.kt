@@ -5,6 +5,6 @@ import org.koin.dsl.bind
 import org.koin.dsl.module
 
 val catalogModule = module {
-    singleOf(::ApiCatalogItemClient) bind CatalogItemClient::class
+    singleOf(::CatalogItemClient)
     singleOf(::ApiCatalogItemRepository) bind CatalogItemRepository::class
 }

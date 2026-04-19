@@ -5,7 +5,7 @@ import org.koin.dsl.bind
 import org.koin.dsl.module
 
 val shoppingModule = module {
-    singleOf(::ApiShoppingListClient) bind ShoppingListClient::class
+    singleOf(::ShoppingListClient)
     singleOf(::ApiShoppingListRepository) bind ShoppingListRepository::class
     singleOf(::ShoppingListViewModel)
 }

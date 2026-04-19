@@ -18,7 +18,6 @@ import kotlinx.coroutines.flow.update
 import kotlin.uuid.Uuid
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
-@Suppress("TooManyFunctions") // 15 methods; resetState is the last one and owned by SessionCleaner
 class ShoppingListViewModel(
     private val repository: ShoppingListRepository,
     private val catalogItemRepository: CatalogItemRepository,
@@ -186,18 +185,6 @@ class ShoppingListViewModel(
     override fun onError(e: Exception) {
         updateState { copy(isLoading = false, isRefreshing = false) }
         sendEffect(ShoppingListEffect.Error("Something went wrong. Please try again."))
-    }
-
-    /**
-     * Resets state to its initial value. Called by `SessionCleaner` on logout
-     * to drop the previous user's lists, items, selection, and suggestions.
-     * This VM has no `.drop(1)` barrier on `searchQueryFlow`, so the empty
-     * emit flows to `catalogItemRepository.search("")`, which short-circuits
-     * on blank queries and returns an empty list without a network call.
-     */
-    fun resetState() {
-        updateState { ShoppingListState() }
-        searchQueryFlow.update { "" }
     }
 
     companion object {

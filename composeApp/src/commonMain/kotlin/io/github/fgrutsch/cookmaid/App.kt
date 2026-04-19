@@ -81,35 +81,47 @@ fun App(
         single<TokenStore> { tokenStore }
     }
 
-    KoinApplication(koinConfiguration { modules(allModules + platformModule) }) {
+    KoinApplication(koinConfiguration { modules(appModules + sessionModules + platformModule) }) {
         val settingsViewModel = koinInject<SettingsViewModel>()
         val settingsState by settingsViewModel.state.collectAsState()
+        val authViewModel = koinInject<AuthViewModel>()
+        val authState by authViewModel.state.collectAsState()
+
+        LaunchedEffect(Unit) {
+            authViewModel.onEvent(AuthEvent.Initialize)
+        }
+
+        // Reset user-scoped Koin beans whenever identity changes. Lives above
+        // key(settingsState.locale) so changing language does NOT rebuild the
+        // session graph mid-session. `remember` (not DisposableEffect) is used
+        // so the unload/reload runs synchronously *before* children compose,
+        // guaranteeing their koinInject<T>() calls resolve to fresh instances.
+        val koin = getKoin()
+        remember(authState.user?.id) {
+            koin.unloadModules(sessionModules)
+            koin.loadModules(sessionModules)
+        }
 
         CompositionLocalProvider(
             LocalAppLocale provides (settingsState.locale?.code),
         ) {
             key(settingsState.locale) {
                 AppTheme(isDark = settingsState.effectiveDarkMode(isSystemInDarkTheme())) {
-                    val authViewModel = koinInject<AuthViewModel>()
-                    val authState by authViewModel.state.collectAsState()
-
-                    LaunchedEffect(Unit) {
-                        authViewModel.onEvent(AuthEvent.Initialize)
-                    }
-
-                    when (authState.status) {
-                        AuthState.Status.Initializing -> {
-                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                CircularProgressIndicator()
+                    key(authState.user?.id) {
+                        when (authState.status) {
+                            AuthState.Status.Initializing -> {
+                                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                    CircularProgressIndicator()
+                                }
                             }
-                        }
 
-                        AuthState.Status.Unauthenticated -> LoginScreen(viewModel = authViewModel)
-                        AuthState.Status.Authenticated -> MainContent(
-                            settingsViewModel = settingsViewModel,
-                            authViewModel = authViewModel,
-                            userProfile = authState.profile,
-                        )
+                            AuthState.Status.Unauthenticated -> LoginScreen(viewModel = authViewModel)
+                            AuthState.Status.Authenticated -> MainContent(
+                                settingsViewModel = settingsViewModel,
+                                authViewModel = authViewModel,
+                                userProfile = authState.profile,
+                            )
+                        }
                     }
                 }
             }

@@ -144,27 +144,6 @@ Four Gradle modules:
 - **MVI pattern**: Each screen has `State`, `Event`, `Effect` types +
   `MviViewModel` base class. ViewModels use `launch {}` for coroutines
   and `updateState {}` for state mutations.
-- **Structured concurrency in suspend catches**: Any new
-  `catch (e: Exception)` in suspend code must rethrow `CancellationException`
-  first. In Kotlin, `CancellationException` extends `Exception`, so a bare
-  catch silently swallows cancellation and breaks scope teardown. Pattern
-  already modeled in `MviViewModel.launch` / `launchOptimistic` /
-  `SessionCleaner.runStep`:
-
-  ```kotlin
-  try { block() }
-  catch (e: CancellationException) { throw e }
-  catch (@Suppress("TooGenericExceptionCaught") e: Exception) { ... }
-  ```
-- **Session cleanup on logout**: `SessionCleaner` (in `ui/auth/`) owns the
-  full logout sequence — tokens, Ktor auth, repo caches, singleton VM state
-  resets — best-effort per step. **Any new user-scoped singleton must be
-  registered there** (and gets a `clear()` or `resetState()` method). Wired
-  in via `sessionModule`, invoked from `OidcAuthHandler.logout()`. Identity
-  reset (`status = Unauthenticated`, `user = null`, `profile = UserProfile()`)
-  happens synchronously in `AuthViewModel.logout()` *before* the suspend
-  handler runs — otherwise observers see `Authenticated && user == null`
-  during the cleanup window.
 - **Debounced MutableStateFlow inputs**: When a `MutableStateFlow` drives a
   debounced side-effect (e.g. `searchQueryFlow` in `RecipeListViewModel`),
   do **not** also mutate the flow from a synchronous handler that calls the
@@ -176,12 +155,22 @@ Four Gradle modules:
   fake, not state-only assertions.
 - **Koin DI**: ViewModels injected via `koinInject<T>()` in composables
   or `getKoin()` in navigation entries.
+- **Session vs. app scope**: `KoinModules.kt` splits `appModules` (auth,
+  settings, user — survives logout) from `sessionModules` (repositories +
+  singleton ViewModels holding user data). `App.kt` re-keys on
+  `authState.user?.id` and calls `koin.unloadModules(sessionModules)` +
+  `koin.loadModules(sessionModules)` on every identity change, so
+  session-scoped singletons are GC'd on logout and rebuilt on login. **Any
+  new user-scoped repository or singleton VM must go in a module registered
+  under `sessionModules`** — otherwise its state leaks across users. Auth
+  infra (`ApiClient`, `HttpClient`, `OidcAuthHandler`) stays in `appModules`
+  so logout itself can run; `OidcAuthHandler.logout()` still calls
+  `tokenStore.removeTokens()` + `httpClient.clearTokens()` to invalidate the
+  bearer on the surviving transport. `AuthViewModel.logout()` flips
+  `status = Unauthenticated` + `user = null` **synchronously** before
+  `authHandler.logout()` so the session rebuild triggers immediately — no
+  observer sees `Authenticated && user == null`.
 - **Repository pattern**: `ApiXxxRepository` wraps `XxxClient` (Ktor HTTP).
-  Both the repository and the HTTP client are `interface` + `Api*`
-  implementation pairs (e.g. `ShoppingListClient` + `ApiShoppingListClient`,
-  `ShoppingListRepository` + `ApiShoppingListRepository`). The client
-  interface split lets repo-level tests substitute a fake client without
-  booting the full `ApiClient` / OIDC / Ktor stack.
 - **Compose Material3**: UI uses `MaterialTheme` from Material3.
 - **Reusable components**: `SwipeItem` (optional `onEdit`),
   `DayPickerDialog` (has its own `DayPickerViewModel`).

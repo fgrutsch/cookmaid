@@ -16,42 +16,31 @@ import io.ktor.http.contentType
 import kotlinx.datetime.LocalDate
 import kotlin.uuid.Uuid
 
-/**
- * HTTP client for meal-plan endpoints. Interface-based so repository tests
- * can substitute a fake without constructing the full [ApiClient].
- */
-interface MealPlanClient {
-    suspend fun fetchItems(from: LocalDate, to: LocalDate): List<MealPlanItem>
-    suspend fun create(request: CreateMealPlanItemRequest): MealPlanItem
-    suspend fun update(id: Uuid, request: UpdateMealPlanItemRequest)
-    suspend fun delete(id: Uuid)
-}
-
-class ApiMealPlanClient(
+class MealPlanClient(
     private val apiClient: ApiClient,
-) : MealPlanClient {
+) {
     private val base = "/api/meal-plan"
 
-    override suspend fun fetchItems(from: LocalDate, to: LocalDate): List<MealPlanItem> =
+    suspend fun fetchItems(from: LocalDate, to: LocalDate): List<MealPlanItem> =
         apiClient.httpClient.get(base) {
             parameter("from", from.toString())
             parameter("to", to.toString())
         }.body()
 
-    override suspend fun create(request: CreateMealPlanItemRequest): MealPlanItem =
+    suspend fun create(request: CreateMealPlanItemRequest): MealPlanItem =
         apiClient.httpClient.post(base) {
             contentType(ContentType.Application.Json)
             setBody(request)
         }.body()
 
-    override suspend fun update(id: Uuid, request: UpdateMealPlanItemRequest) {
+    suspend fun update(id: Uuid, request: UpdateMealPlanItemRequest) {
         apiClient.httpClient.put("$base/$id") {
             contentType(ContentType.Application.Json)
             setBody(request)
         }
     }
 
-    override suspend fun delete(id: Uuid) {
+    suspend fun delete(id: Uuid) {
         apiClient.httpClient.delete("$base/$id")
     }
 }

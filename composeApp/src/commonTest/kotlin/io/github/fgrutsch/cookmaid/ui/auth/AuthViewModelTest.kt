@@ -98,6 +98,21 @@ class AuthViewModelTest : BaseViewModelTest() {
     }
 
     @Test
+    fun `logout resets identity synchronously before handler runs`() = viewModelTest {
+        val user = User(id = Uuid.random(), oidcSubject = "sub-1")
+        fakeHandler.resultToReturn = AuthResult(user, UserProfile(name = "Alice"))
+        val viewModel = createInitializedViewModel()
+
+        viewModel.onEvent(AuthEvent.Logout)
+
+        val state = viewModel.state.value
+        assertEquals(AuthState.Status.Unauthenticated, state.status)
+        assertNull(state.user)
+        assertEquals(UserProfile(), state.profile)
+        assertNull(state.loginError)
+    }
+
+    @Test
     fun `login clears previous error`() = viewModelTest {
         fakeHandler.shouldFail = true
         fakeHandler.failMessage = "Old error"

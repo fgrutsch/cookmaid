@@ -19,7 +19,6 @@ import kotlinx.datetime.todayIn
 import kotlin.time.Clock
 import kotlin.uuid.Uuid
 
-@Suppress("TooManyFunctions") // 15 methods; resetState is the last one and owned by SessionCleaner
 class MealPlanViewModel(
     private val mealPlanRepository: MealPlanRepository,
     private val recipeRepository: RecipeRepository,
@@ -169,18 +168,6 @@ class MealPlanViewModel(
     override fun onError(e: Exception) {
         updateState { copy(isLoading = false) }
         sendEffect(MealPlanEffect.Error("Something went wrong. Please try again."))
-    }
-
-    /**
-     * Resets state to its initial value, re-computing `currentWeekStart` from
-     * the system clock so the reset matches fresh-VM construction. Called by
-     * `SessionCleaner` on logout to drop the previous user's week, days,
-     * items, and recipe search results.
-     */
-    fun resetState() {
-        updateState {
-            MealPlanState(currentWeekStart = mondayOfWeek(Clock.System.todayIn(TimeZone.currentSystemDefault())))
-        }
     }
 }
 

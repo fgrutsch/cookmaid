@@ -74,12 +74,6 @@ abstract class MviViewModel<S, E, F>(initialState: S) : ViewModel() {
      * Applies an optimistic state change, then runs a suspend block.
      * If the block throws, the state is rolled back to the snapshot taken before the change.
      *
-     * Known race: the snapshot is restored unconditionally on failure, so an
-     * in-flight optimistic operation that completes with an exception *after*
-     * a logout-triggered `resetState()` will restore the pre-logout snapshot
-     * into the just-cleared state. Fix would require a generation counter or
-     * cancelling `viewModelScope` children on logout; out of scope for #73.
-     *
      * @param optimisticUpdate reducer applied immediately before the async operation.
      * @param block the suspend function to execute after the optimistic update.
      */

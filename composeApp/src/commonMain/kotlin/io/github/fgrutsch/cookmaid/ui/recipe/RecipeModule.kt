@@ -6,7 +6,7 @@ import org.koin.dsl.bind
 import org.koin.dsl.module
 
 val recipeModule = module {
-    singleOf(::ApiRecipeClient) bind RecipeClient::class
+    singleOf(::RecipeClient)
     singleOf(::ApiRecipeRepository) bind RecipeRepository::class
     singleOf(::RecipeListViewModel)
 }

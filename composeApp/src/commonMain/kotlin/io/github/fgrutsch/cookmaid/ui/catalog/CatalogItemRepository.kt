@@ -36,16 +36,6 @@ class ApiCatalogItemRepository(
             .take(MAX_SEARCH_RESULTS)
     }
 
-    /**
-     * Drops the in-memory catalog cache. The next [search] call will
-     * re-fetch from the server. Called by `SessionCleaner` on logout
-     * for consistency with the other repos; catalog items are global,
-     * so this is staleness prevention rather than a security concern.
-     */
-    suspend fun clear(): Unit = mutex.withLock {
-        cachedItems = emptyList()
-    }
-
     companion object {
         private const val MAX_SEARCH_RESULTS = 5
     }

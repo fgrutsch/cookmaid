@@ -108,16 +108,6 @@ class ApiShoppingListRepository(
         cachedLists
     }
 
-    /**
-     * Drops the in-memory list cache. The next [getLists] call (even with
-     * `refresh = false`) will fetch from the server. Called by
-     * `SessionCleaner` on logout to prevent per-user data leaking across
-     * auth boundaries.
-     */
-    suspend fun clear(): Unit = mutex.withLock {
-        cachedLists = emptyList()
-    }
-
     override suspend fun createList(name: String): ShoppingList = mutex.withLock {
         val list = client.createList(name)
         cachedLists = cachedLists + list
