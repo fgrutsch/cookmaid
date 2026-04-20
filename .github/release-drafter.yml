@@ -4,7 +4,7 @@ version-resolver:
   major:
     labels: ['breaking']
   minor:
-    labels: ['feature']
+    labels: ['feature', 'dependencies']
   patch:
     labels: ['bug', 'chore', 'documentation']
   default: patch
@@ -16,7 +16,8 @@ categories:
     labels: ['bug']
   - title: '🔧 Maintenance'
     labels: ['chore', 'documentation']
-
+  - title: '🌱 Dependencies'
+    labels: ['dependencies']
 exclude-labels: ['duplicate', 'wontfix']
 
 change-template: '- $TITLE by @$AUTHOR in #$NUMBER'
