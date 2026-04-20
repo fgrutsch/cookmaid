@@ -1,0 +1,13 @@
+pull_request_rules:
+  - name: merge dependabot PRs
+    conditions:
+      - 'author=dependabot'
+      - 'status-success=Detekt'
+      - 'status-success=Shared'
+      - 'status-success=Docker'
+      - 'status-success=Server'
+      - 'status-success=Android'
+      - 'status-success=ComposeApp'
+    actions:
+      merge:
+        method: squash
