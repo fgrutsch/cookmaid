@@ -1,10 +1,9 @@
 package io.github.fgrutsch.cookmaid.ui.recipe
 
-import io.github.fgrutsch.cookmaid.recipe.CreateRecipeRequest
 import io.github.fgrutsch.cookmaid.recipe.Recipe
 import io.github.fgrutsch.cookmaid.recipe.RecipePage
+import io.github.fgrutsch.cookmaid.recipe.RecipeRequest
 import io.github.fgrutsch.cookmaid.recipe.TagsResponse
-import io.github.fgrutsch.cookmaid.recipe.UpdateRecipeRequest
 import io.github.fgrutsch.cookmaid.ui.auth.ApiClient
 import io.ktor.client.call.body
 import io.ktor.client.request.delete
@@ -36,13 +35,13 @@ class RecipeClient(
     suspend fun fetchTags(): List<String> =
         apiClient.httpClient.get("$base/tags").body<TagsResponse>().items
 
-    suspend fun create(request: CreateRecipeRequest): Recipe =
+    suspend fun create(request: RecipeRequest): Recipe =
         apiClient.httpClient.post(base) {
             contentType(ContentType.Application.Json)
             setBody(request)
         }.body()
 
-    suspend fun update(id: Uuid, request: UpdateRecipeRequest) {
+    suspend fun update(id: Uuid, request: RecipeRequest) {
         apiClient.httpClient.put("$base/$id") {
             contentType(ContentType.Application.Json)
             setBody(request)

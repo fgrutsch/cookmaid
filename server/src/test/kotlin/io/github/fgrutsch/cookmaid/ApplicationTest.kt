@@ -13,4 +13,19 @@ class ApplicationTest : BaseIntegrationTest() {
         val response = client.get("/")
         assertEquals(HttpStatusCode.NotFound, response.status)
     }
+
+    @Test
+    fun `responses contain security headers`() = integrationTest {
+        val response = client.get("/")
+        assertEquals("DENY", response.headers["X-Frame-Options"])
+        assertEquals("nosniff", response.headers["X-Content-Type-Options"])
+        assertEquals("no-referrer", response.headers["Referrer-Policy"])
+        assertEquals("max-age=31536000; includeSubDomains", response.headers["Strict-Transport-Security"])
+        assertEquals(
+            "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; " +
+                "style-src 'self' 'unsafe-inline'; img-src 'self' data:; " +
+                "connect-src 'self'; object-src 'none'",
+            response.headers["Content-Security-Policy"],
+        )
+    }
 }

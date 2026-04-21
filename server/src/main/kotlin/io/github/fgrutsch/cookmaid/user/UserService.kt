@@ -1,6 +1,6 @@
 package io.github.fgrutsch.cookmaid.user
 
-import io.github.fgrutsch.cookmaid.shopping.ShoppingListRepository
+import io.github.fgrutsch.cookmaid.shopping.ShoppingListService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
 import java.util.concurrent.ConcurrentHashMap
@@ -13,7 +13,7 @@ import kotlin.time.TimeSource
  */
 class UserService(
     private val repository: UserRepository,
-    private val shoppingListRepository: ShoppingListRepository,
+    private val shoppingListService: ShoppingListService,
 ) {
 
     private val logger = KotlinLogging.logger {}
@@ -53,7 +53,7 @@ class UserService(
 
         val user = suspendTransaction {
             val created = repository.create(oidcSubject)
-            shoppingListRepository.createList(UserId(created.id), "Shopping List", default = true)
+            shoppingListService.createDefaultList(UserId(created.id))
             created
         }
         logger.info { "New user created: id=${user.id}, oidcSubject=$oidcSubject" }

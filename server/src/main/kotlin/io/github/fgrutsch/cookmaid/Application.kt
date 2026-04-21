@@ -24,6 +24,7 @@ import io.ktor.server.config.*
 import io.ktor.server.netty.*
 import io.ktor.server.plugins.MissingRequestParameterException
 import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.plugins.defaultheaders.DefaultHeaders
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.response.respond
 import io.ktor.server.routing.*
@@ -61,6 +62,18 @@ private fun Application.configureDI() {
 
 private fun Application.configureHttp() {
     install(ContentNegotiation) { json() }
+    install(DefaultHeaders) {
+        header("X-Frame-Options", "DENY")
+        header("X-Content-Type-Options", "nosniff")
+        header("Referrer-Policy", "no-referrer")
+        header("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+        header(
+            "Content-Security-Policy",
+            "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; " +
+                "style-src 'self' 'unsafe-inline'; img-src 'self' data:; " +
+                "connect-src 'self'; object-src 'none'",
+        )
+    }
 }
 
 private fun Application.configureStatusPages() {

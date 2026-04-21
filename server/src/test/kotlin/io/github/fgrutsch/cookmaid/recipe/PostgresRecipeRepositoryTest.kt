@@ -28,7 +28,7 @@ class PostgresRecipeRepositoryTest : BaseTest() {
         ingredients: List<RecipeIngredient> = emptyList(),
         steps: List<String> = emptyList(),
         tags: List<String> = emptyList(),
-    ) = RecipeData(name, description, ingredients, steps, tags, servings = null)
+    ) = RecipeRequest(name, description, ingredients, steps, tags, servings = null)
 
     @Test
     fun `create creates a new recipe with all fields`() = runTest {

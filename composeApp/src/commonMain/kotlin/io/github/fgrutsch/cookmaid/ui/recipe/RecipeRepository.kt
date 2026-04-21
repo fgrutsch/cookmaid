@@ -1,11 +1,10 @@
 package io.github.fgrutsch.cookmaid.ui.recipe
 
-import io.github.fgrutsch.cookmaid.recipe.CreateRecipeRequest
 import io.github.fgrutsch.cookmaid.recipe.DEFAULT_RECIPE_PAGE_SIZE
 import io.github.fgrutsch.cookmaid.recipe.Recipe
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
 import io.github.fgrutsch.cookmaid.recipe.RecipePage
-import io.github.fgrutsch.cookmaid.recipe.UpdateRecipeRequest
+import io.github.fgrutsch.cookmaid.recipe.RecipeRequest
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.http.HttpStatusCode
 import kotlin.uuid.Uuid
@@ -129,7 +128,7 @@ class ApiRecipeRepository(
         tags: List<String>,
         servings: Int?,
     ): Recipe {
-        return client.create(CreateRecipeRequest(name, description, ingredients, steps, tags, servings))
+        return client.create(RecipeRequest(name, description, ingredients, steps, tags, servings))
     }
 
     override suspend fun update(
@@ -141,7 +140,7 @@ class ApiRecipeRepository(
         tags: List<String>,
         servings: Int?,
     ) {
-        client.update(id, UpdateRecipeRequest(name, description, ingredients, steps, tags, servings))
+        client.update(id, RecipeRequest(name, description, ingredients, steps, tags, servings))
     }
 
     override suspend fun fetchRandom(tag: String?, excludeId: String?): Recipe? {

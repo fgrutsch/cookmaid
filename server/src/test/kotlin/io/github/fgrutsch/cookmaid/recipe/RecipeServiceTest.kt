@@ -24,7 +24,7 @@ class RecipeServiceTest : BaseTest() {
     private suspend fun createUserWithRecipe(subject: String = "test-subject"): Pair<UserId, Recipe> {
         val userId = createUser(subject)
         val service = getKoin().get<RecipeService>()
-        val data = RecipeData(
+        val data = RecipeRequest(
             name = "Test Recipe",
             description = null,
             ingredients = listOf(RecipeIngredient(Item.FreeText("Flour"), "200")),
@@ -74,7 +74,7 @@ class RecipeServiceTest : BaseTest() {
 
         val recipe = service.create(
             userId,
-            RecipeData("Pasta", null, emptyList(), emptyList(), emptyList(), servings = null),
+            RecipeRequest("Pasta", null, emptyList(), emptyList(), emptyList(), servings = null),
             SupportedLocale.EN,
         )
 
@@ -86,7 +86,7 @@ class RecipeServiceTest : BaseTest() {
         val service = getKoin().get<RecipeService>()
         val (userId, recipe) = createUserWithRecipe()
 
-        val request = RecipeData("New Name", null, emptyList(), emptyList(), emptyList(), servings = null)
+        val request = RecipeRequest("New Name", null, emptyList(), emptyList(), emptyList(), servings = null)
         val result = service.update(userId, recipe.id, request)
 
         assertTrue(result)
@@ -98,7 +98,7 @@ class RecipeServiceTest : BaseTest() {
         val (_, recipe) = createUserWithRecipe("user-1")
         val otherUserId = createUser("user-2")
 
-        val request = RecipeData("Hacked", null, emptyList(), emptyList(), emptyList(), servings = null)
+        val request = RecipeRequest("Hacked", null, emptyList(), emptyList(), emptyList(), servings = null)
         assertFalse(service.update(otherUserId, recipe.id, request))
     }
 
