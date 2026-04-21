@@ -28,7 +28,7 @@ koin = "4.2.0"
 
 # Database
 exposed = "1.2.0"
-flyway = "12.3.0"
+flyway = "12.4.0"
 postgresql = "42.7.10"
 
 # Auth
