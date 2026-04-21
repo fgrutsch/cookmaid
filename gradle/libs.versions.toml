@@ -35,7 +35,7 @@ postgresql = "42.7.10"
 oidc = "0.16.5"
 
 # Testing
-junit5 = "5.13.0"
+junit5 = "6.0.3"
 testcontainers = "1.21.4"
 
 # Tooling
