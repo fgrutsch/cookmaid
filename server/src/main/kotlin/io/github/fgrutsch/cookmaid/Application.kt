@@ -66,7 +66,6 @@ private fun Application.configureHttp() {
     install(DefaultHeaders) {
         header("X-Frame-Options", "DENY")
         header("X-Content-Type-Options", "nosniff")
-        header("Referrer-Policy", "no-referrer")
         header(
             "Content-Security-Policy",
             "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; " +

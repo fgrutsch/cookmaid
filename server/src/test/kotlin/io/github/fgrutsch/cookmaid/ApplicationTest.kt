@@ -19,7 +19,6 @@ class ApplicationTest : BaseIntegrationTest() {
         val response = client.get("/")
         assertEquals("DENY", response.headers["X-Frame-Options"])
         assertEquals("nosniff", response.headers["X-Content-Type-Options"])
-        assertEquals("no-referrer", response.headers["Referrer-Policy"])
         assertEquals(
             "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; " +
                 "style-src 'self' 'unsafe-inline'; img-src 'self' data:; " +
