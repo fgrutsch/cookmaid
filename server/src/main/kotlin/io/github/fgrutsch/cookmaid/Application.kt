@@ -25,6 +25,7 @@ import io.ktor.server.netty.*
 import io.ktor.server.plugins.MissingRequestParameterException
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.defaultheaders.DefaultHeaders
+import io.ktor.server.plugins.hsts.HSTS
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.response.respond
 import io.ktor.server.routing.*
@@ -66,7 +67,6 @@ private fun Application.configureHttp() {
         header("X-Frame-Options", "DENY")
         header("X-Content-Type-Options", "nosniff")
         header("Referrer-Policy", "no-referrer")
-        header("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
         header(
             "Content-Security-Policy",
             "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; " +
@@ -74,6 +74,7 @@ private fun Application.configureHttp() {
                 "connect-src 'self'; object-src 'none'",
         )
     }
+    install(HSTS)
 }
 
 private fun Application.configureStatusPages() {

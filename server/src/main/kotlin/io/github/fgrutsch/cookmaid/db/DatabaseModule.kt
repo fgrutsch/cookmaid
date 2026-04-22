@@ -11,9 +11,6 @@ import org.koin.core.module.dsl.withOptions
 import org.koin.dsl.module
 import javax.sql.DataSource
 
-private const val POOL_MAX_SIZE = 10
-private const val POOL_MIN_IDLE = 2
-
 val databaseModule = module {
     single<DataSource> { createDataSource(get()) } withOptions {
         createdAtStart()
@@ -26,13 +23,14 @@ val databaseModule = module {
  * Creates a pooled [HikariDataSource] and runs Flyway migrations against it.
  *
  * @param config the Ktor application config supplying `database.url`, `database.user`,
- *   and `database.password`.
+ *   `database.password`, and `database.pool-size`.
  * @return the [DataSource] backed by a HikariCP connection pool.
  */
 private fun createDataSource(config: ApplicationConfig): DataSource {
     val url = config.property("database.url").getString()
     val user = config.property("database.user").getString()
     val password = config.property("database.password").getString()
+    val poolSize = config.property("database.pool-size").getString().toInt()
 
     val dataSource = HikariDataSource(
         HikariConfig().apply {
@@ -40,8 +38,7 @@ private fun createDataSource(config: ApplicationConfig): DataSource {
             username = user
             this.password = password
             driverClassName = "org.postgresql.Driver"
-            maximumPoolSize = POOL_MAX_SIZE
-            minimumIdle = POOL_MIN_IDLE
+            maximumPoolSize = poolSize
         },
     )
 

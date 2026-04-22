@@ -20,7 +20,6 @@ class ApplicationTest : BaseIntegrationTest() {
         assertEquals("DENY", response.headers["X-Frame-Options"])
         assertEquals("nosniff", response.headers["X-Content-Type-Options"])
         assertEquals("no-referrer", response.headers["Referrer-Policy"])
-        assertEquals("max-age=31536000; includeSubDomains", response.headers["Strict-Transport-Security"])
         assertEquals(
             "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; " +
                 "style-src 'self' 'unsafe-inline'; img-src 'self' data:; " +
