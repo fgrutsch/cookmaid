@@ -21,7 +21,7 @@ class ApplicationTest : BaseIntegrationTest() {
         assertEquals("nosniff", response.headers["X-Content-Type-Options"])
         assertEquals(
             "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; " +
-                "style-src 'self' 'unsafe-inline'; img-src 'self' data:; " +
+                "style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; " +
                 "connect-src 'self'; object-src 'none'",
             response.headers["Content-Security-Policy"],
         )

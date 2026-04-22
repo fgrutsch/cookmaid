@@ -69,7 +69,7 @@ private fun Application.configureHttp() {
         header(
             "Content-Security-Policy",
             "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; " +
-                "style-src 'self' 'unsafe-inline'; img-src 'self' data:; " +
+                "style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; " +
                 "connect-src 'self'; object-src 'none'",
         )
     }
