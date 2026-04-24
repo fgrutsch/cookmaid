@@ -29,6 +29,7 @@ koin = "4.2.1"
 # Database
 exposed = "1.2.0"
 flyway = "12.4.0"
+hikari = "7.0.2"
 postgresql = "42.7.10"
 
 # Auth
@@ -85,6 +86,8 @@ ktor-serverAuthJwt = { module = "io.ktor:ktor-server-auth-jwt-jvm", version.ref 
 ktor-serverConfigYaml = { module = "io.ktor:ktor-server-config-yaml-jvm", version.ref = "ktor" }
 ktor-serverContentNegotiation = { module = "io.ktor:ktor-server-content-negotiation-jvm", version.ref = "ktor" }
 ktor-serverCore = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor" }
+ktor-serverDefaultHeaders = { module = "io.ktor:ktor-server-default-headers-jvm", version.ref = "ktor" }
+ktor-serverHsts = { module = "io.ktor:ktor-server-hsts-jvm", version.ref = "ktor" }
 ktor-serverNetty = { module = "io.ktor:ktor-server-netty-jvm", version.ref = "ktor" }
 ktor-serverStatusPages = { module = "io.ktor:ktor-server-status-pages-jvm", version.ref = "ktor" }
 ktor-serverTestHost = { module = "io.ktor:ktor-server-test-host-jvm", version.ref = "ktor" }
@@ -103,6 +106,7 @@ exposed-jdbc = { module = "org.jetbrains.exposed:exposed-jdbc", version.ref = "e
 exposed-kotlin-datetime = { module = "org.jetbrains.exposed:exposed-kotlin-datetime", version.ref = "exposed" }
 flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
 flyway-postgresql = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
+hikari = { module = "com.zaxxer:HikariCP", version.ref = "hikari" }
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
 
 # Auth
@@ -134,7 +138,7 @@ koin-test = ["koin-test", "koin-test-junit5"]
 
 # Ktor
 ktor-client = ["ktor-clientCore", "ktor-clientContentNegotiation", "ktor-clientAuth", "ktor-serializationJsonMultiplatform"]
-ktor-server = ["ktor-serverCore", "ktor-serverNetty", "ktor-serverAuthJwt", "ktor-serverConfigYaml", "ktor-serverContentNegotiation", "ktor-serverStatusPages", "ktor-serializationJson"]
+ktor-server = ["ktor-serverCore", "ktor-serverNetty", "ktor-serverAuthJwt", "ktor-serverConfigYaml", "ktor-serverContentNegotiation", "ktor-serverDefaultHeaders", "ktor-serverHsts", "ktor-serverStatusPages", "ktor-serializationJson"]
 ktor-server-test = ["ktor-serverTestHost", "ktor-clientContentNegotiation", "ktor-serializationJson"]
 
 # Auth

@@ -1,6 +1,6 @@
 package io.github.fgrutsch.cookmaid.mealplan
 
-import io.github.fgrutsch.cookmaid.recipe.CreateRecipeRequest
+import io.github.fgrutsch.cookmaid.recipe.RecipeRequest
 import io.github.fgrutsch.cookmaid.recipe.Recipe as RecipeDto
 import io.github.fgrutsch.cookmaid.support.BaseIntegrationTest
 import io.github.fgrutsch.cookmaid.support.TestJwt
@@ -62,7 +62,7 @@ class MealPlanRoutesTest : BaseIntegrationTest() {
         val createRecipeResponse = client.post("/api/recipes") {
             bearerAuth(token)
             contentType(ContentType.Application.Json)
-            setBody(CreateRecipeRequest(name = "Pasta"))
+            setBody(RecipeRequest(name = "Pasta"))
         }
         val recipe = createRecipeResponse.body<RecipeDto>()
 
@@ -120,7 +120,7 @@ class MealPlanRoutesTest : BaseIntegrationTest() {
         val createRecipeResponse = client.post("/api/recipes") {
             bearerAuth(tokenA)
             contentType(ContentType.Application.Json)
-            setBody(CreateRecipeRequest(name = "Secret Pasta"))
+            setBody(RecipeRequest(name = "Secret Pasta"))
         }
         val recipe = createRecipeResponse.body<RecipeDto>()
 

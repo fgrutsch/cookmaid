@@ -50,8 +50,8 @@ fun Route.recipeRoutes() {
         }
 
         post {
-            val body = call.receive<CreateRecipeRequest>()
-            val recipe = service.create(call.userId(), body.toData(), call.locale())
+            val body = call.receive<RecipeRequest>()
+            val recipe = service.create(call.userId(), body, call.locale())
             call.respond(HttpStatusCode.Created, recipe)
         }
 
@@ -69,8 +69,8 @@ fun Route.recipeRoutes() {
 
             put {
                 val recipeId = call.parameters.uuid("recipeId")
-                val body = call.receive<UpdateRecipeRequest>()
-                if (!service.update(call.userId(), recipeId, body.toData())) {
+                val body = call.receive<RecipeRequest>()
+                if (!service.update(call.userId(), recipeId, body)) {
                     call.respond(HttpStatusCode.NotFound)
                 } else {
                     call.respond(HttpStatusCode.NoContent)

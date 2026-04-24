@@ -319,17 +319,17 @@ class PostgresShoppingListRepository : ShoppingListRepository {
     }
 
     override suspend fun isListOwner(userId: UserId, listId: Uuid): Boolean = suspendTransaction {
-        ShoppingListsTable.selectAll()
+        !ShoppingListsTable.selectAll()
             .where { (ShoppingListsTable.id eq listId) and (ShoppingListsTable.userId eq userId.value) }
-            .count() > 0
+            .empty()
     }
 
     override suspend fun isItemOwner(userId: UserId, itemId: Uuid): Boolean = suspendTransaction {
-        ShoppingItemsTable
+        !ShoppingItemsTable
             .join(ShoppingListsTable, JoinType.INNER, ShoppingItemsTable.listId, ShoppingListsTable.id)
             .selectAll()
             .where { (ShoppingItemsTable.id eq itemId) and (ShoppingListsTable.userId eq userId.value) }
-            .count() > 0
+            .empty()
     }
 }
 

@@ -55,6 +55,7 @@ dependencies {
     implementation(libs.kotlinx.datetime)
     implementation(libs.bundles.exposed)
     implementation(libs.bundles.flyway)
+    implementation(libs.hikari)
     runtimeOnly(libs.postgresql)
     testImplementation(libs.kotlin.testJunit5)
     testImplementation(libs.junit5)
