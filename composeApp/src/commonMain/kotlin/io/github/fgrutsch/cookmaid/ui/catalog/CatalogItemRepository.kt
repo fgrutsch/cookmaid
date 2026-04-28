@@ -45,7 +45,8 @@ class ApiCatalogItemRepository(
         val trimmed = name.trim()
         if (trimmed.isEmpty()) return null
         val items = ensureCacheLoaded()
-        return items.firstOrNull { it.name.equals(trimmed, ignoreCase = true) }
+        val key = trimmed.lowercase()
+        return items.firstOrNull { it.name.lowercase() == key }
     }
 
     private suspend fun ensureCacheLoaded(): List<Item.Catalog> = mutex.withLock {

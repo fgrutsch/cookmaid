@@ -15,6 +15,7 @@ class FakeCatalogItemRepository : CatalogItemRepository {
     override suspend fun findExactMatch(name: String): Item.Catalog? {
         val trimmed = name.trim()
         if (trimmed.isEmpty()) return null
-        return items.firstOrNull { it.name.equals(trimmed, ignoreCase = true) }
+        val key = trimmed.lowercase()
+        return items.firstOrNull { it.name.lowercase() == key }
     }
 }

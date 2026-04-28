@@ -105,16 +105,11 @@ class AddRecipeViewModel(
 
     private fun addIngredientByName(name: String, quantity: String?) {
         if (name.isBlank()) return
+        updateState { copy(ingredientQuery = "", ingredientSuggestions = emptyList()) }
+        ingredientQueryFlow.value = ""
         launch {
             val resolved = catalogItemRepository.findExactMatch(name) ?: Item.FreeText(name = name.trim())
-            updateState {
-                copy(
-                    ingredients = ingredients + RecipeIngredient(resolved, quantity),
-                    ingredientQuery = "",
-                    ingredientSuggestions = emptyList(),
-                )
-            }
-            ingredientQueryFlow.value = ""
+            updateState { copy(ingredients = ingredients + RecipeIngredient(resolved, quantity)) }
         }
     }
 
