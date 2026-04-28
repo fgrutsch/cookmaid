@@ -28,6 +28,7 @@ import org.jetbrains.exposed.v1.datetime.timestamp
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.insertReturning
+import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
 import org.jetbrains.exposed.v1.jdbc.update
@@ -82,7 +83,7 @@ interface RecipeRepository {
      * @param locale the language code for catalog item names.
      * @return the persisted recipe.
      */
-    suspend fun create(userId: UserId, data: RecipeData, locale: SupportedLocale): Recipe
+    suspend fun create(userId: UserId, data: RecipeRequest, locale: SupportedLocale): Recipe
 
     /**
      * Replaces the recipe data (including ingredients) for the given [id].
@@ -90,7 +91,7 @@ interface RecipeRepository {
      * @param id the recipe to update.
      * @param data the new recipe content.
      */
-    suspend fun update(id: Uuid, data: RecipeData)
+    suspend fun update(id: Uuid, data: RecipeRequest)
 
     /**
      * Deletes a recipe and its associated ingredients by [id].
@@ -212,7 +213,7 @@ class PostgresRecipeRepository : RecipeRepository {
     }
 
     override suspend fun findTags(userId: UserId): List<String> = suspendTransaction {
-        RecipesTable.selectAll()
+        RecipesTable.select(RecipesTable.tags)
             .where(RecipesTable.userId eq userId.value)
             .flatMap { it[RecipesTable.tags] }
             .distinct()
@@ -221,7 +222,7 @@ class PostgresRecipeRepository : RecipeRepository {
 
     override suspend fun create(
         userId: UserId,
-        data: RecipeData,
+        data: RecipeRequest,
         locale: SupportedLocale,
     ): Recipe = suspendTransaction {
         val row = RecipesTable.insertReturning {
@@ -247,7 +248,7 @@ class PostgresRecipeRepository : RecipeRepository {
         )
     }
 
-    override suspend fun update(id: Uuid, data: RecipeData): Unit = suspendTransaction {
+    override suspend fun update(id: Uuid, data: RecipeRequest): Unit = suspendTransaction {
         RecipesTable.update({ RecipesTable.id eq id }) {
             it[RecipesTable.name] = data.name.trim()
             it[RecipesTable.description] = data.description?.trim()?.ifBlank { null }
@@ -265,9 +266,9 @@ class PostgresRecipeRepository : RecipeRepository {
     }
 
     override suspend fun isOwner(userId: UserId, recipeId: Uuid): Boolean = suspendTransaction {
-        RecipesTable.selectAll()
+        !RecipesTable.selectAll()
             .where { (RecipesTable.id eq recipeId) and (RecipesTable.userId eq userId.value) }
-            .count() > 0
+            .empty()
     }
 
     override suspend fun findRandom(

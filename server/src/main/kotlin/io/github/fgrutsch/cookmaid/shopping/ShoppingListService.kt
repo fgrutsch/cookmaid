@@ -22,6 +22,17 @@ class ShoppingListService(
     }
 
     /**
+     * Creates the default shopping list during user provisioning.
+     *
+     * Does not open its own transaction — the caller is responsible for atomicity.
+     *
+     * @param userId the owner of the new default list.
+     */
+    suspend fun createDefaultList(userId: UserId) {
+        repository.createList(userId, "Shopping List", default = true)
+    }
+
+    /**
      * Creates a new non-default shopping list for [userId].
      *
      * @param userId the owner of the new list.
