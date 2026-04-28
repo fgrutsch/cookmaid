@@ -15,20 +15,20 @@ materialkolor = "4.1.1"
 navigation3 = "1.1.0"
 
 # Kotlin
-kotlin = "2.3.20"
+kotlin = "2.3.21"
 kotlinx-coroutines = "1.10.2"
 kotlinx-datetime = "0.7.1"
 kotlinx-serialization = "1.11.0"
 
 # Ktor
-ktor = "3.4.2"
+ktor = "3.4.3"
 
 # DI
 koin = "4.2.1"
 
 # Database
 exposed = "1.2.0"
-flyway = "12.4.0"
+flyway = "12.5.0"
 hikari = "7.0.2"
 postgresql = "42.7.10"
 
