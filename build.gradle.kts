@@ -31,13 +31,12 @@ tasks.register<Exec>("buildDockerImage") {
     description = "Build the cookmaid Docker image for the local architecture and load it into the daemon."
     dependsOn(dockerPrereqs)
     commandLine(
-        listOf(
-            "docker", "buildx", "build",
-            "--load",
-            "-f", "docker/Dockerfile",
-            "-t", "cookmaid:${rootProject.version}",
-            "-t", "cookmaid:latest",
-        ) + dockerCacheArgs + ".",
+        "docker", "buildx", "build",
+        "--load",
+        "-f", "docker/Dockerfile",
+        "-t", "cookmaid:${rootProject.version}",
+        "-t", "cookmaid:latest",
+        ".",
     )
 }
 
