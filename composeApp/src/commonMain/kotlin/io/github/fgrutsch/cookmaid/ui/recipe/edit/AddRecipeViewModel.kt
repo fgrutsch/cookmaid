@@ -42,6 +42,7 @@ class AddRecipeViewModel(
             is AddRecipeEvent.SetDescription -> updateState { copy(description = event.value) }
             is AddRecipeEvent.UpdateIngredientQuery -> updateIngredientQuery(event.query)
             is AddRecipeEvent.AddIngredient -> addIngredient(event.item, event.quantity)
+            is AddRecipeEvent.AddIngredientByName -> addIngredientByName(event.name, event.quantity)
             is AddRecipeEvent.UpdateIngredientQuantity -> updateIngredientQuantity(event.index, event.quantity)
             is AddRecipeEvent.SetServings -> updateState { copy(servings = event.value) }
             is AddRecipeEvent.RemoveIngredient -> updateState {
@@ -100,6 +101,21 @@ class AddRecipeViewModel(
             )
         }
         ingredientQueryFlow.value = ""
+    }
+
+    private fun addIngredientByName(name: String, quantity: String?) {
+        if (name.isBlank()) return
+        launch {
+            val resolved = catalogItemRepository.findExactMatch(name) ?: Item.FreeText(name = name.trim())
+            updateState {
+                copy(
+                    ingredients = ingredients + RecipeIngredient(resolved, quantity),
+                    ingredientQuery = "",
+                    ingredientSuggestions = emptyList(),
+                )
+            }
+            ingredientQueryFlow.value = ""
+        }
     }
 
     private fun updateIngredientQuantity(index: Int, quantity: String?) {

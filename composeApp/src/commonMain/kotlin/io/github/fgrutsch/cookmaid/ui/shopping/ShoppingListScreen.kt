@@ -126,7 +126,7 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
                 onQueryChange = { onEvent(ShoppingListEvent.UpdateSearchQuery(it)) },
                 onAddFreeText = {
                     if (state.searchQuery.isNotBlank()) {
-                        onEvent(ShoppingListEvent.AddItem(Item.FreeText(name = state.searchQuery.trim())))
+                        onEvent(ShoppingListEvent.AddItemByName(state.searchQuery))
                     }
                 },
                 onAddCatalogItem = { onEvent(ShoppingListEvent.AddItem(it)) },

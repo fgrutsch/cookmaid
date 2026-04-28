@@ -24,6 +24,7 @@ sealed interface AddRecipeEvent {
     data class SetDescription(val value: String) : AddRecipeEvent
     data class UpdateIngredientQuery(val query: String) : AddRecipeEvent
     data class AddIngredient(val item: Item, val quantity: String?) : AddRecipeEvent
+    data class AddIngredientByName(val name: String, val quantity: String?) : AddRecipeEvent
     data class UpdateIngredientQuantity(val index: Int, val quantity: String?) : AddRecipeEvent
     data class SetServings(val value: Int?) : AddRecipeEvent
     data class RemoveIngredient(val index: Int) : AddRecipeEvent

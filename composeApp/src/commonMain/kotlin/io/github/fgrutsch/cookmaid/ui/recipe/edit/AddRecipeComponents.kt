@@ -167,8 +167,8 @@ internal fun IngredientsSection(
             onQuantityChange = onQuantityInputChange,
             onAddFreeText = {
                 if (ingredientQuery.isNotBlank()) {
-                    onEvent(AddRecipeEvent.AddIngredient(
-                        Item.FreeText(name = ingredientQuery.trim()),
+                    onEvent(AddRecipeEvent.AddIngredientByName(
+                        ingredientQuery,
                         ingredientQuantityInput.ifBlank { null },
                     ))
                     onQuantityInputClear()

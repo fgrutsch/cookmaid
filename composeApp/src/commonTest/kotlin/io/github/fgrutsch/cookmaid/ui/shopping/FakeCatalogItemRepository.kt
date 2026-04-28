@@ -11,4 +11,10 @@ class FakeCatalogItemRepository : CatalogItemRepository {
         if (query.isBlank()) return emptyList()
         return items.filter { it.name.lowercase().contains(query.lowercase()) }
     }
+
+    override suspend fun findExactMatch(name: String): Item.Catalog? {
+        val trimmed = name.trim()
+        if (trimmed.isEmpty()) return null
+        return items.firstOrNull { it.name.equals(trimmed, ignoreCase = true) }
+    }
 }

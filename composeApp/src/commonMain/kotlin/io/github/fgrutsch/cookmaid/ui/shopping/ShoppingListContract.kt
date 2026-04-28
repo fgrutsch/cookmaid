@@ -32,6 +32,7 @@ sealed interface ShoppingListEvent {
     data class UpdateSearchQuery(val query: String) : ShoppingListEvent
     data object ClearSearch : ShoppingListEvent
     data class AddItem(val item: Item) : ShoppingListEvent
+    data class AddItemByName(val name: String) : ShoppingListEvent
     data class UpdateItem(val item: ShoppingItem) : ShoppingListEvent
     data class ToggleChecked(val itemId: Uuid) : ShoppingListEvent
     data class DeleteItem(val itemId: Uuid) : ShoppingListEvent
