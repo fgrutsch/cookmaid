@@ -1,6 +1,7 @@
 package io.github.fgrutsch.cookmaid
 
 import io.github.fgrutsch.cookmaid.support.BaseIntegrationTest
+import io.github.fgrutsch.cookmaid.support.TestJwt
 import io.ktor.client.request.get
 import io.ktor.http.HttpStatusCode
 import org.junit.jupiter.api.Test
@@ -20,9 +21,9 @@ class ApplicationTest : BaseIntegrationTest() {
         assertEquals("DENY", response.headers["X-Frame-Options"])
         assertEquals("nosniff", response.headers["X-Content-Type-Options"])
         assertEquals(
-            "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; " +
+            "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; worker-src 'self' blob:; " +
                 "style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; " +
-                "connect-src 'self'; object-src 'none'",
+                "connect-src 'self' ${TestJwt.issuer}; object-src 'none'",
             response.headers["Content-Security-Policy"],
         )
     }

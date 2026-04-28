@@ -62,15 +62,16 @@ private fun Application.configureDI() {
 }
 
 private fun Application.configureHttp() {
+    val oidcIssuer = environment.config.property("oidc.issuer").getString()
     install(ContentNegotiation) { json() }
     install(DefaultHeaders) {
         header("X-Frame-Options", "DENY")
         header("X-Content-Type-Options", "nosniff")
         header(
             "Content-Security-Policy",
-            "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; " +
+            "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; worker-src 'self' blob:; " +
                 "style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; " +
-                "connect-src 'self'; object-src 'none'",
+                "connect-src 'self' $oidcIssuer; object-src 'none'",
         )
     }
     install(HSTS)

@@ -11,7 +11,6 @@ plugins {
     alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.buildkonfig)
     alias(libs.plugins.detekt)
-    alias(libs.plugins.kover)
 }
 
 kotlin {
