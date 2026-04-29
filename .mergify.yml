@@ -4,7 +4,7 @@ pull_request_rules:
       - 'author=dependabot[bot]'
       - 'status-success=Detekt'
       - 'status-success=Shared'
-      - 'status-success=Docker'
+      - 'status-success=Distribution'
       - 'status-success=Server'
       - 'status-success=Android'
       - 'status-success=ComposeApp'

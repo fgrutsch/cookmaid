@@ -20,24 +20,18 @@ allprojects {
 }
 
 val dockerPrereqs = listOf(":server:installDist", ":composeApp:wasmJsBrowserDistribution")
-val dockerCacheArgs = if (System.getenv("GITHUB_ACTIONS") == "true") {
-    listOf("--cache-from", "type=gha", "--cache-to", "type=gha,mode=max")
-} else {
-    emptyList()
-}
 
 tasks.register<Exec>("buildDockerImage") {
     group = "docker"
     description = "Build the cookmaid Docker image for the local architecture and load it into the daemon."
     dependsOn(dockerPrereqs)
     commandLine(
-        listOf(
-            "docker", "buildx", "build",
-            "--load",
-            "-f", "docker/Dockerfile",
-            "-t", "cookmaid:${rootProject.version}",
-            "-t", "cookmaid:latest",
-        ) + dockerCacheArgs + ".",
+        "docker", "buildx", "build",
+        "--load",
+        "-f", "docker/Dockerfile",
+        "-t", "cookmaid:${rootProject.version}",
+        "-t", "cookmaid:latest",
+        ".",
     )
 }
 
@@ -48,14 +42,13 @@ tasks.register<Exec>("pushDockerImage") {
     val registry = findProperty("docker.registry")?.toString() ?: ""
     val version = rootProject.version.toString()
     commandLine(
-        listOf(
-            "docker", "buildx", "build",
-            "--platform", "linux/amd64,linux/arm64",
-            "--push",
-            "-f", "docker/Dockerfile",
-            "-t", "$registry:$version",
-            "-t", "$registry:latest",
-        ) + dockerCacheArgs + ".",
+        "docker", "buildx", "build",
+        "--platform", "linux/amd64,linux/arm64",
+        "--push",
+        "-f", "docker/Dockerfile",
+        "-t", "$registry:$version",
+        "-t", "$registry:latest",
+        ".",
     )
 }
 
