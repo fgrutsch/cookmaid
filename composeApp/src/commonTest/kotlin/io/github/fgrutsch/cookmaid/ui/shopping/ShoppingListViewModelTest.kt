@@ -229,8 +229,8 @@ class ShoppingListViewModelTest : BaseViewModelTest() {
         advanceUntilIdle()
 
         assertEquals(1, viewModel.state.value.items.size)
-        assertTrue(viewModel.state.value.items.first().item is Item.Catalog)
-        assertEquals(catalogItem.id, (viewModel.state.value.items.first().item as Item.Catalog).id)
+        assertEquals(catalogItem.id, fakeRepo.lastAddedCatalogItemId)
+        assertNull(fakeRepo.lastAddedFreeTextName)
     }
 
     @Test
@@ -247,7 +247,7 @@ class ShoppingListViewModelTest : BaseViewModelTest() {
         advanceUntilIdle()
 
         assertEquals(1, viewModel.state.value.items.size)
-        assertTrue(viewModel.state.value.items.first().item is Item.Catalog)
+        assertEquals(catalogItem.id, fakeRepo.lastAddedCatalogItemId)
     }
 
     @Test
@@ -259,8 +259,8 @@ class ShoppingListViewModelTest : BaseViewModelTest() {
         advanceUntilIdle()
 
         assertEquals(1, viewModel.state.value.items.size)
-        assertTrue(viewModel.state.value.items.first().item is Item.FreeText)
-        assertEquals("Custom Item", viewModel.state.value.items.first().item.name)
+        assertNull(fakeRepo.lastAddedCatalogItemId)
+        assertEquals("Custom Item", fakeRepo.lastAddedFreeTextName)
     }
 
     @Test
