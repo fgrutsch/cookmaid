@@ -72,8 +72,6 @@ jobs:
   composeApp:
     name: ComposeApp
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
     steps:
       - uses: actions/checkout@v5
       - uses: jdx/mise-action@v2
@@ -82,22 +80,12 @@ jobs:
       - name: Test
         run: ./gradlew :composeApp:allTests
 
-      - name: Coverage
-        run: ./gradlew :composeApp:koverXmlReport
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
-        with:
-          fail_ci_if_error: true
-          use_oidc: true
-
-  docker:
-    name: Docker
+  distribution:
+    name: Distribution
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
       - uses: jdx/mise-action@v2
       - uses: gradle/actions/setup-gradle@v4
-      - uses: docker/setup-buildx-action@v3
-      - name: Build Docker image
-        run: ./gradlew buildDockerImage
+      - name: Build production artifacts
+        run: ./gradlew :server:installDist :composeApp:wasmJsBrowserDistribution

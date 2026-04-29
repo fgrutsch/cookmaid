@@ -1,7 +1,7 @@
 package io.github.fgrutsch.cookmaid.mealplan
 
 import io.github.fgrutsch.cookmaid.common.SupportedLocale
-import io.github.fgrutsch.cookmaid.recipe.RecipeData
+import io.github.fgrutsch.cookmaid.recipe.RecipeRequest
 import io.github.fgrutsch.cookmaid.recipe.RecipeRepository
 import io.github.fgrutsch.cookmaid.support.BaseTest
 import io.github.fgrutsch.cookmaid.user.UserId
@@ -29,7 +29,7 @@ class MealPlanServiceTest : BaseTest() {
 
     private suspend fun createRecipe(userId: UserId): Uuid {
         val recipeRepo = getKoin().get<RecipeRepository>()
-        val data = RecipeData("Test Recipe", null, emptyList(), emptyList(), emptyList(), servings = null)
+        val data = RecipeRequest("Test Recipe", null, emptyList(), emptyList(), emptyList(), servings = null)
         return recipeRepo.create(userId, data, SupportedLocale.EN).id
     }
 

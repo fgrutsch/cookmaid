@@ -78,7 +78,7 @@ class RecipeService(
      * @param locale the language code for catalog item names.
      * @return the persisted recipe.
      */
-    suspend fun create(userId: UserId, data: RecipeData, locale: SupportedLocale): Recipe {
+    suspend fun create(userId: UserId, data: RecipeRequest, locale: SupportedLocale): Recipe {
         return repository.create(userId, data, locale)
     }
 
@@ -90,7 +90,7 @@ class RecipeService(
      * @param data the new recipe content.
      * @return true if the update succeeded, false if not found or not owned.
      */
-    suspend fun update(userId: UserId, recipeId: Uuid, data: RecipeData): Boolean {
+    suspend fun update(userId: UserId, recipeId: Uuid, data: RecipeRequest): Boolean {
         if (!repository.isOwner(userId, recipeId)) return false
         repository.update(recipeId, data)
         return true

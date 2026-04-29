@@ -53,7 +53,7 @@ class RecipeRoutesTest : BaseIntegrationTest() {
             bearerAuth(token)
             contentType(ContentType.Application.Json)
             setBody(
-                CreateRecipeRequest(
+                RecipeRequest(
                     name = "Spaghetti Bolognese",
                     ingredients = listOf(
                         RecipeIngredient(catalogItem, "400"),
@@ -92,7 +92,7 @@ class RecipeRoutesTest : BaseIntegrationTest() {
             bearerAuth(token)
             contentType(ContentType.Application.Json)
             setBody(
-                UpdateRecipeRequest(
+                RecipeRequest(
                     name = "Bolognese Pasta",
                     ingredients = listOf(RecipeIngredient(Item.FreeText("Penne"), "400")),
                     steps = listOf("Cook penne", "Make sauce", "Mix together", "Serve"),
@@ -116,7 +116,7 @@ class RecipeRoutesTest : BaseIntegrationTest() {
         val recipe2 = client.post("/api/recipes") {
             bearerAuth(token)
             contentType(ContentType.Application.Json)
-            setBody(CreateRecipeRequest(name = "Caesar Salad"))
+            setBody(RecipeRequest(name = "Caesar Salad"))
         }.body<Recipe>()
 
         val deleteResponse = client.delete("/api/recipes/${recipe2.id}") {
@@ -159,7 +159,7 @@ class RecipeRoutesTest : BaseIntegrationTest() {
         val created = client.post("/api/recipes") {
             bearerAuth(token)
             contentType(ContentType.Application.Json)
-            setBody(CreateRecipeRequest(name = "Random Test Recipe"))
+            setBody(RecipeRequest(name = "Random Test Recipe"))
         }.body<Recipe>()
 
         val response = client.get("/api/recipes/random") { bearerAuth(token) }
@@ -178,12 +178,12 @@ class RecipeRoutesTest : BaseIntegrationTest() {
         val recipe1 = client.post("/api/recipes") {
             bearerAuth(token)
             contentType(ContentType.Application.Json)
-            setBody(CreateRecipeRequest(name = "Recipe A"))
+            setBody(RecipeRequest(name = "Recipe A"))
         }.body<Recipe>()
         val recipe2 = client.post("/api/recipes") {
             bearerAuth(token)
             contentType(ContentType.Application.Json)
-            setBody(CreateRecipeRequest(name = "Recipe B"))
+            setBody(RecipeRequest(name = "Recipe B"))
         }.body<Recipe>()
 
         val response = client.get("/api/recipes/random?excludeId=${recipe1.id}") {
@@ -203,7 +203,7 @@ class RecipeRoutesTest : BaseIntegrationTest() {
         val only = client.post("/api/recipes") {
             bearerAuth(token)
             contentType(ContentType.Application.Json)
-            setBody(CreateRecipeRequest(name = "Only Recipe"))
+            setBody(RecipeRequest(name = "Only Recipe"))
         }.body<Recipe>()
 
         val response = client.get("/api/recipes/random?excludeId=${only.id}") {
@@ -223,12 +223,12 @@ class RecipeRoutesTest : BaseIntegrationTest() {
         client.post("/api/recipes") {
             bearerAuth(token)
             contentType(ContentType.Application.Json)
-            setBody(CreateRecipeRequest(name = "Italian Dish", tags = listOf("Italian")))
+            setBody(RecipeRequest(name = "Italian Dish", tags = listOf("Italian")))
         }.body<Recipe>()
         client.post("/api/recipes") {
             bearerAuth(token)
             contentType(ContentType.Application.Json)
-            setBody(CreateRecipeRequest(name = "Mexican Dish", tags = listOf("Mexican")))
+            setBody(RecipeRequest(name = "Mexican Dish", tags = listOf("Mexican")))
         }.body<Recipe>()
 
         val response = client.get("/api/recipes/random?tag=Italian") { bearerAuth(token) }
@@ -246,7 +246,7 @@ class RecipeRoutesTest : BaseIntegrationTest() {
         client.post("/api/recipes") {
             bearerAuth(token)
             contentType(ContentType.Application.Json)
-            setBody(CreateRecipeRequest(name = "Untagged Recipe"))
+            setBody(RecipeRequest(name = "Untagged Recipe"))
         }
 
         val response = client.get("/api/recipes/random?tag=NonExistent") { bearerAuth(token) }

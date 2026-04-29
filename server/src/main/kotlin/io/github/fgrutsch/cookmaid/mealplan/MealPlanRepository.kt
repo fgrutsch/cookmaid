@@ -123,9 +123,9 @@ class PostgresMealPlanRepository : MealPlanRepository {
     }
 
     override suspend fun isOwner(userId: UserId, itemId: Uuid): Boolean = suspendTransaction {
-        MealPlanItemsTable.selectAll()
+        !MealPlanItemsTable.selectAll()
             .where { (MealPlanItemsTable.id eq itemId) and (MealPlanItemsTable.userId eq userId.value) }
-            .count() > 0
+            .empty()
     }
 
     private fun ResultRow.toMealPlanItem(): MealPlanItem {

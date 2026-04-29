@@ -20,7 +20,6 @@ allprojects {
 }
 
 val dockerPrereqs = listOf(":server:installDist", ":composeApp:wasmJsBrowserDistribution")
-val dockerPlatforms = "linux/amd64,linux/arm64"
 
 tasks.register<Exec>("buildDockerImage") {
     group = "docker"
@@ -44,7 +43,7 @@ tasks.register<Exec>("pushDockerImage") {
     val version = rootProject.version.toString()
     commandLine(
         "docker", "buildx", "build",
-        "--platform", dockerPlatforms,
+        "--platform", "linux/amd64,linux/arm64",
         "--push",
         "-f", "docker/Dockerfile",
         "-t", "$registry:$version",
