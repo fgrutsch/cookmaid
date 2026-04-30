@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.uuid.Uuid
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
@@ -29,7 +30,7 @@ class AddRecipeViewModel(
 
     init {
         ingredientQueryFlow
-            .debounce(SEARCH_DEBOUNCE_MILLIS)
+            .debounce(150.milliseconds)
             .flatMapLatest { query -> flow { emit(catalogItemRepository.search(query)) } }
             .onEach { results -> updateState { copy(ingredientSuggestions = results) } }
             .launchIn(viewModelScope)
@@ -42,6 +43,7 @@ class AddRecipeViewModel(
             is AddRecipeEvent.SetDescription -> updateState { copy(description = event.value) }
             is AddRecipeEvent.UpdateIngredientQuery -> updateIngredientQuery(event.query)
             is AddRecipeEvent.AddIngredient -> addIngredient(event.item, event.quantity)
+            is AddRecipeEvent.AddIngredientByName -> addIngredientByName(event.name, event.quantity)
             is AddRecipeEvent.UpdateIngredientQuantity -> updateIngredientQuantity(event.index, event.quantity)
             is AddRecipeEvent.SetServings -> updateState { copy(servings = event.value) }
             is AddRecipeEvent.RemoveIngredient -> updateState {
@@ -100,6 +102,16 @@ class AddRecipeViewModel(
             )
         }
         ingredientQueryFlow.value = ""
+    }
+
+    private fun addIngredientByName(name: String, quantity: String?) {
+        if (name.isBlank()) return
+        updateState { copy(ingredientQuery = "", ingredientSuggestions = emptyList()) }
+        ingredientQueryFlow.value = ""
+        launch {
+            val resolved = catalogItemRepository.findExactMatch(name) ?: Item.FreeText(name = name.trim())
+            updateState { copy(ingredients = ingredients + RecipeIngredient(resolved, quantity)) }
+        }
     }
 
     private fun updateIngredientQuantity(index: Int, quantity: String?) {
@@ -170,7 +182,4 @@ class AddRecipeViewModel(
         sendEffect(AddRecipeEffect.Error("Something went wrong. Please try again."))
     }
 
-    companion object {
-        private const val SEARCH_DEBOUNCE_MILLIS = 150L
-    }
 }

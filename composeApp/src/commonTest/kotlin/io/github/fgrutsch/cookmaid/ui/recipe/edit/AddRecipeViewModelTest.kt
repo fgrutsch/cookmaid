@@ -1,6 +1,7 @@
 package io.github.fgrutsch.cookmaid.ui.recipe.edit
 
 import io.github.fgrutsch.cookmaid.catalog.Item
+import io.github.fgrutsch.cookmaid.catalog.ItemCategory
 import io.github.fgrutsch.cookmaid.recipe.Recipe
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
 import io.github.fgrutsch.cookmaid.ui.recipe.FakeRecipeRepository
@@ -221,6 +222,81 @@ class AddRecipeViewModelTest : BaseViewModelTest() {
         assertEquals(1, fakeRecipeRepo.recipes.size)
         assertEquals("Pasta", fakeRecipeRepo.recipes.first().name)
         job.cancel()
+    }
+
+    @Test
+    fun `add ingredient by name resolves to catalog item on exact match`() = viewModelTest {
+        val catalogItem = Item.Catalog(
+            id = Uuid.random(),
+            name = "Milk",
+            category = ItemCategory(id = Uuid.random(), name = "Dairy"),
+        )
+        fakeCatalog.items = listOf(catalogItem)
+        val viewModel = createViewModel()
+
+        viewModel.onEvent(AddRecipeEvent.AddIngredientByName("Milk", "200ml"))
+        advanceUntilIdle()
+
+        assertEquals(1, viewModel.state.value.ingredients.size)
+        assertTrue(viewModel.state.value.ingredients.first().item is Item.Catalog)
+        assertEquals(catalogItem.id, (viewModel.state.value.ingredients.first().item as Item.Catalog).id)
+        assertEquals("200ml", viewModel.state.value.ingredients.first().quantity)
+    }
+
+    @Test
+    fun `add ingredient by name case-insensitive resolves to catalog item`() = viewModelTest {
+        val catalogItem = Item.Catalog(
+            id = Uuid.random(),
+            name = "Milk",
+            category = ItemCategory(id = Uuid.random(), name = "Dairy"),
+        )
+        fakeCatalog.items = listOf(catalogItem)
+        val viewModel = createViewModel()
+
+        viewModel.onEvent(AddRecipeEvent.AddIngredientByName("milk", "1L"))
+        advanceUntilIdle()
+
+        assertEquals(1, viewModel.state.value.ingredients.size)
+        assertTrue(viewModel.state.value.ingredients.first().item is Item.Catalog)
+        assertEquals("1L", viewModel.state.value.ingredients.first().quantity)
+    }
+
+    @Test
+    fun `add ingredient by name falls back to free text when no match`() = viewModelTest {
+        fakeCatalog.items = emptyList()
+        val viewModel = createViewModel()
+
+        viewModel.onEvent(AddRecipeEvent.AddIngredientByName("Custom Spice", null))
+        advanceUntilIdle()
+
+        assertEquals(1, viewModel.state.value.ingredients.size)
+        assertTrue(viewModel.state.value.ingredients.first().item is Item.FreeText)
+        assertEquals("Custom Spice", viewModel.state.value.ingredients.first().item.name)
+    }
+
+    @Test
+    fun `add ingredient by name with blank name is ignored`() = viewModelTest {
+        val viewModel = createViewModel()
+
+        viewModel.onEvent(AddRecipeEvent.AddIngredientByName("  ", null))
+        advanceUntilIdle()
+
+        assertTrue(viewModel.state.value.ingredients.isEmpty())
+    }
+
+    @Test
+    fun `add ingredient by name clears query and suggestions`() = viewModelTest {
+        fakeCatalog.items = emptyList()
+        val viewModel = createViewModel()
+
+        viewModel.onEvent(AddRecipeEvent.UpdateIngredientQuery("test"))
+        advanceUntilIdle()
+
+        viewModel.onEvent(AddRecipeEvent.AddIngredientByName("test", null))
+        advanceUntilIdle()
+
+        assertEquals("", viewModel.state.value.ingredientQuery)
+        assertTrue(viewModel.state.value.ingredientSuggestions.isEmpty())
     }
 
     @Test

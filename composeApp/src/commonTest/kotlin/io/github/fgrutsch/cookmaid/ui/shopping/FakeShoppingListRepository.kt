@@ -10,6 +10,8 @@ class FakeShoppingListRepository : ShoppingListRepository {
 
     var lists: MutableList<ShoppingList> = mutableListOf()
     var itemsByList: MutableMap<Uuid, MutableList<ShoppingItem>> = mutableMapOf()
+    var lastAddedCatalogItemId: Uuid? = null
+    var lastAddedFreeTextName: String? = null
 
     override suspend fun getLists(refresh: Boolean): List<ShoppingList> = lists.toList()
 
@@ -37,9 +39,12 @@ class FakeShoppingListRepository : ShoppingListRepository {
         freeTextName: String?,
         quantity: String?,
     ): ShoppingItem {
+        lastAddedCatalogItemId = catalogItemId
+        lastAddedFreeTextName = freeTextName
         val item = ShoppingItem(
             id = Uuid.random(),
-            item = Item.FreeText(name = freeTextName ?: "item"),
+            item = if (catalogItemId != null) Item.FreeText(name = "catalog-stub")
+            else Item.FreeText(name = freeTextName ?: "item"),
             quantity = quantity,
             checked = false,
         )

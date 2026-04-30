@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.uuid.Uuid
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
@@ -27,7 +28,7 @@ class ShoppingListViewModel(
 
     init {
         searchQueryFlow
-            .debounce(SEARCH_DEBOUNCE_MILLIS)
+            .debounce(150.milliseconds)
             .flatMapLatest { query ->
                 flow { emit(catalogItemRepository.search(query)) }
             }
@@ -43,6 +44,7 @@ class ShoppingListViewModel(
             is ShoppingListEvent.UpdateSearchQuery -> updateSearchQuery(event.query)
             is ShoppingListEvent.ClearSearch -> updateSearchQuery("")
             is ShoppingListEvent.AddItem -> addItem(event.item)
+            is ShoppingListEvent.AddItemByName -> addItemByName(event.name)
             is ShoppingListEvent.UpdateItem -> updateItem(event.item)
             is ShoppingListEvent.ToggleChecked -> toggleChecked(event.itemId)
             is ShoppingListEvent.DeleteItem -> deleteItem(event.itemId)
@@ -107,6 +109,19 @@ class ShoppingListViewModel(
         launch {
             val catalogItemId = (item as? Item.Catalog)?.id
             val freeTextName = (item as? Item.FreeText)?.name
+            val created = repository.addItem(listId, catalogItemId, freeTextName, null)
+            updateState { copy(items = items + created) }
+        }
+    }
+
+    private fun addItemByName(name: String) {
+        if (name.isBlank()) return
+        val listId = state.value.selectedListId ?: return
+        updateSearchQuery("")
+        launch {
+            val resolved = catalogItemRepository.findExactMatch(name) ?: Item.FreeText(name = name.trim())
+            val catalogItemId = (resolved as? Item.Catalog)?.id
+            val freeTextName = (resolved as? Item.FreeText)?.name
             val created = repository.addItem(listId, catalogItemId, freeTextName, null)
             updateState { copy(items = items + created) }
         }
@@ -187,7 +202,4 @@ class ShoppingListViewModel(
         sendEffect(ShoppingListEffect.Error("Something went wrong. Please try again."))
     }
 
-    companion object {
-        private const val SEARCH_DEBOUNCE_MILLIS = 150L
-    }
 }

@@ -268,9 +268,14 @@ Required env vars at runtime: `DATABASE_URL`, `DATABASE_USER`, `DATABASE_PASSWOR
 
 CI: `ci.yml` builds the Docker image on every push/PR (no `needs:` gate —
 Gradle `buildDockerImage` task's own `dependsOn` handles prerequisites).
-`release.yml` runs on `v*` tags and pushes to GHCR. Multi-platform push
-requires `driver: docker-container` on `setup-buildx-action` — the default
-`docker` driver does not support `--push` with multi-platform manifests.
+`release.yml` runs on `v*` tags with two sequential jobs:
+1. `docker` — pushes the multi-platform image to GHCR. Requires
+   `driver: docker-container` on `setup-buildx-action` — the default
+   `docker` driver does not support `--push` with multi-platform manifests.
+2. `publish-release` (`needs: docker`) — promotes the draft GitHub release
+   to published via `gh release edit --draft=false --latest`. Prerequisite:
+   a draft release for the tag must exist before the tag is pushed.
+   Requires `permissions: contents: write`; no checkout needed.
 
 ## Version Catalog (`libs.versions.toml`)
 

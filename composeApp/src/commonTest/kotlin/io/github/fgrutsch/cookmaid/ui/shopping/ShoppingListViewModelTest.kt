@@ -1,6 +1,7 @@
 package io.github.fgrutsch.cookmaid.ui.shopping
 
 import io.github.fgrutsch.cookmaid.catalog.Item
+import io.github.fgrutsch.cookmaid.catalog.ItemCategory
 import io.github.fgrutsch.cookmaid.shopping.ShoppingItem
 import io.github.fgrutsch.cookmaid.shopping.ShoppingList
 import io.github.fgrutsch.cookmaid.support.BaseViewModelTest
@@ -212,6 +213,78 @@ class ShoppingListViewModelTest : BaseViewModelTest() {
 
         assertEquals(2, viewModel.state.value.uncheckedItems.size)
         assertEquals(1, viewModel.state.value.checkedItems.size)
+    }
+
+    @Test
+    fun `add item by name resolves to catalog item on exact match`() = viewModelTest {
+        val catalogItem = Item.Catalog(
+            id = Uuid.random(),
+            name = "Milk",
+            category = ItemCategory(id = Uuid.random(), name = "Dairy"),
+        )
+        fakeCatalog.items = listOf(catalogItem)
+        val viewModel = createLoadedViewModel()
+
+        viewModel.onEvent(ShoppingListEvent.AddItemByName("Milk"))
+        advanceUntilIdle()
+
+        assertEquals(1, viewModel.state.value.items.size)
+        assertEquals(catalogItem.id, fakeRepo.lastAddedCatalogItemId)
+        assertNull(fakeRepo.lastAddedFreeTextName)
+    }
+
+    @Test
+    fun `add item by name case-insensitive resolves to catalog item`() = viewModelTest {
+        val catalogItem = Item.Catalog(
+            id = Uuid.random(),
+            name = "Milk",
+            category = ItemCategory(id = Uuid.random(), name = "Dairy"),
+        )
+        fakeCatalog.items = listOf(catalogItem)
+        val viewModel = createLoadedViewModel()
+
+        viewModel.onEvent(ShoppingListEvent.AddItemByName("milk"))
+        advanceUntilIdle()
+
+        assertEquals(1, viewModel.state.value.items.size)
+        assertEquals(catalogItem.id, fakeRepo.lastAddedCatalogItemId)
+    }
+
+    @Test
+    fun `add item by name falls back to free text when no match`() = viewModelTest {
+        fakeCatalog.items = emptyList()
+        val viewModel = createLoadedViewModel()
+
+        viewModel.onEvent(ShoppingListEvent.AddItemByName("Custom Item"))
+        advanceUntilIdle()
+
+        assertEquals(1, viewModel.state.value.items.size)
+        assertNull(fakeRepo.lastAddedCatalogItemId)
+        assertEquals("Custom Item", fakeRepo.lastAddedFreeTextName)
+    }
+
+    @Test
+    fun `add item by name with blank name is ignored`() = viewModelTest {
+        val viewModel = createLoadedViewModel()
+
+        viewModel.onEvent(ShoppingListEvent.AddItemByName("  "))
+        advanceUntilIdle()
+
+        assertTrue(viewModel.state.value.items.isEmpty())
+    }
+
+    @Test
+    fun `add item by name clears search query`() = viewModelTest {
+        fakeCatalog.items = emptyList()
+        val viewModel = createLoadedViewModel()
+
+        viewModel.onEvent(ShoppingListEvent.UpdateSearchQuery("test"))
+        advanceUntilIdle()
+
+        viewModel.onEvent(ShoppingListEvent.AddItemByName("test"))
+        advanceUntilIdle()
+
+        assertEquals("", viewModel.state.value.searchQuery)
     }
 
     companion object {

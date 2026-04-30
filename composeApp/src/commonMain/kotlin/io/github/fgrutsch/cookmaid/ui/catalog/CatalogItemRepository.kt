@@ -15,6 +15,14 @@ interface CatalogItemRepository {
      * @return list of matching [Item.Catalog] entries.
      */
     suspend fun search(query: String): List<Item.Catalog>
+
+    /**
+     * Finds a catalog item whose localized name exactly matches [name] (case-insensitive, trimmed).
+     *
+     * @param name the text to match exactly against catalog item names.
+     * @return the first matching [Item.Catalog], or null if no exact match exists.
+     */
+    suspend fun findExactMatch(name: String): Item.Catalog?
 }
 
 class ApiCatalogItemRepository(
@@ -27,13 +35,23 @@ class ApiCatalogItemRepository(
     override suspend fun search(query: String): List<Item.Catalog> {
         val q = query.trim().lowercase()
         if (q.isEmpty()) return emptyList()
-        val items = mutex.withLock {
-            if (cachedItems.isEmpty()) cachedItems = client.fetchAll()
-            cachedItems
-        }
+        val items = ensureCacheLoaded()
         return items
             .filter { it.name.lowercase().contains(q) }
             .take(MAX_SEARCH_RESULTS)
+    }
+
+    override suspend fun findExactMatch(name: String): Item.Catalog? {
+        val trimmed = name.trim()
+        if (trimmed.isEmpty()) return null
+        val items = ensureCacheLoaded()
+        val key = trimmed.lowercase()
+        return items.firstOrNull { it.name.lowercase() == key }
+    }
+
+    private suspend fun ensureCacheLoaded(): List<Item.Catalog> = mutex.withLock {
+        if (cachedItems.isEmpty()) cachedItems = client.fetchAll()
+        cachedItems
     }
 
     companion object {
