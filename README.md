@@ -1,10 +1,13 @@
 <div align="center">
-<img src="docs/images/cookmaid_logo.png" alt="Cookmaid logo" width="250"/>
+<img src="docs/images/cookmaid_logo.png" alt="Cookmaid logo" width="300"/>
+
+[![Github Actions CI Workflow](https://img.shields.io/github/actions/workflow/status/fgrutsch/cookmaid/ci.yml?logo=Github&style=for-the-badge)](https://github.com/fgrutsch/cookmaid/actions/workflows/ci.yml?query=branch%3Amain)
+[![Codecov](https://img.shields.io/codecov/c/github/fgrutsch/cookmaid/main?logo=Codecov&style=for-the-badge)](https://codecov.io/gh/fgrutsch/cookmaid)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 </div>
 
-# Cookmaid
-
-An app for managing shopping lists, recipes and meal planning.
+Cookmaid is a self-hosted meal planning app. Manage your recipes, plan meals for the week,
+and generate shopping lists — available on Android and as a Progressive Web App.
 
 ## Tech Stack
 
