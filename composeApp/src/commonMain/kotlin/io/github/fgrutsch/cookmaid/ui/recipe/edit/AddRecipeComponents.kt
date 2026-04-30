@@ -293,7 +293,7 @@ internal fun IngredientRow(
             },
             label = { Text(Res.string.common_quantity.resolve()) },
             singleLine = true,
-            modifier = Modifier.width(80.dp),
+            modifier = Modifier.width(85.dp),
         )
         IconButton(onClick = onRemove) {
             Icon(painterResource(Res.drawable.ic_close), contentDescription = Res.string.common_remove.resolve())
@@ -351,7 +351,7 @@ internal fun IngredientAddField(
             onValueChange = onQuantityChange,
             label = { Text(Res.string.common_quantity.resolve()) },
             singleLine = true,
-            modifier = Modifier.width(80.dp),
+            modifier = Modifier.width(85.dp),
         )
         IconButton(onClick = onAddFreeText) {
             Icon(painterResource(Res.drawable.ic_send), contentDescription = Res.string.common_add.resolve())

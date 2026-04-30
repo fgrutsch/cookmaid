@@ -43,7 +43,8 @@ class FakeShoppingListRepository : ShoppingListRepository {
         lastAddedFreeTextName = freeTextName
         val item = ShoppingItem(
             id = Uuid.random(),
-            item = if (catalogItemId != null) Item.FreeText(name = "catalog-stub") else Item.FreeText(name = freeTextName ?: "item"),
+            item = if (catalogItemId != null) Item.FreeText(name = "catalog-stub")
+            else Item.FreeText(name = freeTextName ?: "item"),
             quantity = quantity,
             checked = false,
         )

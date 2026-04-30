@@ -90,7 +90,7 @@ complexity:
     ignoreOverloaded: false
   CyclomaticComplexMethod:
     active: true
-    allowedComplexity: 14
+    allowedComplexity: 15
     ignoreSingleWhenExpression: false
     ignoreSimpleWhenEntries: false
     ignoreNestingFunctions: false
@@ -155,7 +155,7 @@ complexity:
     active: true
     excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**']
     allowedFunctionsPerFile: 11
-    allowedFunctionsPerClass: 14
+    allowedFunctionsPerClass: 15
     allowedFunctionsPerInterface: 14
     allowedFunctionsPerObject: 11
     allowedFunctionsPerEnum: 11

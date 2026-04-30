@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.uuid.Uuid
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
@@ -29,7 +30,7 @@ class AddRecipeViewModel(
 
     init {
         ingredientQueryFlow
-            .debounce(SEARCH_DEBOUNCE_MILLIS)
+            .debounce(150.milliseconds)
             .flatMapLatest { query -> flow { emit(catalogItemRepository.search(query)) } }
             .onEach { results -> updateState { copy(ingredientSuggestions = results) } }
             .launchIn(viewModelScope)
@@ -181,7 +182,4 @@ class AddRecipeViewModel(
         sendEffect(AddRecipeEffect.Error("Something went wrong. Please try again."))
     }
 
-    companion object {
-        private const val SEARCH_DEBOUNCE_MILLIS = 150L
-    }
 }

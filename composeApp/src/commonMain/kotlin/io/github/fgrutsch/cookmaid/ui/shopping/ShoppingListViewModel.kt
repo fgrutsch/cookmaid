@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.uuid.Uuid
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
@@ -27,7 +28,7 @@ class ShoppingListViewModel(
 
     init {
         searchQueryFlow
-            .debounce(SEARCH_DEBOUNCE_MILLIS)
+            .debounce(150.milliseconds)
             .flatMapLatest { query ->
                 flow { emit(catalogItemRepository.search(query)) }
             }
@@ -201,7 +202,4 @@ class ShoppingListViewModel(
         sendEffect(ShoppingListEffect.Error("Something went wrong. Please try again."))
     }
 
-    companion object {
-        private const val SEARCH_DEBOUNCE_MILLIS = 150L
-    }
 }
