@@ -1,6 +1,7 @@
 <div align="center">
 <img src="docs/images/cookmaid_logo.png" alt="Cookmaid logo" width="300"/>
 
+[![Github Actions CI Workflow](https://img.shields.io/github/v/tag/fgrutsch/cookmaid?logo=Github&style=for-the-badge)](https://github.com/fgrutsch/cookmaid/releases)
 [![Github Actions CI Workflow](https://img.shields.io/github/actions/workflow/status/fgrutsch/cookmaid/ci.yml?logo=Github&style=for-the-badge)](https://github.com/fgrutsch/cookmaid/actions/workflows/ci.yml?query=branch%3Amain)
 [![Codecov](https://img.shields.io/codecov/c/github/fgrutsch/cookmaid/main?logo=Codecov&style=for-the-badge)](https://codecov.io/gh/fgrutsch/cookmaid)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
