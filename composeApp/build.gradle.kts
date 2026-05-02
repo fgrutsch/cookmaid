@@ -100,6 +100,7 @@ tasks.named<Copy>("wasmJsProcessResources") {
             "OIDC_DISCOVERY_URI" to localProps.getProperty("oidc.discoveryUri"),
             "OIDC_CLIENT_ID" to localProps.getProperty("oidc.clientId"),
             "OIDC_SCOPE" to localProps.getProperty("oidc.scope"),
+            "OIDC_ACCOUNT_URI" to localProps.getProperty("oidc.accountUri"),
         )
     }
 }

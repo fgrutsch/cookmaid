@@ -63,6 +63,7 @@ Add OIDC settings to `local.properties` (gitignored):
 oidc.discoveryUri=http://localhost:8082/.well-known/openid-configuration
 oidc.clientId=<your-client-id>
 oidc.scope=openid profile email offline_access
+oidc.accountUri=http://localhost:8082/settings
 ```
 
 These are injected into the WasmJS web app at build time via Gradle's

@@ -3,9 +3,10 @@ package io.github.fgrutsch.cookmaid.ui.settings
 import io.github.fgrutsch.cookmaid.common.SupportedLocale
 import cookmaid.composeapp.generated.resources.settings_language_de
 import cookmaid.composeapp.generated.resources.settings_language_en
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -24,6 +25,7 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import cookmaid.composeapp.generated.resources.settings_dark_mode_dark
 import cookmaid.composeapp.generated.resources.settings_dark_mode_light
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -33,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
@@ -40,6 +43,7 @@ import cookmaid.composeapp.generated.resources.Res
 import cookmaid.composeapp.generated.resources.ic_person
 import cookmaid.composeapp.generated.resources.settings_dark_mode
 import cookmaid.composeapp.generated.resources.settings_language
+import cookmaid.composeapp.generated.resources.settings_manage_account
 import cookmaid.composeapp.generated.resources.settings_profile_picture
 import cookmaid.composeapp.generated.resources.settings_sign_out
 import cookmaid.composeapp.generated.resources.settings_title
@@ -53,10 +57,16 @@ import org.jetbrains.compose.resources.painterResource
  *
  * @param viewModel the settings view model.
  * @param userProfile the authenticated user's profile.
+ * @param accountUri the IDP account management URL to open in the browser.
  * @param onLogout called when the user logs out.
  */
 @Composable
-fun SettingsScreen(viewModel: SettingsViewModel, userProfile: UserProfile, onLogout: () -> Unit) {
+fun SettingsScreen(
+    viewModel: SettingsViewModel,
+    userProfile: UserProfile,
+    accountUri: String,
+    onLogout: () -> Unit,
+) {
     val state by viewModel.state.collectAsState()
 
     Scaffold(
@@ -72,6 +82,7 @@ fun SettingsScreen(viewModel: SettingsViewModel, userProfile: UserProfile, onLog
     ) { padding ->
         SettingsContent(
             userProfile = userProfile,
+            accountUri = accountUri,
             darkMode = state.darkMode,
             onDarkModeSelected = { viewModel.onEvent(SettingsEvent.SetDarkMode(it)) },
             locale = state.locale,
@@ -86,6 +97,7 @@ fun SettingsScreen(viewModel: SettingsViewModel, userProfile: UserProfile, onLog
 @Composable
 private fun SettingsContent(
     userProfile: UserProfile,
+    accountUri: String,
     darkMode: Boolean?,
     onDarkModeSelected: (Boolean?) -> Unit,
     locale: SupportedLocale?,
@@ -94,11 +106,22 @@ private fun SettingsContent(
     appVersion: String,
     modifier: Modifier = Modifier,
 ) {
+    val uriHandler = LocalUriHandler.current
+
     Column(
-        modifier = modifier,
+        modifier = modifier.verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         UserProfileSection(userProfile)
+
+        if (accountUri.isNotBlank()) {
+            TextButton(
+                onClick = { uriHandler.openUri(accountUri) },
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+            ) {
+                Text(Res.string.settings_manage_account.resolve())
+            }
+        }
 
         HorizontalDivider()
 
@@ -123,7 +146,7 @@ private fun SettingsContent(
             Text(Res.string.settings_sign_out.resolve())
         }
 
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.height(24.dp))
 
         Text(
             text = "v$appVersion",
@@ -141,13 +164,12 @@ private fun DarkModePicker(
     onSelected: (Boolean?) -> Unit,
 ) {
     val options: List<Boolean?> = listOf(null, false, true)
-    Row(
+    Column(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(Res.string.settings_dark_mode.resolve())
-        SingleChoiceSegmentedButtonRow {
+        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
             options.forEachIndexed { index, mode ->
                 SegmentedButton(
                     selected = selectedMode == mode,
@@ -176,13 +198,12 @@ private fun LanguagePicker(
     onSelected: (SupportedLocale?) -> Unit,
 ) {
     val options: List<SupportedLocale?> = listOf(null) + SupportedLocale.entries
-    Row(
+    Column(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(Res.string.settings_language.resolve())
-        SingleChoiceSegmentedButtonRow {
+        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
             options.forEachIndexed { index, locale ->
                 SegmentedButton(
                     selected = selectedLocale == locale,

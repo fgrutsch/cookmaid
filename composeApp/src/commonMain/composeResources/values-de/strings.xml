@@ -39,6 +39,7 @@
     <string name="settings_language">Sprache</string>
     <string name="settings_language_en">Englisch</string>
     <string name="settings_language_de">Deutsch</string>
+    <string name="settings_manage_account">Konto verwalten</string>
     <string name="settings_sign_out">Abmelden</string>
     <string name="settings_profile_picture">Profilbild</string>
 

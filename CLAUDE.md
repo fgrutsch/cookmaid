@@ -252,7 +252,8 @@ runtime image. Artifacts are built by Gradle on the host, then COPYed in.
 
 - **Runtime image**: `eclipse-temurin:21-jre-alpine` — non-root user `cookmaid`
 - **Entrypoint**: `docker/docker-entrypoint.sh` — runs `envsubst` on
-  `index.html` to inject `OIDC_DISCOVERY_URI`, `OIDC_CLIENT_ID`, `OIDC_SCOPE`
+  `index.html` to inject `OIDC_DISCOVERY_URI`, `OIDC_CLIENT_ID`, `OIDC_SCOPE`,
+  `OIDC_ACCOUNT_URI`
   at container startup. CI builds leave `${VAR}` placeholders intact (no
   `local.properties`); `envsubst` and `expand()` are mutually exclusive per
   variable — never pass a runtime-injected placeholder to Gradle `expand()`.
@@ -264,7 +265,8 @@ Build locally:
 ```
 
 Required env vars at runtime: `DATABASE_URL`, `DATABASE_USER`, `DATABASE_PASSWORD`,
-`OIDC_ISSUER`, `OIDC_JWKS_URL`, `OIDC_DISCOVERY_URI`, `OIDC_CLIENT_ID`, `OIDC_SCOPE`.
+`OIDC_ISSUER`, `OIDC_JWKS_URL`, `OIDC_DISCOVERY_URI`, `OIDC_CLIENT_ID`, `OIDC_SCOPE`,
+`OIDC_ACCOUNT_URI`.
 
 CI: `ci.yml` builds the Docker image on every push/PR (no `needs:` gate —
 Gradle `buildDockerImage` task's own `dependsOn` handles prerequisites).
