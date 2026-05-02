@@ -3,6 +3,8 @@ package io.github.fgrutsch.cookmaid.ui.settings
 import io.github.fgrutsch.cookmaid.common.SupportedLocale
 import cookmaid.composeapp.generated.resources.settings_language_de
 import cookmaid.composeapp.generated.resources.settings_language_en
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -107,16 +109,18 @@ private fun SettingsContent(
     val uriHandler = LocalUriHandler.current
 
     Column(
-        modifier = modifier,
+        modifier = modifier.verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         UserProfileSection(userProfile)
 
-        TextButton(
-            onClick = { uriHandler.openUri(accountUri) },
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-        ) {
-            Text(Res.string.settings_manage_account.resolve())
+        if (accountUri.isNotBlank()) {
+            TextButton(
+                onClick = { uriHandler.openUri(accountUri) },
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+            ) {
+                Text(Res.string.settings_manage_account.resolve())
+            }
         }
 
         HorizontalDivider()
@@ -142,7 +146,7 @@ private fun SettingsContent(
             Text(Res.string.settings_sign_out.resolve())
         }
 
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.height(24.dp))
 
         Text(
             text = "v$appVersion",
