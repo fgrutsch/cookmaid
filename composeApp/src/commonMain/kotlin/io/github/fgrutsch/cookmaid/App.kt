@@ -120,6 +120,7 @@ fun App(
                                 settingsViewModel = settingsViewModel,
                                 authViewModel = authViewModel,
                                 userProfile = authState.profile,
+                                accountUrl = oidcConfig.accountUrl,
                             )
                         }
                     }
@@ -134,6 +135,7 @@ private fun MainContent(
     settingsViewModel: SettingsViewModel,
     authViewModel: AuthViewModel,
     userProfile: UserProfile,
+    accountUrl: String,
 ) {
     val backStack = rememberNavBackStack(navConfig, Route.ShoppingList)
     var selectedTab by remember { mutableStateOf(TopLevelRoute.Shopping) }
@@ -158,6 +160,7 @@ private fun MainContent(
             settingsViewModel = settingsViewModel,
             authViewModel = authViewModel,
             userProfile = userProfile,
+            accountUrl = accountUrl,
             modifier = Modifier.padding(innerPadding),
         )
     }
@@ -182,12 +185,14 @@ private fun BottomNavigationBar(
     }
 }
 
+@Suppress("LongMethod")
 @Composable
 private fun AppNavDisplay(
     backStack: NavBackStack<NavKey>,
     settingsViewModel: SettingsViewModel,
     authViewModel: AuthViewModel,
     userProfile: UserProfile,
+    accountUrl: String,
     modifier: Modifier = Modifier,
 ) {
     NavDisplay(
@@ -249,6 +254,7 @@ private fun AppNavDisplay(
                 SettingsScreen(
                     viewModel = settingsViewModel,
                     userProfile = userProfile,
+                    accountUrl = accountUrl,
                     onLogout = { authViewModel.onEvent(AuthEvent.Logout) },
                 )
             }
