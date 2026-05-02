@@ -26,6 +26,7 @@ class MainActivity : ComponentActivity() {
                     scope = BuildConfig.OIDC_SCOPE,
                     redirectUri = "cookmaid://callback",
                     postLogoutRedirectUri = "cookmaid://callback",
+                    accountUrl = BuildConfig.OIDC_ACCOUNT_URL,
                 ),
                 codeAuthFlowFactory = codeAuthFlowFactory,
                 tokenStore = SettingsTokenStore(AndroidDataStoreSettingsStore(this)),

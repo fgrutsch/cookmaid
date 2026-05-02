@@ -8,13 +8,8 @@ data class OidcConfig(
     val scope: String,
     val redirectUri: String,
     val postLogoutRedirectUri: String,
-) {
-    /**
-     * IDP account management URL, derived by stripping the OIDC discovery suffix.
-     */
-    val accountUrl: String
-        get() = discoveryUri.removeSuffix("/.well-known/openid-configuration")
-}
+    val accountUrl: String,
+)
 
 fun createOidcClient(config: OidcConfig): OpenIdConnectClient =
     OpenIdConnectClient(discoveryUri = config.discoveryUri) {
