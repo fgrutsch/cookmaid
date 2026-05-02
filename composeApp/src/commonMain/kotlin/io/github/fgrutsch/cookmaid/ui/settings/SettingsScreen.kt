@@ -55,14 +55,14 @@ import org.jetbrains.compose.resources.painterResource
  *
  * @param viewModel the settings view model.
  * @param userProfile the authenticated user's profile.
- * @param accountUrl the IDP account management URL to open in the browser.
+ * @param accountUri the IDP account management URL to open in the browser.
  * @param onLogout called when the user logs out.
  */
 @Composable
 fun SettingsScreen(
     viewModel: SettingsViewModel,
     userProfile: UserProfile,
-    accountUrl: String,
+    accountUri: String,
     onLogout: () -> Unit,
 ) {
     val state by viewModel.state.collectAsState()
@@ -80,7 +80,7 @@ fun SettingsScreen(
     ) { padding ->
         SettingsContent(
             userProfile = userProfile,
-            accountUrl = accountUrl,
+            accountUri = accountUri,
             darkMode = state.darkMode,
             onDarkModeSelected = { viewModel.onEvent(SettingsEvent.SetDarkMode(it)) },
             locale = state.locale,
@@ -95,7 +95,7 @@ fun SettingsScreen(
 @Composable
 private fun SettingsContent(
     userProfile: UserProfile,
-    accountUrl: String,
+    accountUri: String,
     darkMode: Boolean?,
     onDarkModeSelected: (Boolean?) -> Unit,
     locale: SupportedLocale?,
@@ -113,7 +113,7 @@ private fun SettingsContent(
         UserProfileSection(userProfile)
 
         TextButton(
-            onClick = { uriHandler.openUri(accountUrl) },
+            onClick = { uriHandler.openUri(accountUri) },
             modifier = Modifier.align(Alignment.CenterHorizontally),
         ) {
             Text(Res.string.settings_manage_account.resolve())

@@ -34,7 +34,7 @@ android {
             buildConfigField("String", "OIDC_DISCOVERY_URI", """"${localProps.getProperty("oidc.discoveryUri")}"""")
             buildConfigField("String", "OIDC_CLIENT_ID", """"${localProps.getProperty("oidc.clientId")}"""")
             buildConfigField("String", "OIDC_SCOPE", """"${localProps.getProperty("oidc.scope")}"""")
-            buildConfigField("String", "OIDC_ACCOUNT_URL", """"${localProps.getProperty("oidc.accountUrl")}"""")
+            buildConfigField("String", "OIDC_ACCOUNT_URI", """"${localProps.getProperty("oidc.accountUri")}"""")
         }
         create("prod") {
             dimension = "environment"
@@ -42,7 +42,7 @@ android {
             buildConfigField("String", "OIDC_DISCOVERY_URI", """"https://idp.fgrutsch.dev/.well-known/openid-configuration"""")
             buildConfigField("String", "OIDC_CLIENT_ID", """"4b0e486c-0dd2-40f4-8f5b-98a4ec815686"""")
             buildConfigField("String", "OIDC_SCOPE", """"openid profile email offline_access"""")
-            buildConfigField("String", "OIDC_ACCOUNT_URL", """"https://idp.fgrutsch.dev/settings"""")
+            buildConfigField("String", "OIDC_ACCOUNT_URI", """"https://idp.fgrutsch.dev/settings"""")
         }
     }
     packaging {

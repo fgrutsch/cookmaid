@@ -8,7 +8,7 @@ data class OidcConfig(
     val scope: String,
     val redirectUri: String,
     val postLogoutRedirectUri: String,
-    val accountUrl: String,
+    val accountUri: String,
 )
 
 fun createOidcClient(config: OidcConfig): OpenIdConnectClient =

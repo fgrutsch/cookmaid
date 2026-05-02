@@ -21,7 +21,7 @@ private val oidcClientId: String = js("window.__CONFIG__.OIDC_CLIENT_ID")
 private val oidcScope: String = js("window.__CONFIG__.OIDC_SCOPE")
 
 @OptIn(ExperimentalWasmJsInterop::class)
-private val oidcAccountUrl: String = js("window.__CONFIG__.OIDC_ACCOUNT_URL")
+private val oidcAccountUri: String = js("window.__CONFIG__.OIDC_ACCOUNT_URI")
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
@@ -38,7 +38,7 @@ fun main() {
                     scope = oidcScope,
                     redirectUri = "$origin/callback",
                     postLogoutRedirectUri = "$origin/callback",
-                    accountUrl = oidcAccountUrl,
+                    accountUri = oidcAccountUri,
                 ),
                 codeAuthFlowFactory = WebCodeAuthFlowFactory(),
                 tokenStore = SettingsTokenStore(LocalStorageSettingsStore()),
