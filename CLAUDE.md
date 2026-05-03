@@ -112,11 +112,14 @@ Four Gradle modules:
 - **Flyway migrations**: `server/src/main/resources/db/migration/V*__*.sql`
 - **Timestamps**: All tables (except catalog) have `created_at`/`updated_at`
   with a shared `set_updated_at()` trigger.
+- **List query parameters**: Encode lists as comma-separated values in a
+  single query parameter (e.g., `?excludeIds=a,b,c`). Parse with
+  `split(",").filter { it.isNotBlank() }.map { ... }.orEmpty()`.
 - **Batch loading**: When loading child entities for a page of parents
   (e.g., ingredients per recipe), batch with Exposed's `inList` in a
-  single query instead of per-entity calls. Guard with early return if
-  the ID list is empty. Single-entity lookups (`findById`) can keep the
-  per-row variant.
+  single query instead of per-entity calls. Use `notInList` for
+  multi-value exclusions. Guard with early return if the ID list is
+  empty. Single-entity lookups (`findById`) can keep the per-row variant.
 - **Ktor testing**: Integration tests use `testApplication { }`;
   unit tests use Koin + Testcontainers + `runTest`. Multi-user tests:
   generate tokens with `TestJwt.generateToken(subject)` using distinct
