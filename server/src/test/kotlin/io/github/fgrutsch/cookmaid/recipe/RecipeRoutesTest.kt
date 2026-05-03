@@ -270,6 +270,29 @@ class RecipeRoutesTest : BaseIntegrationTest() {
     }
 
     @Test
+    fun `GET recipes random with excludeIds ignores blank segments`() = integrationTest {
+        val token = TestJwt.generateToken("random-blank-segments-user")
+        val client = jsonClient()
+
+        client.post("/api/users/me") { bearerAuth(token) }
+        val recipe1 = client.post("/api/recipes") {
+            bearerAuth(token)
+            contentType(ContentType.Application.Json)
+            setBody(RecipeRequest(name = "Recipe A"))
+        }.body<Recipe>()
+        client.post("/api/recipes") {
+            bearerAuth(token)
+            contentType(ContentType.Application.Json)
+            setBody(RecipeRequest(name = "Recipe B"))
+        }.body<Recipe>()
+
+        val response = client.get("/api/recipes/random?excludeIds=${recipe1.id},,") {
+            bearerAuth(token)
+        }
+        assertEquals(HttpStatusCode.OK, response.status)
+    }
+
+    @Test
     fun `GET recipes random with tag filter`() = integrationTest {
         val token = TestJwt.generateToken("random-tag-user")
         val client = jsonClient()
