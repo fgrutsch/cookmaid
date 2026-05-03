@@ -84,13 +84,13 @@ interface RecipeRepository {
     )
 
     /**
-     * Returns a random recipe, optionally filtered by [tag] and excluding [excludeId].
+     * Returns a random recipe, optionally filtered by [tag] and excluding [excludeIds].
      *
      * @param tag optional tag to filter by.
-     * @param excludeId optional recipe ID to exclude (for avoiding repeats).
+     * @param excludeIds recipe IDs to exclude (for avoiding repeats).
      * @return a random [Recipe], or null if none match.
      */
-    suspend fun fetchRandom(tag: String? = null, excludeId: String? = null): Recipe?
+    suspend fun fetchRandom(tag: String? = null, excludeIds: List<String> = emptyList()): Recipe?
 
     /**
      * Deletes the recipe with the given [id].
@@ -143,9 +143,9 @@ class ApiRecipeRepository(
         client.update(id, RecipeRequest(name, description, ingredients, steps, tags, servings))
     }
 
-    override suspend fun fetchRandom(tag: String?, excludeId: String?): Recipe? {
+    override suspend fun fetchRandom(tag: String?, excludeIds: List<String>): Recipe? {
         return try {
-            client.fetchRandom(tag, excludeId)
+            client.fetchRandom(tag, excludeIds)
         } catch (e: ClientRequestException) {
             if (e.response.status == HttpStatusCode.NotFound) null else throw e
         }

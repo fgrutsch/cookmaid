@@ -168,6 +168,60 @@ class RecipeListViewModelTest : BaseViewModelTest() {
     }
 
     @Test
+    fun `roll random recipe accumulates shownRecipeIds`() = viewModelTest {
+        val viewModel = createLoadedViewModel(
+            recipes = listOf(recipe("Pasta"), recipe("Salad"), recipe("Soup")),
+        )
+
+        viewModel.onEvent(RecipeListEvent.RollRandomRecipe)
+        advanceUntilIdle()
+        val first = viewModel.state.value.randomRecipe
+        assertNotNull(first)
+        assertEquals(1, viewModel.state.value.shownRecipeIds.size)
+        assertTrue(viewModel.state.value.shownRecipeIds.contains(first.id.toString()))
+
+        viewModel.onEvent(RecipeListEvent.RollRandomRecipe)
+        advanceUntilIdle()
+        val second = viewModel.state.value.randomRecipe
+        assertNotNull(second)
+        assertEquals(2, viewModel.state.value.shownRecipeIds.size)
+        assertTrue(viewModel.state.value.shownRecipeIds.contains(first.id.toString()))
+        assertTrue(viewModel.state.value.shownRecipeIds.contains(second.id.toString()))
+    }
+
+    @Test
+    fun `clear random recipe resets shownRecipeIds`() = viewModelTest {
+        val viewModel = createLoadedViewModel(recipes = listOf(recipe("Pasta"), recipe("Salad")))
+
+        viewModel.onEvent(RecipeListEvent.RollRandomRecipe)
+        advanceUntilIdle()
+        assertTrue(viewModel.state.value.shownRecipeIds.isNotEmpty())
+
+        viewModel.onEvent(RecipeListEvent.ClearRandomRecipe)
+        advanceUntilIdle()
+        assertTrue(viewModel.state.value.shownRecipeIds.isEmpty())
+    }
+
+    @Test
+    fun `select tag resets shownRecipeIds`() = viewModelTest {
+        val viewModel = createLoadedViewModel(
+            recipes = listOf(
+                recipe("Pasta", tags = listOf("Italian")),
+                recipe("Tacos", tags = listOf("Mexican")),
+            ),
+            tags = listOf("Italian", "Mexican"),
+        )
+
+        viewModel.onEvent(RecipeListEvent.RollRandomRecipe)
+        advanceUntilIdle()
+        assertTrue(viewModel.state.value.shownRecipeIds.isNotEmpty())
+
+        viewModel.onEvent(RecipeListEvent.SelectTag("Italian"))
+        advanceUntilIdle()
+        assertTrue(viewModel.state.value.shownRecipeIds.isEmpty())
+    }
+
+    @Test
     fun `set search active and close resets query`() = viewModelTest {
         val viewModel = createLoadedViewModel(recipes = listOf(recipe("Pasta")))
 

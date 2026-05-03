@@ -44,8 +44,12 @@ fun Route.recipeRoutes() {
 
         get("/random") {
             val tag = call.request.queryParameters["tag"]
-            val excludeId = call.request.queryParameters["excludeId"]?.let { Uuid.parse(it) }
-            val recipe = service.findRandom(call.userId(), tag, excludeId, call.locale())
+            val excludeIds = call.request.queryParameters["excludeIds"]
+                ?.split(",")
+                ?.filter { it.isNotBlank() }
+                ?.map { Uuid.parse(it.trim()) }
+                .orEmpty()
+            val recipe = service.findRandom(call.userId(), tag, excludeIds, call.locale())
             if (recipe != null) call.respond(recipe) else call.respond(HttpStatusCode.NotFound)
         }
 

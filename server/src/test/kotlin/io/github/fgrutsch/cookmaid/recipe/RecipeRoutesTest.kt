@@ -170,7 +170,7 @@ class RecipeRoutesTest : BaseIntegrationTest() {
     }
 
     @Test
-    fun `GET recipes random with excludeId returns different recipe when possible`() = integrationTest {
+    fun `GET recipes random with excludeIds returns different recipe when possible`() = integrationTest {
         val token = TestJwt.generateToken("random-exclude-user")
         val client = jsonClient()
 
@@ -186,7 +186,7 @@ class RecipeRoutesTest : BaseIntegrationTest() {
             setBody(RecipeRequest(name = "Recipe B"))
         }.body<Recipe>()
 
-        val response = client.get("/api/recipes/random?excludeId=${recipe1.id}") {
+        val response = client.get("/api/recipes/random?excludeIds=${recipe1.id}") {
             bearerAuth(token)
         }
         assertEquals(HttpStatusCode.OK, response.status)
@@ -195,7 +195,7 @@ class RecipeRoutesTest : BaseIntegrationTest() {
     }
 
     @Test
-    fun `GET recipes random with excludeId falls back when only one recipe`() = integrationTest {
+    fun `GET recipes random with excludeIds falls back when only one recipe`() = integrationTest {
         val token = TestJwt.generateToken("random-fallback-user")
         val client = jsonClient()
 
@@ -206,12 +206,90 @@ class RecipeRoutesTest : BaseIntegrationTest() {
             setBody(RecipeRequest(name = "Only Recipe"))
         }.body<Recipe>()
 
-        val response = client.get("/api/recipes/random?excludeId=${only.id}") {
+        val response = client.get("/api/recipes/random?excludeIds=${only.id}") {
             bearerAuth(token)
         }
         assertEquals(HttpStatusCode.OK, response.status)
         val result = response.body<Recipe>()
         assertEquals(only.id, result.id)
+    }
+
+    @Test
+    fun `GET recipes random with multiple excludeIds excludes all`() = integrationTest {
+        val token = TestJwt.generateToken("random-multi-exclude-user")
+        val client = jsonClient()
+
+        client.post("/api/users/me") { bearerAuth(token) }
+        val recipe1 = client.post("/api/recipes") {
+            bearerAuth(token)
+            contentType(ContentType.Application.Json)
+            setBody(RecipeRequest(name = "Recipe A"))
+        }.body<Recipe>()
+        val recipe2 = client.post("/api/recipes") {
+            bearerAuth(token)
+            contentType(ContentType.Application.Json)
+            setBody(RecipeRequest(name = "Recipe B"))
+        }.body<Recipe>()
+        val recipe3 = client.post("/api/recipes") {
+            bearerAuth(token)
+            contentType(ContentType.Application.Json)
+            setBody(RecipeRequest(name = "Recipe C"))
+        }.body<Recipe>()
+
+        val response = client.get("/api/recipes/random?excludeIds=${recipe1.id},${recipe2.id}") {
+            bearerAuth(token)
+        }
+        assertEquals(HttpStatusCode.OK, response.status)
+        val result = response.body<Recipe>()
+        assertEquals(recipe3.id, result.id)
+    }
+
+    @Test
+    fun `GET recipes random with all recipes excluded falls back`() = integrationTest {
+        val token = TestJwt.generateToken("random-all-excluded-user")
+        val client = jsonClient()
+
+        client.post("/api/users/me") { bearerAuth(token) }
+        val recipe1 = client.post("/api/recipes") {
+            bearerAuth(token)
+            contentType(ContentType.Application.Json)
+            setBody(RecipeRequest(name = "Recipe A"))
+        }.body<Recipe>()
+        val recipe2 = client.post("/api/recipes") {
+            bearerAuth(token)
+            contentType(ContentType.Application.Json)
+            setBody(RecipeRequest(name = "Recipe B"))
+        }.body<Recipe>()
+
+        val response = client.get("/api/recipes/random?excludeIds=${recipe1.id},${recipe2.id}") {
+            bearerAuth(token)
+        }
+        assertEquals(HttpStatusCode.OK, response.status)
+        val result = response.body<Recipe>()
+        assertTrue(result.id == recipe1.id || result.id == recipe2.id)
+    }
+
+    @Test
+    fun `GET recipes random with excludeIds ignores blank segments`() = integrationTest {
+        val token = TestJwt.generateToken("random-blank-segments-user")
+        val client = jsonClient()
+
+        client.post("/api/users/me") { bearerAuth(token) }
+        val recipe1 = client.post("/api/recipes") {
+            bearerAuth(token)
+            contentType(ContentType.Application.Json)
+            setBody(RecipeRequest(name = "Recipe A"))
+        }.body<Recipe>()
+        client.post("/api/recipes") {
+            bearerAuth(token)
+            contentType(ContentType.Application.Json)
+            setBody(RecipeRequest(name = "Recipe B"))
+        }.body<Recipe>()
+
+        val response = client.get("/api/recipes/random?excludeIds=${recipe1.id},,") {
+            bearerAuth(token)
+        }
+        assertEquals(HttpStatusCode.OK, response.status)
     }
 
     @Test

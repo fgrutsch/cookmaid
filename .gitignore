@@ -21,3 +21,4 @@ dev/postgres-data/
 .claude/
 .context/
 sandbox/
+.worktrees/

@@ -72,13 +72,13 @@ class FakeRecipeRepository : RecipeRepository {
         }.toMutableList()
     }
 
-    override suspend fun fetchRandom(tag: String?, excludeId: String?): Recipe? {
+    override suspend fun fetchRandom(tag: String?, excludeIds: List<String>): Recipe? {
         var filtered = recipes.toList()
         if (!tag.isNullOrBlank()) {
             filtered = filtered.filter { tag in it.tags }
         }
-        if (!excludeId.isNullOrBlank()) {
-            filtered = filtered.filter { it.id.toString() != excludeId }
+        if (excludeIds.isNotEmpty()) {
+            filtered = filtered.filter { it.id.toString() !in excludeIds }
         }
         return filtered.randomOrNull()
     }
