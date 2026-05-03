@@ -42,7 +42,8 @@ class RecipeListViewModel(
             is RecipeListEvent.SetSearchActive -> setSearchActive(event.active)
             is RecipeListEvent.SelectTag -> selectTag(event.tag)
             is RecipeListEvent.RollRandomRecipe -> rollRandomRecipe()
-            is RecipeListEvent.ClearRandomRecipe -> updateState { copy(randomRecipe = null, shownRecipeIds = emptySet()) }
+            is RecipeListEvent.ClearRandomRecipe ->
+                updateState { copy(randomRecipe = null, shownRecipeIds = emptySet()) }
             is RecipeListEvent.DeleteRecipe -> deleteRecipe(event.id)
             is RecipeListEvent.AddIngredientsToShoppingList -> addToShoppingList(event.ingredients)
             is RecipeListEvent.AddToMealPlan -> addToMealPlan(event.recipeId, event.day)

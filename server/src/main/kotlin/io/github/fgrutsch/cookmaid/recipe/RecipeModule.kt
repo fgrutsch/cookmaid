@@ -48,7 +48,7 @@ fun Route.recipeRoutes() {
                 ?.split(",")
                 ?.filter { it.isNotBlank() }
                 ?.map { Uuid.parse(it.trim()) }
-                ?: emptyList()
+                .orEmpty()
             val recipe = service.findRandom(call.userId(), tag, excludeIds, call.locale())
             if (recipe != null) call.respond(recipe) else call.respond(HttpStatusCode.NotFound)
         }
