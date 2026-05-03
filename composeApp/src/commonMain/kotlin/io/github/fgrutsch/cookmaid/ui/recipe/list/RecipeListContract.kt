@@ -19,6 +19,7 @@ data class RecipeListState(
     val selectedTag: String? = null,
     val randomRecipe: Recipe? = null,
     val isLoadingRandom: Boolean = false,
+    val shownRecipeIds: Set<String> = emptySet(),
 )
 
 sealed interface RecipeListEvent {

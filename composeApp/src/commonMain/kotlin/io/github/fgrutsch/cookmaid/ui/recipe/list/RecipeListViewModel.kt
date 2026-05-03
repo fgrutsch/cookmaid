@@ -42,7 +42,7 @@ class RecipeListViewModel(
             is RecipeListEvent.SetSearchActive -> setSearchActive(event.active)
             is RecipeListEvent.SelectTag -> selectTag(event.tag)
             is RecipeListEvent.RollRandomRecipe -> rollRandomRecipe()
-            is RecipeListEvent.ClearRandomRecipe -> updateState { copy(randomRecipe = null) }
+            is RecipeListEvent.ClearRandomRecipe -> updateState { copy(randomRecipe = null, shownRecipeIds = emptySet()) }
             is RecipeListEvent.DeleteRecipe -> deleteRecipe(event.id)
             is RecipeListEvent.AddIngredientsToShoppingList -> addToShoppingList(event.ingredients)
             is RecipeListEvent.AddToMealPlan -> addToMealPlan(event.recipeId, event.day)
@@ -130,20 +130,25 @@ class RecipeListViewModel(
 
     private fun selectTag(tag: String?) {
         val selected = if (tag == state.value.selectedTag) null else tag
-        updateState { copy(selectedTag = selected) }
+        updateState { copy(selectedTag = selected, shownRecipeIds = emptySet()) }
         fetchFirstPage()
     }
 
     private fun rollRandomRecipe() {
         launch {
             updateState { copy(isLoadingRandom = true) }
-            val current = state.value.randomRecipe
             val tag = state.value.selectedTag
             val recipe = repository.fetchRandom(
                 tag = tag,
-                excludeId = current?.id?.toString(),
+                excludeIds = state.value.shownRecipeIds.toList(),
             )
-            updateState { copy(randomRecipe = recipe, isLoadingRandom = false) }
+            updateState {
+                copy(
+                    randomRecipe = recipe,
+                    isLoadingRandom = false,
+                    shownRecipeIds = if (recipe != null) shownRecipeIds + recipe.id.toString() else shownRecipeIds,
+                )
+            }
         }
     }
 

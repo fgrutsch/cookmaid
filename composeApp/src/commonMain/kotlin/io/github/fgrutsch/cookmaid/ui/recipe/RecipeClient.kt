@@ -48,10 +48,12 @@ class RecipeClient(
         }
     }
 
-    suspend fun fetchRandom(tag: String?, excludeId: String?): Recipe =
+    suspend fun fetchRandom(tag: String?, excludeIds: List<String>): Recipe =
         apiClient.httpClient.get("$base/random") {
             tag?.let { parameter("tag", it) }
-            excludeId?.let { parameter("excludeId", it) }
+            if (excludeIds.isNotEmpty()) {
+                parameter("excludeIds", excludeIds.joinToString(","))
+            }
         }.body()
 
     suspend fun delete(id: Uuid) {
