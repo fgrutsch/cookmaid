@@ -62,12 +62,12 @@ class RecipeService(
      *
      * @param userId the owner of the recipes.
      * @param tag optional tag filter.
-     * @param excludeId optional recipe ID to exclude (for avoiding repeats).
+     * @param excludeIds recipe IDs to exclude (for avoiding repeats).
      * @param locale the language code for catalog item names.
      * @return a random recipe, or null if no recipes match.
      */
-    suspend fun findRandom(userId: UserId, tag: String?, excludeId: Uuid?, locale: SupportedLocale): Recipe? {
-        return repository.findRandom(userId, tag, excludeId, locale)
+    suspend fun findRandom(userId: UserId, tag: String?, excludeIds: List<Uuid>, locale: SupportedLocale): Recipe? {
+        return repository.findRandom(userId, tag, excludeIds, locale)
     }
 
     /**
