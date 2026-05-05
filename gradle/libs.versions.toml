@@ -41,7 +41,7 @@ testcontainers = "1.21.4"
 
 # Tooling
 axionRelease = "1.21.1"
-buildkonfig = "0.19.0"
+buildkonfig = "0.20.0"
 detekt = "2.0.0-alpha.3"
 kover = "0.9.8"
 
