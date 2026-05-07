@@ -92,6 +92,9 @@ fun RecipeListScreen(
                 searchActive = state.searchActive,
                 searchQuery = state.searchQuery,
                 searchFocusRequester = searchFocusRequester,
+                availableTags = state.availableTags,
+                selectedTag = state.selectedTag,
+                onTagClick = { onEvent(RecipeListEvent.SelectTag(it)) },
                 onSearchQueryChange = { onEvent(RecipeListEvent.UpdateSearchQuery(it)) },
                 onSearchDismiss = { keyboardController?.hide() },
                 onCloseSearch = { onEvent(RecipeListEvent.SetSearchActive(false)) },
@@ -113,7 +116,6 @@ fun RecipeListScreen(
             RecipeListContent(
                 state = state,
                 listState = listState,
-                onTagClick = { onEvent(RecipeListEvent.SelectTag(it)) },
                 onRecipeClick = onRecipeClick,
                 onAddToShoppingList = { ingredientPickerRecipeId = it },
                 onAddToMealPlan = { dayPickerRecipeId = it },

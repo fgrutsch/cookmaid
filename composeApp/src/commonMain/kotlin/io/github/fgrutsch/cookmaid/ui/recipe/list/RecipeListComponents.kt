@@ -1,6 +1,5 @@
 package io.github.fgrutsch.cookmaid.ui.recipe.list
 
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,16 +12,17 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -50,6 +50,7 @@ import cookmaid.composeapp.generated.resources.Res
 import cookmaid.composeapp.generated.resources.common_add_to_meal_plan
 import cookmaid.composeapp.generated.resources.ic_casino
 import cookmaid.composeapp.generated.resources.ic_close
+import cookmaid.composeapp.generated.resources.ic_filter_list
 import cookmaid.composeapp.generated.resources.ic_more_vert
 import cookmaid.composeapp.generated.resources.ic_refresh
 import cookmaid.composeapp.generated.resources.ic_search
@@ -59,7 +60,9 @@ import cookmaid.composeapp.generated.resources.common_options
 import cookmaid.composeapp.generated.resources.common_search
 import cookmaid.composeapp.generated.resources.common_search_recipes
 import cookmaid.composeapp.generated.resources.recipe_list_close_search
+import cookmaid.composeapp.generated.resources.recipe_list_clear_filter
 import cookmaid.composeapp.generated.resources.recipe_list_empty
+import cookmaid.composeapp.generated.resources.recipe_list_filter_tags
 import cookmaid.composeapp.generated.resources.recipe_list_random
 import cookmaid.composeapp.generated.resources.recipe_list_reroll
 import cookmaid.composeapp.generated.resources.recipe_list_title
@@ -72,11 +75,15 @@ import kotlin.uuid.Uuid
 
 internal const val PAGINATION_THRESHOLD = 5
 
+@Suppress("LongMethod", "LongParameterList")
 @Composable
 internal fun RecipeListTopBar(
     searchActive: Boolean,
     searchQuery: String,
     searchFocusRequester: FocusRequester,
+    availableTags: List<String>,
+    selectedTag: String?,
+    onTagClick: (String) -> Unit,
     onSearchQueryChange: (String) -> Unit,
     onSearchDismiss: () -> Unit,
     onCloseSearch: () -> Unit,
@@ -126,6 +133,13 @@ internal fun RecipeListTopBar(
                         contentDescription = Res.string.common_search.resolve(),
                     )
                 }
+                if (availableTags.isNotEmpty()) {
+                    TagFilterIconButton(
+                        tags = availableTags,
+                        selectedTag = selectedTag,
+                        onTagClick = onTagClick,
+                    )
+                }
                 IconButton(onClick = onRandomRecipe) {
                     Icon(
                         painterResource(Res.drawable.ic_casino),
@@ -138,24 +152,57 @@ internal fun RecipeListTopBar(
 }
 
 @Composable
-internal fun TagFilterRow(
+private fun TagFilterIconButton(
     tags: List<String>,
     selectedTag: String?,
     onTagClick: (String) -> Unit,
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .horizontalScroll(rememberScrollState())
-            .padding(horizontal = 12.dp, vertical = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        tags.forEach { tag ->
-            FilterChip(
-                selected = tag == selectedTag,
-                onClick = { onTagClick(tag) },
-                label = { Text(tag) },
-            )
+    var expanded by remember { mutableStateOf(false) }
+
+    Box {
+        IconButton(onClick = { expanded = true }) {
+            BadgedBox(
+                badge = {
+                    if (selectedTag != null) {
+                        Badge { Text("1") }
+                    }
+                },
+            ) {
+                Icon(
+                    painterResource(Res.drawable.ic_filter_list),
+                    contentDescription = Res.string.recipe_list_filter_tags.resolve(),
+                )
+            }
+        }
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+        ) {
+            if (selectedTag != null) {
+                DropdownMenuItem(
+                    text = { Text(Res.string.recipe_list_clear_filter.resolve()) },
+                    onClick = {
+                        onTagClick(selectedTag)
+                        expanded = false
+                    },
+                )
+                HorizontalDivider()
+            }
+            tags.forEach { tag ->
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = tag,
+                            fontWeight = if (tag == selectedTag) FontWeight.Bold else null,
+                        )
+                    },
+                    onClick = {
+                        onTagClick(tag)
+                        expanded = false
+                    },
+                )
+            }
         }
     }
 }
@@ -164,19 +211,11 @@ internal fun TagFilterRow(
 internal fun RecipeListContent(
     state: RecipeListState,
     listState: LazyListState,
-    onTagClick: (String) -> Unit,
     onRecipeClick: (Uuid) -> Unit,
     onAddToShoppingList: (Uuid) -> Unit,
     onAddToMealPlan: (Uuid) -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
-        if (state.availableTags.isNotEmpty()) {
-            TagFilterRow(
-                tags = state.availableTags,
-                selectedTag = state.selectedTag,
-                onTagClick = onTagClick,
-            )
-        }
 
         if (state.isLoading && state.recipes.isEmpty()) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
