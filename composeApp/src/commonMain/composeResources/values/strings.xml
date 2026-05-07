@@ -49,9 +49,7 @@
     <string name="recipe_list_close_search">Close search</string>
     <string name="recipe_list_random">Random recipe</string>
     <string name="recipe_list_empty">No recipes found</string>
-    <string name="recipe_list_more_tags">+%1$d more</string>
-    <string name="recipe_list_filter_tags">Filter by tag</string>
-    <string name="recipe_list_search_tags">Search tags…</string>
+    <string name="recipe_list_filter_tags">Tags</string>
     <string name="recipe_list_clear_filter">Clear filter</string>
     <string name="recipe_list_reroll">Re-roll</string>
     <string name="recipe_list_view_details">View details</string>

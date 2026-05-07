@@ -1,38 +1,28 @@
 package io.github.fgrutsch.cookmaid.ui.recipe.list
 
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -60,6 +50,7 @@ import cookmaid.composeapp.generated.resources.Res
 import cookmaid.composeapp.generated.resources.common_add_to_meal_plan
 import cookmaid.composeapp.generated.resources.ic_casino
 import cookmaid.composeapp.generated.resources.ic_close
+import cookmaid.composeapp.generated.resources.ic_filter_list
 import cookmaid.composeapp.generated.resources.ic_more_vert
 import cookmaid.composeapp.generated.resources.ic_refresh
 import cookmaid.composeapp.generated.resources.ic_search
@@ -72,8 +63,6 @@ import cookmaid.composeapp.generated.resources.recipe_list_close_search
 import cookmaid.composeapp.generated.resources.recipe_list_clear_filter
 import cookmaid.composeapp.generated.resources.recipe_list_empty
 import cookmaid.composeapp.generated.resources.recipe_list_filter_tags
-import cookmaid.composeapp.generated.resources.recipe_list_more_tags
-import cookmaid.composeapp.generated.resources.recipe_list_search_tags
 import cookmaid.composeapp.generated.resources.recipe_list_random
 import cookmaid.composeapp.generated.resources.recipe_list_reroll
 import cookmaid.composeapp.generated.resources.recipe_list_title
@@ -86,11 +75,15 @@ import kotlin.uuid.Uuid
 
 internal const val PAGINATION_THRESHOLD = 5
 
+@Suppress("LongMethod", "LongParameterList")
 @Composable
 internal fun RecipeListTopBar(
     searchActive: Boolean,
     searchQuery: String,
     searchFocusRequester: FocusRequester,
+    availableTags: List<String>,
+    selectedTag: String?,
+    onTagClick: (String) -> Unit,
     onSearchQueryChange: (String) -> Unit,
     onSearchDismiss: () -> Unit,
     onCloseSearch: () -> Unit,
@@ -140,6 +133,13 @@ internal fun RecipeListTopBar(
                         contentDescription = Res.string.common_search.resolve(),
                     )
                 }
+                if (availableTags.isNotEmpty()) {
+                    TagFilterIconButton(
+                        tags = availableTags,
+                        selectedTag = selectedTag,
+                        onTagClick = onTagClick,
+                    )
+                }
                 IconButton(onClick = onRandomRecipe) {
                     Icon(
                         painterResource(Res.drawable.ic_casino),
@@ -151,130 +151,57 @@ internal fun RecipeListTopBar(
     )
 }
 
-private const val INLINE_TAG_LIMIT = 8
-
 @Composable
-internal fun TagFilterRow(
+private fun TagFilterIconButton(
     tags: List<String>,
     selectedTag: String?,
     onTagClick: (String) -> Unit,
 ) {
-    var showSheet by remember { mutableStateOf(false) }
-    val inlineTags = if (tags.size <= INLINE_TAG_LIMIT) tags else tags.take(INLINE_TAG_LIMIT)
-    val overflowCount = tags.size - inlineTags.size
-    val selectedIsHidden = selectedTag != null && selectedTag !in inlineTags
+    var expanded by remember { mutableStateOf(false) }
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .horizontalScroll(rememberScrollState())
-            .padding(horizontal = 12.dp, vertical = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        if (selectedIsHidden && selectedTag != null) {
-            FilterChip(
-                selected = true,
-                onClick = { onTagClick(selectedTag) },
-                label = { Text(selectedTag) },
-            )
-        }
-        inlineTags.forEach { tag ->
-            if (tag == selectedTag && selectedIsHidden) return@forEach
-            FilterChip(
-                selected = tag == selectedTag,
-                onClick = { onTagClick(tag) },
-                label = { Text(tag) },
-            )
-        }
-        if (overflowCount > 0) {
-            FilterChip(
-                selected = false,
-                onClick = { showSheet = true },
-                label = { Text(Res.string.recipe_list_more_tags.resolve(overflowCount)) },
-            )
-        }
-    }
-
-    if (showSheet) {
-        TagFilterSheet(
-            tags = tags,
-            selectedTag = selectedTag,
-            onTagClick = { tag ->
-                onTagClick(tag)
-                showSheet = false
-            },
-            onClearFilter = {
-                if (selectedTag != null) onTagClick(selectedTag)
-                showSheet = false
-            },
-            onDismiss = { showSheet = false },
-        )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun TagFilterSheet(
-    tags: List<String>,
-    selectedTag: String?,
-    onTagClick: (String) -> Unit,
-    onClearFilter: () -> Unit,
-    onDismiss: () -> Unit,
-) {
-    val sheetState = rememberModalBottomSheetState()
-    var searchQuery by remember { mutableStateOf("") }
-    val filteredTags = if (searchQuery.isBlank()) tags
-        else tags.filter { it.contains(searchQuery, ignoreCase = true) }
-
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = sheetState,
-    ) {
-        Column(modifier = Modifier.padding(bottom = 16.dp)) {
-            Text(
-                text = Res.string.recipe_list_filter_tags.resolve(),
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(horizontal = 16.dp),
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            if (tags.size > INLINE_TAG_LIMIT) {
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = { searchQuery = it },
-                    placeholder = { Text(Res.string.recipe_list_search_tags.resolve()) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+    Box {
+        IconButton(onClick = { expanded = true }) {
+            BadgedBox(
+                badge = {
+                    if (selectedTag != null) {
+                        Badge { Text("1") }
+                    }
+                },
+            ) {
+                Icon(
+                    painterResource(Res.drawable.ic_filter_list),
+                    contentDescription = Res.string.recipe_list_filter_tags.resolve(),
                 )
-                Spacer(modifier = Modifier.height(8.dp))
             }
+        }
 
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+        ) {
             if (selectedTag != null) {
-                TextButton(
-                    onClick = onClearFilter,
-                    modifier = Modifier.padding(horizontal = 8.dp),
-                ) {
-                    Text(Res.string.recipe_list_clear_filter.resolve())
-                }
+                DropdownMenuItem(
+                    text = { Text(Res.string.recipe_list_clear_filter.resolve()) },
+                    onClick = {
+                        onTagClick(selectedTag)
+                        expanded = false
+                    },
+                )
+                HorizontalDivider()
             }
-
-            HorizontalDivider()
-
-            LazyColumn {
-                items(filteredTags.size) { index ->
-                    val tag = filteredTags[index]
-                    ListItem(
-                        headlineContent = { Text(tag) },
-                        leadingContent = {
-                            RadioButton(
-                                selected = tag == selectedTag,
-                                onClick = { onTagClick(tag) },
-                            )
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
+            tags.forEach { tag ->
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = tag,
+                            fontWeight = if (tag == selectedTag) FontWeight.Bold else null,
+                        )
+                    },
+                    onClick = {
+                        onTagClick(tag)
+                        expanded = false
+                    },
+                )
             }
         }
     }
@@ -284,19 +211,11 @@ private fun TagFilterSheet(
 internal fun RecipeListContent(
     state: RecipeListState,
     listState: LazyListState,
-    onTagClick: (String) -> Unit,
     onRecipeClick: (Uuid) -> Unit,
     onAddToShoppingList: (Uuid) -> Unit,
     onAddToMealPlan: (Uuid) -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
-        if (state.availableTags.isNotEmpty()) {
-            TagFilterRow(
-                tags = state.availableTags,
-                selectedTag = state.selectedTag,
-                onTagClick = onTagClick,
-            )
-        }
 
         if (state.isLoading && state.recipes.isEmpty()) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

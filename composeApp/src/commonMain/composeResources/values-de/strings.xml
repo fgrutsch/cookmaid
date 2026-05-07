@@ -49,9 +49,7 @@
     <string name="recipe_list_close_search">Suche schließen</string>
     <string name="recipe_list_random">Zufälliges Rezept</string>
     <string name="recipe_list_empty">Keine Rezepte gefunden</string>
-    <string name="recipe_list_more_tags">+%1$d weitere</string>
-    <string name="recipe_list_filter_tags">Nach Tag filtern</string>
-    <string name="recipe_list_search_tags">Tags suchen…</string>
+    <string name="recipe_list_filter_tags">Tags</string>
     <string name="recipe_list_clear_filter">Filter löschen</string>
     <string name="recipe_list_reroll">Neu würfeln</string>
     <string name="recipe_list_view_details">Details anzeigen</string>
