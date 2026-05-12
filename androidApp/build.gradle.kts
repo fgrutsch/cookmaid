@@ -31,11 +31,14 @@ android {
         addManifestPlaceholders(mapOf("oidcRedirectScheme" to "cookmaid"))
     }
     signingConfigs {
-        create("play") {
-            storeFile = file(keystoreProps.getProperty("storeFile"))
-            storePassword = keystoreProps.getProperty("storePassword")
-            keyAlias = keystoreProps.getProperty("keyAlias")
-            keyPassword = keystoreProps.getProperty("keyPassword")
+        create("release") {
+            val keystorePropsFile = rootProject.file("keystore.properties")
+            if (keystorePropsFile.exists()) {
+                storeFile = file(keystoreProps.getProperty("storeFile"))
+                storePassword = keystoreProps.getProperty("storePassword")
+                keyAlias = keystoreProps.getProperty("keyAlias")
+                keyPassword = keystoreProps.getProperty("keyPassword")
+            }
         }
     }
     flavorDimensions += "environment"
@@ -65,7 +68,7 @@ android {
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("play")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {
