@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -22,7 +23,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -52,6 +52,7 @@ import cookmaid.composeapp.generated.resources.shopping_new_list
 import cookmaid.composeapp.generated.resources.shopping_rename_list
 import cookmaid.composeapp.generated.resources.shopping_title
 import io.github.fgrutsch.cookmaid.catalog.Item
+import io.github.fgrutsch.cookmaid.ui.common.SuccessSnackbarHost
 import io.github.fgrutsch.cookmaid.shopping.ShoppingItem
 import io.github.fgrutsch.cookmaid.shopping.ShoppingList
 import io.github.fgrutsch.cookmaid.ui.common.SwipeItem
@@ -88,7 +89,8 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
     }
 
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        contentWindowInsets = WindowInsets(0),
+        snackbarHost = { SuccessSnackbarHost(snackbarHostState) },
         topBar = {
             ShoppingListTopBar(
                 showMenu = showMenu,

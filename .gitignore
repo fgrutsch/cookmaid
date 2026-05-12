@@ -5,6 +5,8 @@
 xcuserdata
 !src/**/build/
 local.properties
+*.jks
+keystore.properties
 .idea
 .DS_Store
 captures

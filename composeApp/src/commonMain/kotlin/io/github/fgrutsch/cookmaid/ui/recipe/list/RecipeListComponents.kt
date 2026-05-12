@@ -5,8 +5,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -73,7 +75,7 @@ import io.github.fgrutsch.cookmaid.ui.common.resolve
 import org.jetbrains.compose.resources.painterResource
 import kotlin.uuid.Uuid
 
-internal const val PAGINATION_THRESHOLD = 5
+private const val DROPDOWN_HEIGHT = 0.6f
 
 @Suppress("LongMethod", "LongParameterList")
 @Composable
@@ -178,6 +180,7 @@ private fun TagFilterIconButton(
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
+            modifier = Modifier.fillMaxHeight(DROPDOWN_HEIGHT),
         ) {
             if (selectedTag != null) {
                 DropdownMenuItem(

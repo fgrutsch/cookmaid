@@ -1,5 +1,6 @@
 package io.github.fgrutsch.cookmaid.ui.recipe.list
 
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -34,6 +35,8 @@ import io.github.fgrutsch.cookmaid.ui.mealplan.DayPickerViewModel
 import io.github.fgrutsch.cookmaid.ui.mealplan.IngredientPickerDialog
 import kotlin.uuid.Uuid
 import org.koin.compose.koinInject
+
+private const val PAGINATION_THRESHOLD = 5
 
 /**
  * Paginated recipe list with search, tag filtering, and pull-to-refresh.
@@ -85,8 +88,9 @@ fun RecipeListScreen(
     }
     LaunchedEffect(shouldLoadMore) { if (shouldLoadMore) onEvent(RecipeListEvent.LoadMore) }
 
-    SuccessSnackbarHost(snackbarHostState) {
     Scaffold(
+        contentWindowInsets = WindowInsets(0),
+        snackbarHost = { SuccessSnackbarHost(snackbarHostState) },
         topBar = {
             RecipeListTopBar(
                 searchActive = state.searchActive,
@@ -121,7 +125,6 @@ fun RecipeListScreen(
                 onAddToMealPlan = { dayPickerRecipeId = it },
             )
         }
-    }
     }
 
     state.randomRecipe?.let { recipe ->
