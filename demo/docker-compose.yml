@@ -24,7 +24,7 @@ services:
     image: postgres:18-alpine
     restart: unless-stopped
     volumes:
-      - demo-data:/var/lib/postgresql/data
+      - demo-data:/var/lib/postgresql
       - ./init-databases.sh:/docker-entrypoint-initdb.d/init-databases.sh:ro
     environment:
       POSTGRES_USER: cookmaid
@@ -38,7 +38,7 @@ services:
       start_period: 5s
 
   nginx:
-    image: nginx:1-alpine
+    image: nginx:1.29.6-alpine
     restart: unless-stopped
     ports:
       - "8082:8082"
@@ -55,7 +55,7 @@ services:
       APP_URL: http://localhost:8082
       ENCRYPTION_KEY: 9gsZlxKb0bGfgkFEiczMeC8PkqiWTP1DPry9kZ7U/3U=
       TRUST_PROXY: "true"
-      DB_CONNECTION_STRING: postgres://cookmaid:cookmaid@postgres:5432/pocketid
+      DB_CONNECTION_STRING: postgres://cookmaid:cookmaid@postgres:5432/pocketid?sslmode=disable
     depends_on:
       postgres:
         condition: service_healthy
