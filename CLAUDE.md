@@ -43,6 +43,12 @@ package of `io.github.fgrutsch.cookmaid`.
 ./gradlew detektAll
 ```
 
+## Documented Solutions
+
+`docs/solutions/` contains documented solutions to past problems and established
+conventions, organized by category with YAML frontmatter (`module`, `tags`,
+`problem_type`). Relevant when implementing or debugging in documented areas.
+
 ## Architecture
 
 Four Gradle modules:
