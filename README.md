@@ -10,6 +10,25 @@
 Cookmaid is a self-hosted meal planning app. Manage your recipes, plan meals for the week,
 and generate shopping lists — available on Android and as a Progressive Web App.
 
+See the [FAQ & Feature Guide](docs/faq.md) for usage tips and common workflows.
+
+## Screenshots
+
+<table>
+  <tr>
+    <td><img src="docs/images/screenshot-recipes.png" alt="Recipe list" width="250"/></td>
+    <td><img src="docs/images/screenshot-recipe-detail.png" alt="Recipe detail" width="250"/></td>
+    <td><img src="docs/images/screenshot-meal-plan.png" alt="Meal plan" width="250"/></td>
+    <td><img src="docs/images/screenshot-shopping-list.png" alt="Shopping list" width="250"/></td>
+  </tr>
+  <tr>
+    <td align="center">Recipes</td>
+    <td align="center">Recipe Detail</td>
+    <td align="center">Meal Plan</td>
+    <td align="center">Shopping List</td>
+  </tr>
+</table>
+
 ## Tech Stack
 
 - Kotlin + Compose Multiplatform (Android, WasmJS)
@@ -100,3 +119,73 @@ and `oidc.jwks-url` default to the local PocketID instance;
 ./gradlew :shared:allTests
 ./gradlew :composeApp:allTests
 ```
+
+## Production Deployment
+
+Cookmaid is published as a Docker image to
+`ghcr.io/fgrutsch/cookmaid` on every release tag. The image bundles
+the Ktor server and the WasmJS web app — a single container serves
+both the API and the frontend.
+
+### Docker Compose
+
+Create a `docker-compose.yml`:
+
+```yaml
+services:
+  cookmaid:
+    image: ghcr.io/fgrutsch/cookmaid:latest
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      # --- Server (application.yaml) ---
+      DATABASE_URL: jdbc:postgresql://postgres:5432/cookmaid
+      DATABASE_USER: cookmaid
+      DATABASE_PASSWORD: changeme
+      OIDC_ISSUER: https://your-oidc-provider.example.com
+      OIDC_JWKS_URL: https://your-oidc-provider.example.com/.well-known/jwks.json
+      OIDC_CLIENT_ID: your-client-id
+
+      # --- Frontend (injected into index.html at container startup) ---
+      OIDC_DISCOVERY_URI: https://your-oidc-provider.example.com/.well-known/openid-configuration
+      # OIDC_CLIENT_ID is also used here (same value as above)
+      OIDC_SCOPE: "openid profile email offline_access"
+      OIDC_ACCOUNT_URI: https://your-oidc-provider.example.com/settings
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    volumes:
+      - cookmaid-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: cookmaid
+      POSTGRES_PASSWORD: changeme
+      POSTGRES_DB: cookmaid
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cookmaid"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+volumes:
+  cookmaid-data:
+```
+
+```shell
+docker compose up -d
+```
+
+The app is then available at `http://localhost:8081`.
+
+### OIDC Provider
+
+Cookmaid requires an OpenID Connect provider for authentication.
+Any OIDC-compliant provider works (e.g.,
+[PocketID](https://github.com/pocket-id/pocket-id),
+Keycloak, Authentik, Authelia). Configure a client in your provider
+and set the environment variables above accordingly.

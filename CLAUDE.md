@@ -334,3 +334,8 @@ suspend fun ApplicationCall.userId(): UserId { ... }
  */
 suspend fun isOwner(userId: UserId, itemId: Uuid): Boolean
 ```
+
+## User-Maintained Documentation
+
+- `docs/faq.md` — user-facing FAQ and feature guide. Do not auto-update
+  or keep in sync. Content is maintained manually by the project owner.
