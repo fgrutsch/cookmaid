@@ -16,6 +16,7 @@ import io.github.fgrutsch.cookmaid.shopping.shoppingRoutes
 import io.github.fgrutsch.cookmaid.user.userModule
 import io.github.fgrutsch.cookmaid.user.userRoutes
 import io.github.fgrutsch.cookmaid.web.configureStaticFiles
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.*
@@ -32,6 +33,8 @@ import io.ktor.server.routing.*
 import org.koin.dsl.module
 import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
+
+private val logger = KotlinLogging.logger {}
 
 fun main(args: Array<String>) {
     EngineMain.main(args)
@@ -82,13 +85,16 @@ private fun Application.configureStatusPages() {
         exception<UserNotRegisteredException> { call, _ ->
             call.respond(HttpStatusCode.Unauthorized, ErrorResponse("user_not_registered"))
         }
-        exception<MissingRequestParameterException> { call, _ ->
+        exception<MissingRequestParameterException> { call, cause ->
+            logger.debug(cause) { "Missing request parameter" }
             call.respond(HttpStatusCode.BadRequest)
         }
-        exception<IllegalArgumentException> { call, _ ->
+        exception<IllegalArgumentException> { call, cause ->
+            logger.debug(cause) { "Invalid request parameter" }
             call.respond(HttpStatusCode.BadRequest)
         }
-        exception<Throwable> { call, _ ->
+        exception<Throwable> { call, cause ->
+            logger.error(cause) { "Unhandled exception" }
             call.respond(HttpStatusCode.InternalServerError)
         }
     }

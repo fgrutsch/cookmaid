@@ -2,6 +2,7 @@ package io.github.fgrutsch.cookmaid.mealplan
 
 import io.github.fgrutsch.cookmaid.recipe.RecipeRepository
 import io.github.fgrutsch.cookmaid.user.UserId
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.datetime.LocalDate
 import kotlin.uuid.Uuid
 
@@ -12,6 +13,8 @@ class MealPlanService(
     private val recipeRepository: RecipeRepository,
     private val repository: MealPlanRepository,
 ) {
+
+    private val logger = KotlinLogging.logger {}
 
     /**
      * Returns meal plan items for [userId] within the given date range.
@@ -35,8 +38,13 @@ class MealPlanService(
      * @return the created meal plan item, or null if [recipeId] does not belong to [userId].
      */
     suspend fun create(userId: UserId, day: LocalDate, recipeId: Uuid?, note: String?): MealPlanItem? {
-        if (recipeId != null && !recipeRepository.isOwner(userId, recipeId)) return null
-        return repository.create(userId, day, recipeId, note)
+        if (recipeId != null && !recipeRepository.isOwner(userId, recipeId)) {
+            logger.debug { "Recipe ownership check failed: userId=$userId, recipeId=$recipeId" }
+            return null
+        }
+        val item = repository.create(userId, day, recipeId, note)
+        logger.info { "Meal plan item created: userId=$userId, itemId=${item.id}, day=$day" }
+        return item
     }
 
     /**
@@ -49,8 +57,12 @@ class MealPlanService(
      * @return true if the update succeeded, false if not found or not owned.
      */
     suspend fun update(userId: UserId, itemId: Uuid, day: LocalDate?, note: String?): Boolean {
-        if (!repository.isOwner(userId, itemId)) return false
+        if (!repository.isOwner(userId, itemId)) {
+            logger.debug { "Ownership check failed: userId=$userId, itemId=$itemId" }
+            return false
+        }
         repository.update(itemId, day, note)
+        logger.info { "Meal plan item updated: userId=$userId, itemId=$itemId" }
         return true
     }
 
@@ -62,8 +74,12 @@ class MealPlanService(
      * @return true if the deletion succeeded, false if not found or not owned.
      */
     suspend fun delete(userId: UserId, itemId: Uuid): Boolean {
-        if (!repository.isOwner(userId, itemId)) return false
+        if (!repository.isOwner(userId, itemId)) {
+            logger.debug { "Ownership check failed: userId=$userId, itemId=$itemId" }
+            return false
+        }
         repository.delete(itemId)
+        logger.info { "Meal plan item deleted: userId=$userId, itemId=$itemId" }
         return true
     }
 }

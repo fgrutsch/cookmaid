@@ -2,6 +2,7 @@ package io.github.fgrutsch.cookmaid.shopping
 
 import io.github.fgrutsch.cookmaid.common.SupportedLocale
 import io.github.fgrutsch.cookmaid.user.UserId
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.uuid.Uuid
 
 /**
@@ -10,6 +11,8 @@ import kotlin.uuid.Uuid
 class ShoppingListService(
     private val repository: ShoppingListRepository,
 ) {
+
+    private val logger = KotlinLogging.logger {}
 
     /**
      * Returns all shopping lists belonging to [userId].
@@ -30,6 +33,7 @@ class ShoppingListService(
      */
     suspend fun createDefaultList(userId: UserId) {
         repository.createList(userId, "Shopping List", default = true)
+        logger.info { "Default shopping list created: userId=$userId" }
     }
 
     /**
@@ -40,7 +44,9 @@ class ShoppingListService(
      * @return the newly created shopping list.
      */
     suspend fun createList(userId: UserId, name: String): ShoppingList {
-        return repository.createList(userId, name, default = false)
+        val list = repository.createList(userId, name, default = false)
+        logger.info { "Shopping list created: userId=$userId, listId=${list.id}" }
+        return list
     }
 
     /**
@@ -52,8 +58,12 @@ class ShoppingListService(
      * @return true if the update succeeded, false if not owned.
      */
     suspend fun updateList(userId: UserId, id: Uuid, name: String): Boolean {
-        if (!repository.isListOwner(userId, id)) return false
+        if (!repository.isListOwner(userId, id)) {
+            logger.debug { "List ownership check failed: userId=$userId, listId=$id" }
+            return false
+        }
         repository.updateList(id, name)
+        logger.info { "Shopping list updated: userId=$userId, listId=$id" }
         return true
     }
 
@@ -67,9 +77,19 @@ class ShoppingListService(
     suspend fun deleteList(userId: UserId, id: Uuid): DeleteListResult {
         val list = repository.findById(id)
         return when {
-            list == null || !repository.isListOwner(userId, id) -> DeleteListResult.NotFound
-            list.default -> DeleteListResult.CannotDeleteDefault
-            else -> { repository.deleteList(id); DeleteListResult.Deleted }
+            list == null || !repository.isListOwner(userId, id) -> {
+                logger.debug { "List not found or ownership check failed: userId=$userId, listId=$id" }
+                DeleteListResult.NotFound
+            }
+            list.default -> {
+                logger.debug { "Cannot delete default list: userId=$userId, listId=$id" }
+                DeleteListResult.CannotDeleteDefault
+            }
+            else -> {
+                repository.deleteList(id)
+                logger.info { "Shopping list deleted: userId=$userId, listId=$id" }
+                DeleteListResult.Deleted
+            }
         }
     }
 
@@ -82,7 +102,10 @@ class ShoppingListService(
      * @return the items in the list, or null if not owned.
      */
     suspend fun findItemsByListId(userId: UserId, listId: Uuid, locale: SupportedLocale): List<ShoppingItem>? {
-        if (!repository.isListOwner(userId, listId)) return null
+        if (!repository.isListOwner(userId, listId)) {
+            logger.debug { "List ownership check failed: userId=$userId, listId=$listId" }
+            return null
+        }
         return repository.findItemsByListId(listId, locale)
     }
 
@@ -105,8 +128,13 @@ class ShoppingListService(
         quantity: String?,
         locale: SupportedLocale,
     ): ShoppingItem? {
-        if (!repository.isListOwner(userId, listId)) return null
-        return repository.addItem(listId, catalogItemId, freeTextName, quantity, locale)
+        if (!repository.isListOwner(userId, listId)) {
+            logger.debug { "List ownership check failed: userId=$userId, listId=$listId" }
+            return null
+        }
+        val item = repository.addItem(listId, catalogItemId, freeTextName, quantity, locale)
+        logger.info { "Shopping item added: userId=$userId, listId=$listId, itemId=${item.id}" }
+        return item
     }
 
     /**
@@ -124,8 +152,13 @@ class ShoppingListService(
         items: List<CreateShoppingItemRequest>,
         locale: SupportedLocale,
     ): List<ShoppingItem>? {
-        if (!repository.isListOwner(userId, listId)) return null
-        return repository.addItems(listId, items, locale)
+        if (!repository.isListOwner(userId, listId)) {
+            logger.debug { "List ownership check failed: userId=$userId, listId=$listId" }
+            return null
+        }
+        val created = repository.addItems(listId, items, locale)
+        logger.info { "Shopping items added: userId=$userId, listId=$listId, count=${created.size}" }
+        return created
     }
 
     /**
@@ -138,8 +171,12 @@ class ShoppingListService(
      * @return true if the update succeeded, false if not owned.
      */
     suspend fun updateItem(userId: UserId, itemId: Uuid, quantity: String?, checked: Boolean): Boolean {
-        if (!repository.isItemOwner(userId, itemId)) return false
+        if (!repository.isItemOwner(userId, itemId)) {
+            logger.debug { "Item ownership check failed: userId=$userId, itemId=$itemId" }
+            return false
+        }
         repository.updateItem(itemId, quantity, checked)
+        logger.info { "Shopping item updated: userId=$userId, itemId=$itemId" }
         return true
     }
 
@@ -151,8 +188,12 @@ class ShoppingListService(
      * @return true if the deletion succeeded, false if not owned.
      */
     suspend fun deleteItem(userId: UserId, itemId: Uuid): Boolean {
-        if (!repository.isItemOwner(userId, itemId)) return false
+        if (!repository.isItemOwner(userId, itemId)) {
+            logger.debug { "Item ownership check failed: userId=$userId, itemId=$itemId" }
+            return false
+        }
         repository.deleteItem(itemId)
+        logger.info { "Shopping item deleted: userId=$userId, itemId=$itemId" }
         return true
     }
 
@@ -164,8 +205,12 @@ class ShoppingListService(
      * @return true if the operation succeeded, false if not owned.
      */
     suspend fun deleteCheckedItems(userId: UserId, listId: Uuid): Boolean {
-        if (!repository.isListOwner(userId, listId)) return false
+        if (!repository.isListOwner(userId, listId)) {
+            logger.debug { "List ownership check failed: userId=$userId, listId=$listId" }
+            return false
+        }
         repository.deleteCheckedItems(listId)
+        logger.info { "Checked items deleted: userId=$userId, listId=$listId" }
         return true
     }
 }

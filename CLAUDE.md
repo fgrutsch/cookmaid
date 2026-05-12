@@ -124,11 +124,20 @@ Four Gradle modules:
   unit tests use Koin + Testcontainers + `runTest`. Multi-user tests:
   generate tokens with `TestJwt.generateToken(subject)` using distinct
   subjects, and register each via `POST /api/users/me` before testing.
+- **Structured logging**: Each service class holds
+  `private val logger = KotlinLogging.logger {}` inside the class body.
+  Log at `info` for successful create/update/delete (include `userId` and
+  entity ID). Log at `debug` for ownership check failures and expected
+  control-flow rejections. The StatusPages catch-all logs at `error`.
+  For top-level Ktor extension functions (no class scope), declare the
+  logger as a `private` top-level val.
 - **StatusPages error handling**: `Application.configureStatusPages()` maps
-  exceptions to HTTP responses. Do **not** throw raw exceptions with
-  user/internal data in the message — the catch-all responds 500 with empty
-  body, but a typed handler higher up the chain will leak the message if you
-  define one. Use a dedicated exception class (see
+  exceptions to HTTP responses. The catch-all logs the exception at `error`
+  level and responds 500 with empty body. 400-level handlers
+  (`IllegalArgumentException`, `MissingRequestParameterException`) log at
+  `debug` level. Do **not** throw raw exceptions with user/internal data in
+  the message — a typed handler higher up the chain will leak the message
+  if you define one. Use a dedicated exception class (see
   `common/ktor/Errors.kt` for `UserNotRegisteredException`). Path-param
   parsing in `RouteExtensions` (`uuid()`, `localDate()`) throws
   `IllegalArgumentException` — mapped to 400. `Parameters.getOrFail` throws
@@ -146,12 +155,16 @@ Four Gradle modules:
 
 - **MVI pattern**: Each screen has `State`, `Event`, `Effect` types +
   `MviViewModel` base class. ViewModels use `launch {}` for coroutines
-  and `updateState {}` for state mutations.
+  and `updateState {}` for state mutations. `launch`/`launchOptimistic`
+  catch blocks log exceptions at `error` level before calling `onError`.
+  Do **not** add logging in `onError` — subclasses override it without
+  calling `super`, so base-class logging there would be silently bypassed.
 - **Structured concurrency in suspend catches**: Any new
   `catch (e: Exception)` in suspend code must rethrow `CancellationException`
   first. In Kotlin, `CancellationException` extends `Exception`, so a bare
   catch silently swallows cancellation and breaks scope teardown. Pattern
   already modeled in `MviViewModel.launch` / `launchOptimistic` /
+  `AuthViewModel.initialize()` / `AuthViewModel.login()` /
   `AuthViewModel.logout()`:
 
   ```kotlin

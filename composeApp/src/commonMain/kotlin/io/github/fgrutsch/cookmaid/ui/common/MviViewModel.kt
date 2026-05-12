@@ -2,6 +2,7 @@ package io.github.fgrutsch.cookmaid.ui.common
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,6 +19,8 @@ import kotlinx.coroutines.launch
  * @param F The effect type representing one-shot side effects (navigation, snackbars, etc.).
  */
 abstract class MviViewModel<S, E, F>(initialState: S) : ViewModel() {
+
+    private val logger = KotlinLogging.logger {}
 
     val state: StateFlow<S>
         field = MutableStateFlow(initialState)
@@ -65,6 +68,7 @@ abstract class MviViewModel<S, E, F>(initialState: S) : ViewModel() {
             } catch (
                 @Suppress("TooGenericExceptionCaught") e: Exception
             ) {
+                logger.error(e) { "Unhandled error in ${this@MviViewModel::class.simpleName}" }
                 onError(e)
             }
         }
@@ -88,6 +92,7 @@ abstract class MviViewModel<S, E, F>(initialState: S) : ViewModel() {
             } catch (
                 @Suppress("TooGenericExceptionCaught") e: Exception
             ) {
+                logger.error(e) { "Unhandled error in ${this@MviViewModel::class.simpleName}" }
                 state.update { snapshot }
                 onError(e)
             }
