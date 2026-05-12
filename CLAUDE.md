@@ -65,7 +65,7 @@ Four Gradle modules:
 - BuildKonfig (compile-time build config for KMP)
 - Detekt (linting), Kover (coverage), Testcontainers (integration tests)
 - Gradle with version catalog (`gradle/libs.versions.toml`)
-- Android: minSdk 24, targetSdk 36. `versionCode` derived from semver
+- Android: minSdk 28, targetSdk 36. `versionCode` derived from semver
   (`major*10000 + minor*100 + patch`); `versionName` is `project.version`.
 - Android backup: `android:allowBackup="false"` in `AndroidManifest.xml` — the
   DataStore-backed OIDC token store must never land in `adb backup` or
