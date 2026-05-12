@@ -43,7 +43,7 @@ screen.
 
 ### Can I move items between days?
 
-Swipe an item to edit it, then change the assigned day.
+Not directly. Delete the item from one day and add it to the other.
 
 ## Shopping List
 
