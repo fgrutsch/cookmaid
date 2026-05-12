@@ -70,6 +70,9 @@ internal fun ListNameDialog(
     onConfirm: (String) -> Unit,
 ) {
     var name by remember { mutableStateOf(initialName) }
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(Unit) { focusRequester.requestFocus() }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -80,7 +83,7 @@ internal fun ListNameDialog(
                 onValueChange = { name = it },
                 label = { Text(Res.string.shopping_list_name_label.resolve()) },
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
             )
         },
         confirmButton = {
