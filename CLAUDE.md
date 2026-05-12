@@ -335,7 +335,9 @@ suspend fun ApplicationCall.userId(): UserId { ... }
 suspend fun isOwner(userId: UserId, itemId: Uuid): Boolean
 ```
 
-## User-Maintained Assets
+## Documentation
 
+- `docs/faq.md` — user-facing FAQ and feature guide. Keep in sync when
+  adding, changing, or removing user-facing features.
 - `docs/images/screenshot-*.png` — app screenshots referenced in README.
   Taken manually by the project owner; do not generate or replace.
