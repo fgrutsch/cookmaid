@@ -339,3 +339,5 @@ suspend fun isOwner(userId: UserId, itemId: Uuid): Boolean
 
 - `docs/faq.md` — user-facing FAQ and feature guide. Do not auto-update
   or keep in sync. Content is maintained manually by the project owner.
+- `docs/images/screenshot-*.png` — app screenshots referenced in README.
+  Taken manually by the project owner; do not generate or replace.
