@@ -6,7 +6,6 @@ import io.github.fgrutsch.cookmaid.catalog.catalogModule
 import io.github.fgrutsch.cookmaid.catalog.catalogRoutes
 import io.github.fgrutsch.cookmaid.common.ktor.ErrorResponse
 import io.github.fgrutsch.cookmaid.common.ktor.UserNotRegisteredException
-import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.fgrutsch.cookmaid.db.databaseModule
 import io.github.fgrutsch.cookmaid.mealplan.mealPlanModule
 import io.github.fgrutsch.cookmaid.mealplan.mealPlanRoutes
@@ -17,6 +16,7 @@ import io.github.fgrutsch.cookmaid.shopping.shoppingRoutes
 import io.github.fgrutsch.cookmaid.user.userModule
 import io.github.fgrutsch.cookmaid.user.userRoutes
 import io.github.fgrutsch.cookmaid.web.configureStaticFiles
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.*
