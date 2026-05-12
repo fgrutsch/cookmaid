@@ -27,9 +27,43 @@ jobs:
       - name: Push to GHCR
         run: ./gradlew pushDockerImage -Pdocker.registry=ghcr.io/${{ github.repository }}
 
+  android:
+    name: Build Android artifacts
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: jdx/mise-action@v4
+      - uses: android-actions/setup-android@v4
+      - uses: gradle/actions/setup-gradle@v6
+      - name: Decode keystore
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > release.jks
+      - name: Create keystore.properties
+        run: |
+          cat > keystore.properties <<EOF
+          storeFile=${{ github.workspace }}/release.jks
+          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
+          keyAlias=${{ secrets.KEY_ALIAS }}
+          keyPassword=${{ secrets.KEY_PASSWORD }}
+          EOF
+      - name: Build APK and AAB
+        run: ./gradlew :androidApp:assembleProdRelease :androidApp:bundleProdRelease
+      - name: Upload to release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          apk=$(find androidApp/build/outputs/apk/prod/release -name "*.apk" | head -1)
+          aab=$(find androidApp/build/outputs/bundle/prodRelease -name "*.aab" | head -1)
+          gh release upload "$GITHUB_REF_NAME" \
+            "${apk}#cookmaid-${version}.apk" \
+            "${aab}#cookmaid-${version}.aab" \
+            --repo "$GITHUB_REPOSITORY"
+
   publish-release:
     name: Publish Release Draft
-    needs: docker
+    needs: [docker, android]
     runs-on: ubuntu-latest
     permissions:
       contents: write

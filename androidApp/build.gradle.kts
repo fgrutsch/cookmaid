@@ -10,9 +10,13 @@ private val localProps = Properties().apply {
     rootProject.file("local.properties").takeIf { it.exists() }?.reader()?.use { load(it) }
 }
 
+private val keystoreProps = Properties().apply {
+    rootProject.file("keystore.properties").takeIf { it.exists() }?.reader()?.use { load(it) }
+}
+
 android {
     namespace = "io.github.fgrutsch.cookmaid"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
+    compileSdk = libs.versions.android.targetCompileSdk.get().toInt()
 
     buildFeatures {
         buildConfig = true
@@ -20,11 +24,19 @@ android {
     defaultConfig {
         applicationId = "io.github.fgrutsch.cookmaid"
         minSdk = libs.versions.android.minSdk.get().toInt()
-        targetSdk = libs.versions.android.targetSdk.get().toInt()
+        targetSdk = libs.versions.android.targetCompileSdk.get().toInt()
         val parts = project.version.toString().split("-")[0].split(".")
         versionCode = parts[0].toInt() * 10000 + parts[1].toInt() * 100 + parts[2].toInt()
         versionName = project.version.toString()
         addManifestPlaceholders(mapOf("oidcRedirectScheme" to "cookmaid"))
+    }
+    signingConfigs {
+        create("play") {
+            storeFile = file(keystoreProps.getProperty("storeFile"))
+            storePassword = keystoreProps.getProperty("storePassword")
+            keyAlias = keystoreProps.getProperty("keyAlias")
+            keyPassword = keystoreProps.getProperty("keyPassword")
+        }
     }
     flavorDimensions += "environment"
     productFlavors {
@@ -53,11 +65,12 @@ android {
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("play")
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
 }
 

@@ -11,6 +11,8 @@ import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -38,12 +40,15 @@ fun SwipeItem(
     onEdit: (() -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
+    val currentOnDelete by rememberUpdatedState(onDelete)
+    val currentOnEdit by rememberUpdatedState(onEdit)
+
     @Suppress("DEPRECATION")
     val dismissState = rememberSwipeToDismissBoxState(
         confirmValueChange = { value ->
             when (value) {
-                SwipeToDismissBoxValue.EndToStart -> onDelete()
-                SwipeToDismissBoxValue.StartToEnd -> onEdit?.invoke()
+                SwipeToDismissBoxValue.EndToStart -> currentOnDelete()
+                SwipeToDismissBoxValue.StartToEnd -> currentOnEdit?.invoke()
                 SwipeToDismissBoxValue.Settled -> {}
             }
             false

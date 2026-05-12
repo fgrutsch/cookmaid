@@ -6,11 +6,14 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import cookmaid.composeapp.generated.resources.Res
 import cookmaid.composeapp.generated.resources.common_cancel
 import cookmaid.composeapp.generated.resources.common_ok
@@ -27,6 +30,9 @@ internal fun EditItemDialog(
     onSave: (ShoppingItem) -> Unit,
 ) {
     var quantity by remember { mutableStateOf(item.quantity.orEmpty()) }
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(Unit) { focusRequester.requestFocus() }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -37,7 +43,7 @@ internal fun EditItemDialog(
                 onValueChange = { quantity = it },
                 label = { Text(Res.string.shopping_quantity_label.resolve()) },
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
             )
         },
         confirmButton = {

@@ -1,9 +1,8 @@
 [versions]
 # Android
 agp = "9.0.0-alpha06"
-android-compileSdk = "36"
-android-minSdk = "24"
-android-targetSdk = "36"
+android-minSdk = "28"
+android-targetCompileSdk = "36"
 androidx-activity = "1.13.0"
 androidx-lifecycle = "2.10.0"
 

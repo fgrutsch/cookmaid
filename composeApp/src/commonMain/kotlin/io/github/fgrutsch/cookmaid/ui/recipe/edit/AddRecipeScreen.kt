@@ -1,10 +1,10 @@
 package io.github.fgrutsch.cookmaid.ui.recipe.edit
 
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -19,6 +19,7 @@ import androidx.compose.runtime.setValue
 import cookmaid.composeapp.generated.resources.Res
 import cookmaid.composeapp.generated.resources.common_back
 import cookmaid.composeapp.generated.resources.ic_arrow_back
+import io.github.fgrutsch.cookmaid.ui.common.SuccessSnackbarHost
 import cookmaid.composeapp.generated.resources.ic_check
 import cookmaid.composeapp.generated.resources.common_save
 import cookmaid.composeapp.generated.resources.recipe_add_title
@@ -57,7 +58,8 @@ fun AddRecipeScreen(
     }
 
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        contentWindowInsets = WindowInsets(0),
+        snackbarHost = { SuccessSnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = {

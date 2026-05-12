@@ -1,5 +1,6 @@
 package io.github.fgrutsch.cookmaid.ui.mealplan
 
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
@@ -69,8 +70,9 @@ fun MealPlanScreen(
         }
     }
 
-    SuccessSnackbarHost(snackbarHostState) {
     Scaffold(
+        contentWindowInsets = WindowInsets(0),
+        snackbarHost = { SuccessSnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text(Res.string.meal_plan_title.resolve()) },
@@ -119,7 +121,6 @@ fun MealPlanScreen(
                 },
             )
         }
-    }
     }
 
     addItemForDay?.let { day ->

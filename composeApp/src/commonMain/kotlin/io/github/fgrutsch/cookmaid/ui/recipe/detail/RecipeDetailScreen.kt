@@ -1,5 +1,6 @@
 package io.github.fgrutsch.cookmaid.ui.recipe.detail
 
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -56,8 +57,9 @@ fun RecipeDetailScreen(
         }
     }
 
-    SuccessSnackbarHost(snackbarHostState) {
     Scaffold(
+        contentWindowInsets = WindowInsets(0),
+        snackbarHost = { SuccessSnackbarHost(snackbarHostState) },
         topBar = {
             RecipeDetailTopBar(
                 recipeName = state.recipe?.name,
@@ -78,7 +80,6 @@ fun RecipeDetailScreen(
         state.recipe?.let { r ->
             RecipeContent(recipe = r, padding = padding)
         } ?: RecipeNotFound(padding = padding)
-    }
     }
 
     if (showIngredientPicker) {

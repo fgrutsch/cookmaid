@@ -23,11 +23,11 @@ kotlin {
 
     android {
         namespace = "io.github.fgrutsch.cookmaid.ui"
-        compileSdk = libs.versions.android.compileSdk.get().toInt()
+        compileSdk = libs.versions.android.targetCompileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
 
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_11)
+            jvmTarget.set(JvmTarget.JVM_21)
         }
 
         androidResources {
