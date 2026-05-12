@@ -1,11 +1,14 @@
 package io.github.fgrutsch.cookmaid.ui.auth
 
 import io.github.fgrutsch.cookmaid.ui.common.MviViewModel
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CancellationException
 
 class AuthViewModel(
     private val authHandler: AuthHandler,
 ) : MviViewModel<AuthState, AuthEvent, AuthEffect>(AuthState()) {
+
+    private val logger = KotlinLogging.logger {}
 
     override fun handleEvent(event: AuthEvent) {
         when (event) {
@@ -19,6 +22,7 @@ class AuthViewModel(
         launch {
             try {
                 val result = authHandler.tryAutoLogin()
+                logger.debug { "Auto-login succeeded" }
                 updateState {
                     copy(
                         status = AuthState.Status.Authenticated,
@@ -27,7 +31,12 @@ class AuthViewModel(
                         loginError = null,
                     )
                 }
-            } catch (_: Exception) {
+            } catch (e: CancellationException) {
+                throw e
+            } catch (
+                @Suppress("TooGenericExceptionCaught") _: Exception
+            ) {
+                logger.debug { "Auto-login failed, user is unauthenticated" }
                 updateState { copy(status = AuthState.Status.Unauthenticated) }
             }
         }
@@ -38,6 +47,7 @@ class AuthViewModel(
         launch {
             try {
                 val result = authHandler.login()
+                logger.debug { "Login succeeded" }
                 updateState {
                     copy(
                         status = AuthState.Status.Authenticated,
@@ -46,6 +56,8 @@ class AuthViewModel(
                         loginError = null,
                     )
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (
                 @Suppress("TooGenericExceptionCaught") e: Exception
             ) {
@@ -71,6 +83,7 @@ class AuthViewModel(
                 loginError = null,
             )
         }
+        logger.debug { "Logout initiated" }
         launch {
             try {
                 authHandler.logout()
@@ -79,12 +92,7 @@ class AuthViewModel(
             } catch (
                 @Suppress("TooGenericExceptionCaught") e: Exception
             ) {
-                // Token/transport cleanup failed. State is already Unauthenticated
-                // so the UI is safe, but stale tokens may persist on disk and
-                // auto-login as the previous user on next app start. Log loudly
-                // so the failure is diagnosable instead of silently swallowed by
-                // MviViewModel.onError.
-                e.printStackTrace()
+                logger.error(e) { "Logout cleanup failed" }
             }
         }
     }

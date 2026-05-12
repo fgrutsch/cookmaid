@@ -2,6 +2,7 @@ package io.github.fgrutsch.cookmaid.recipe
 
 import io.github.fgrutsch.cookmaid.common.SupportedLocale
 import io.github.fgrutsch.cookmaid.user.UserId
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.time.Instant
 import kotlin.uuid.Uuid
 
@@ -11,6 +12,8 @@ import kotlin.uuid.Uuid
 class RecipeService(
     private val repository: RecipeRepository,
 ) {
+
+    private val logger = KotlinLogging.logger {}
 
     /**
      * Returns a paginated list of recipes for [userId], optionally filtered by [search] text or [tag].
@@ -43,7 +46,10 @@ class RecipeService(
      * @return the recipe, or null if not found or not owned by [userId].
      */
     suspend fun findById(userId: UserId, recipeId: Uuid, locale: SupportedLocale): Recipe? {
-        if (!repository.isOwner(userId, recipeId)) return null
+        if (!repository.isOwner(userId, recipeId)) {
+            logger.debug { "Ownership check failed: userId=$userId, recipeId=$recipeId" }
+            return null
+        }
         return repository.findById(recipeId, locale)
     }
 
@@ -79,7 +85,9 @@ class RecipeService(
      * @return the persisted recipe.
      */
     suspend fun create(userId: UserId, data: RecipeRequest, locale: SupportedLocale): Recipe {
-        return repository.create(userId, data, locale)
+        val recipe = repository.create(userId, data, locale)
+        logger.info { "Recipe created: userId=$userId, recipeId=${recipe.id}" }
+        return recipe
     }
 
     /**
@@ -91,8 +99,12 @@ class RecipeService(
      * @return true if the update succeeded, false if not found or not owned.
      */
     suspend fun update(userId: UserId, recipeId: Uuid, data: RecipeRequest): Boolean {
-        if (!repository.isOwner(userId, recipeId)) return false
+        if (!repository.isOwner(userId, recipeId)) {
+            logger.debug { "Ownership check failed: userId=$userId, recipeId=$recipeId" }
+            return false
+        }
         repository.update(recipeId, data)
+        logger.info { "Recipe updated: userId=$userId, recipeId=$recipeId" }
         return true
     }
 
@@ -104,8 +116,12 @@ class RecipeService(
      * @return true if the deletion succeeded, false if not found or not owned.
      */
     suspend fun delete(userId: UserId, recipeId: Uuid): Boolean {
-        if (!repository.isOwner(userId, recipeId)) return false
+        if (!repository.isOwner(userId, recipeId)) {
+            logger.debug { "Ownership check failed: userId=$userId, recipeId=$recipeId" }
+            return false
+        }
         repository.delete(recipeId)
+        logger.info { "Recipe deleted: userId=$userId, recipeId=$recipeId" }
         return true
     }
 }

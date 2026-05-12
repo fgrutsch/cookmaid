@@ -6,6 +6,7 @@ import io.github.fgrutsch.cookmaid.catalog.catalogModule
 import io.github.fgrutsch.cookmaid.catalog.catalogRoutes
 import io.github.fgrutsch.cookmaid.common.ktor.ErrorResponse
 import io.github.fgrutsch.cookmaid.common.ktor.UserNotRegisteredException
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.fgrutsch.cookmaid.db.databaseModule
 import io.github.fgrutsch.cookmaid.mealplan.mealPlanModule
 import io.github.fgrutsch.cookmaid.mealplan.mealPlanRoutes
@@ -32,6 +33,8 @@ import io.ktor.server.routing.*
 import org.koin.dsl.module
 import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
+
+private val logger = KotlinLogging.logger {}
 
 fun main(args: Array<String>) {
     EngineMain.main(args)
@@ -82,13 +85,16 @@ private fun Application.configureStatusPages() {
         exception<UserNotRegisteredException> { call, _ ->
             call.respond(HttpStatusCode.Unauthorized, ErrorResponse("user_not_registered"))
         }
-        exception<MissingRequestParameterException> { call, _ ->
+        exception<MissingRequestParameterException> { call, cause ->
+            logger.debug(cause) { "Missing request parameter" }
             call.respond(HttpStatusCode.BadRequest)
         }
-        exception<IllegalArgumentException> { call, _ ->
+        exception<IllegalArgumentException> { call, cause ->
+            logger.debug(cause) { "Invalid request parameter" }
             call.respond(HttpStatusCode.BadRequest)
         }
-        exception<Throwable> { call, _ ->
+        exception<Throwable> { call, cause ->
+            logger.error(cause) { "Unhandled exception" }
             call.respond(HttpStatusCode.InternalServerError)
         }
     }
