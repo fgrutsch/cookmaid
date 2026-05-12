@@ -120,72 +120,28 @@ and `oidc.jwks-url` default to the local PocketID instance;
 ./gradlew :composeApp:allTests
 ```
 
-## Production Deployment
+## Try It
 
-Cookmaid is published as a Docker image to
-`ghcr.io/fgrutsch/cookmaid` on every release tag. The image bundles
-the Ktor server and the WasmJS web app — a single container serves
-both the API and the frontend.
-
-### Docker Compose
-
-Create a `docker-compose.yml`:
-
-```yaml
-services:
-  cookmaid:
-    image: ghcr.io/fgrutsch/cookmaid:latest
-    restart: unless-stopped
-    ports:
-      - "8081:8081"
-    environment:
-      # --- Server (application.yaml) ---
-      DATABASE_URL: jdbc:postgresql://postgres:5432/cookmaid
-      DATABASE_USER: cookmaid
-      DATABASE_PASSWORD: changeme
-      OIDC_ISSUER: https://your-oidc-provider.example.com
-      OIDC_JWKS_URL: https://your-oidc-provider.example.com/.well-known/jwks.json
-      OIDC_CLIENT_ID: your-client-id
-
-      # --- Frontend (injected into index.html at container startup) ---
-      OIDC_DISCOVERY_URI: https://your-oidc-provider.example.com/.well-known/openid-configuration
-      # OIDC_CLIENT_ID is also used here (same value as above)
-      OIDC_SCOPE: "openid profile email offline_access"
-      OIDC_ACCOUNT_URI: https://your-oidc-provider.example.com/settings
-    depends_on:
-      postgres:
-        condition: service_healthy
-
-  postgres:
-    image: postgres:18-alpine
-    restart: unless-stopped
-    volumes:
-      - cookmaid-data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_USER: cookmaid
-      POSTGRES_PASSWORD: changeme
-      POSTGRES_DB: cookmaid
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U cookmaid"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 5s
-
-volumes:
-  cookmaid-data:
-```
+The [`demo/`](demo/) directory contains a self-contained Docker Compose
+setup with PostgreSQL, [PocketID](https://github.com/pocket-id/pocket-id)
+(OIDC provider), and Cookmaid — everything you need to try the app locally.
 
 ```shell
-docker compose up -d
+cd demo
+docker compose up -d postgres nginx pocket-id
 ```
 
-The app is then available at `http://localhost:8081`.
+1. Open http://localhost:8082 and complete the PocketID setup wizard
+2. Go to **Admin > OIDC Clients**, create a client with callback URL
+   `http://localhost:8081` and note the **Client ID**
+3. Create a `demo/.env` file:
+   ```
+   OIDC_CLIENT_ID=<your-client-id>
+   ```
+4. Start Cookmaid:
+   ```shell
+   docker compose up -d
+   ```
+5. Open http://localhost:8081 and log in
 
-### OIDC Provider
-
-Cookmaid requires an OpenID Connect provider for authentication.
-Any OIDC-compliant provider works (e.g.,
-[PocketID](https://github.com/pocket-id/pocket-id),
-Keycloak, Authentik, Authelia). Configure a client in your provider
-and set the environment variables above accordingly.
+To stop everything: `docker compose down` (add `-v` to also remove data).
