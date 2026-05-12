@@ -36,6 +36,8 @@ import io.github.fgrutsch.cookmaid.ui.mealplan.IngredientPickerDialog
 import kotlin.uuid.Uuid
 import org.koin.compose.koinInject
 
+private const val PAGINATION_THRESHOLD = 5
+
 /**
  * Paginated recipe list with search, tag filtering, and pull-to-refresh.
  *

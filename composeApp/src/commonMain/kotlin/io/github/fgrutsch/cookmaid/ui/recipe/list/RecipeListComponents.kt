@@ -75,7 +75,7 @@ import io.github.fgrutsch.cookmaid.ui.common.resolve
 import org.jetbrains.compose.resources.painterResource
 import kotlin.uuid.Uuid
 
-internal const val PAGINATION_THRESHOLD = 5
+private const val DROPDOWN_HEIGHT = 0.6f
 
 @Suppress("LongMethod", "LongParameterList")
 @Composable
@@ -180,7 +180,7 @@ private fun TagFilterIconButton(
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            modifier = Modifier.fillMaxHeight(0.6f),
+            modifier = Modifier.fillMaxHeight(DROPDOWN_HEIGHT),
         ) {
             if (selectedTag != null) {
                 DropdownMenuItem(
