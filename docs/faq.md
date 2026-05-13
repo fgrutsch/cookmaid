@@ -3,6 +3,30 @@
 Cookmaid is a self-hosted meal planning app. This guide covers common
 workflows and answers frequently asked questions.
 
+## Shopping List
+
+### How is the shopping list generated?
+
+When you add a recipe to the meal plan, you can choose to add its
+ingredients to the shopping list. Items from the catalog are matched
+automatically so quantities are grouped.
+
+### How do I check off items?
+
+Tap an item to mark it as done. Done items move to the bottom of the
+list. You can also filter the list to show only pending items.
+
+### How do I add a custom item?
+
+Type the item name in the input field at the top of the shopping list
+screen and press enter. If a matching catalog item exists, it is used
+automatically.
+
+### How do I remove items?
+
+Swipe an item to delete it, or use the clear option to remove all
+checked items at once.
+
 ## Recipes
 
 ### How do I add a recipe?
@@ -44,30 +68,6 @@ screen.
 ### Can I move items between days?
 
 Not directly. Delete the item from one day and add it to the other.
-
-## Shopping List
-
-### How is the shopping list generated?
-
-When you add a recipe to the meal plan, you can choose to add its
-ingredients to the shopping list. Items from the catalog are matched
-automatically so quantities are grouped.
-
-### How do I check off items?
-
-Tap an item to mark it as done. Done items move to the bottom of the
-list. You can also filter the list to show only pending items.
-
-### How do I add a custom item?
-
-Type the item name in the input field at the top of the shopping list
-screen and press enter. If a matching catalog item exists, it is used
-automatically.
-
-### How do I remove items?
-
-Swipe an item to delete it, or use the clear option to remove all
-checked items at once.
 
 ## General
 
