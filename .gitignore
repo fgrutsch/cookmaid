@@ -20,6 +20,7 @@ captures
 **/xcshareddata/WorkspaceSettings.xcsettings
 node_modules/
 dev/postgres-data/
+demo/.env
 .claude/
 .context/
 sandbox/

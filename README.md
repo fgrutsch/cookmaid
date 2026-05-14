@@ -10,6 +10,46 @@
 Cookmaid is a self-hosted meal planning app. Manage your recipes, plan meals for the week,
 and generate shopping lists — available on Android and as a Progressive Web App.
 
+<p align="center">
+  <img src="docs/images/shopping_list.png" alt="Shopping list" height="300"/>
+  <img src="docs/images/recipe_list.png" alt="Recipe list" height="300"/>
+  <img src="docs/images/recipe_detail.png" alt="Recipe detail" height="300"/>
+  <img src="docs/images/mealplan.png" alt="Meal plan" height="300"/>
+  <img src="docs/images/settings.png" alt="Meal plan" height="300"/>
+</p>
+
+See the [FAQ & Feature Guide](docs/faq.md) for usage tips and common workflows.
+
+## Try It
+
+The [`demo`](demo) directory contains a self-contained Docker Compose
+setup with PostgreSQL, [PocketID](https://github.com/pocket-id/pocket-id)
+(OIDC provider), and Cookmaid — everything you need to try the app locally.
+
+```shell
+cd demo
+docker compose up -d postgres nginx pocket-id
+```
+
+1. Open http://localhost:8082/setup and complete the PocketID setup wizard
+2. Go to **Administration > User Groups**, create a new one and assign your user
+3. Go to **Administration > OIDC Clients** and create a client with:
+    1. `Callback URLs`/`Logout Callback URLs`: `http://localhost:8081/callback`
+    2. Assign user group from 2.
+    3. `Public Client` and note the **Client ID**
+4. Create a `demo/.env` file:
+   ```
+   OIDC_CLIENT_ID=<your-client-id>
+   ```
+5. Start Cookmaid:
+   ```shell
+   docker compose up -d
+   ```
+6. Open http://localhost:8081 and log in
+
+To stop everything: `docker compose down` (add `-v` to also remove data).
+
+
 ## Tech Stack
 
 - Kotlin + Compose Multiplatform (Android, WasmJS)
