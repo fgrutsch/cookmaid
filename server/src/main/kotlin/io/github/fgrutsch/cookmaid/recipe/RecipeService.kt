@@ -85,6 +85,7 @@ class RecipeService(
      * @return the persisted recipe.
      */
     suspend fun create(userId: UserId, data: RecipeRequest, locale: SupportedLocale): Recipe {
+        require(data.name.isNotBlank()) { "Recipe name must not be blank" }
         val recipe = repository.create(userId, data, locale)
         logger.info { "Recipe created: userId=$userId, recipeId=${recipe.id}" }
         return recipe
@@ -99,6 +100,7 @@ class RecipeService(
      * @return true if the update succeeded, false if not found or not owned.
      */
     suspend fun update(userId: UserId, recipeId: Uuid, data: RecipeRequest): Boolean {
+        require(data.name.isNotBlank()) { "Recipe name must not be blank" }
         if (!repository.isOwner(userId, recipeId)) {
             logger.debug { "Ownership check failed: userId=$userId, recipeId=$recipeId" }
             return false

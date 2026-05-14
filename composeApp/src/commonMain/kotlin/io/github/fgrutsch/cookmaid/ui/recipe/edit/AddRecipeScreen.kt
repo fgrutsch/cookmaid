@@ -18,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import cookmaid.composeapp.generated.resources.Res
 import cookmaid.composeapp.generated.resources.common_back
+import cookmaid.composeapp.generated.resources.common_error
 import cookmaid.composeapp.generated.resources.ic_arrow_back
 import io.github.fgrutsch.cookmaid.ui.common.SuccessSnackbarHost
 import cookmaid.composeapp.generated.resources.ic_check
@@ -25,7 +26,9 @@ import cookmaid.composeapp.generated.resources.common_save
 import cookmaid.composeapp.generated.resources.recipe_add_title
 import cookmaid.composeapp.generated.resources.recipe_edit_title
 import io.github.fgrutsch.cookmaid.ui.common.resolve
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.rememberResourceEnvironment
 
 /**
  * Form screen for creating or editing a recipe.
@@ -46,13 +49,15 @@ fun AddRecipeScreen(
     var ingredientQuantityInput by remember { mutableStateOf("") }
     var showNewTagDialog by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
+    val env = rememberResourceEnvironment()
 
     LaunchedEffect(Unit) {
         onEvent(AddRecipeEvent.Load)
         viewModel.effects.collect { effect ->
             when (effect) {
                 is AddRecipeEffect.Saved -> onBack()
-                is AddRecipeEffect.Error -> snackbarHostState.showSnackbar(effect.message)
+                is AddRecipeEffect.Error ->
+                    snackbarHostState.showSnackbar(getString(env, Res.string.common_error))
             }
         }
     }

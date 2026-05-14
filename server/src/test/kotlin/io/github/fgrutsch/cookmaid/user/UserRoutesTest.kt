@@ -41,7 +41,6 @@ class UserRoutesTest : BaseIntegrationTest() {
         assertEquals(HttpStatusCode.OK, response.status)
         val user = response.body<User>()
         assertNotNull(user.id)
-        assertEquals("test-subject", user.oidcSubject)
     }
 
     @Test

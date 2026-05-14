@@ -21,5 +21,5 @@ sealed interface RecipeDetailEffect {
     data object Deleted : RecipeDetailEffect
     data object AddedToShoppingList : RecipeDetailEffect
     data object AddedToMealPlan : RecipeDetailEffect
-    data class Error(val message: String) : RecipeDetailEffect
+    data object Error : RecipeDetailEffect
 }

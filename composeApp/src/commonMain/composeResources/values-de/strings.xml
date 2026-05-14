@@ -20,6 +20,7 @@
     <string name="common_search_recipes">Rezepte suchen…</string>
     <string name="common_uncategorized">Ohne Kategorie</string>
     <string name="common_quantity">Menge</string>
+    <string name="common_error">Etwas ist schiefgelaufen. Bitte versuche es erneut.</string>
 
     <!-- Navigation -->
     <string name="nav_shopping">Einkaufen</string>

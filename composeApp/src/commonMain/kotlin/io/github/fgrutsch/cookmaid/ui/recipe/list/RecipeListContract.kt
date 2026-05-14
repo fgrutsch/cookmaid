@@ -39,5 +39,5 @@ sealed interface RecipeListEvent {
 sealed interface RecipeListEffect {
     data object AddedToShoppingList : RecipeListEffect
     data object AddedToMealPlan : RecipeListEffect
-    data class Error(val message: String) : RecipeListEffect
+    data object Error : RecipeListEffect
 }

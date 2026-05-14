@@ -22,6 +22,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import cookmaid.composeapp.generated.resources.Res
 import cookmaid.composeapp.generated.resources.common_added_to_meal_plan
+import cookmaid.composeapp.generated.resources.common_error
 import cookmaid.composeapp.generated.resources.ic_add
 import cookmaid.composeapp.generated.resources.common_added_to_shopping_list
 import cookmaid.composeapp.generated.resources.recipe_list_add
@@ -82,7 +83,8 @@ fun RecipeListScreen(
                     snackbarHostState.showSnackbar(getString(env, Res.string.common_added_to_shopping_list))
                 is RecipeListEffect.AddedToMealPlan ->
                     snackbarHostState.showSnackbar(getString(env, Res.string.common_added_to_meal_plan))
-                is RecipeListEffect.Error -> snackbarHostState.showSnackbar(effect.message)
+                is RecipeListEffect.Error ->
+                    snackbarHostState.showSnackbar(getString(env, Res.string.common_error))
             }
         }
     }

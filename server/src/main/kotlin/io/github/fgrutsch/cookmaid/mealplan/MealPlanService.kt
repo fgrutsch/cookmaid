@@ -38,6 +38,9 @@ class MealPlanService(
      * @return the created meal plan item, or null if [recipeId] does not belong to [userId].
      */
     suspend fun create(userId: UserId, day: LocalDate, recipeId: Uuid?, note: String?): MealPlanItem? {
+        require((recipeId != null) xor (note != null)) {
+            "Exactly one of recipeId or note must be provided"
+        }
         if (recipeId != null && !recipeRepository.isOwner(userId, recipeId)) {
             logger.debug { "Recipe ownership check failed: userId=$userId, recipeId=$recipeId" }
             return null

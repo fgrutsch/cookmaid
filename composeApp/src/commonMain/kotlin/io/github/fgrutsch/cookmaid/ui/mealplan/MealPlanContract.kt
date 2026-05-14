@@ -11,6 +11,7 @@ data class MealPlanState(
     val days: List<MealPlanDay> = emptyList(),
     val initialized: Boolean = false,
     val isLoading: Boolean = false,
+    val isRefreshing: Boolean = false,
     val recipeSearchResults: List<Recipe> = emptyList(),
 )
 
@@ -26,10 +27,11 @@ sealed interface MealPlanEvent {
     data class UpdateNote(val itemId: Uuid, val day: LocalDate, val newNote: String) : MealPlanEvent
     data class DeleteItem(val itemId: Uuid, val day: LocalDate) : MealPlanEvent
     data class AddRecipeToShoppingList(val recipeId: Uuid, val recipeName: String) : MealPlanEvent
+    data class AddIngredientsToShoppingList(val ingredients: List<RecipeIngredient>) : MealPlanEvent
 }
 
 sealed interface MealPlanEffect {
     data object IngredientsAdded : MealPlanEffect
     data class ShowIngredientPicker(val recipeName: String, val ingredients: List<RecipeIngredient>) : MealPlanEffect
-    data class Error(val message: String) : MealPlanEffect
+    data object Error : MealPlanEffect
 }

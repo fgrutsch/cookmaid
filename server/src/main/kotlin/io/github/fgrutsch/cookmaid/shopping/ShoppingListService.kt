@@ -44,6 +44,7 @@ class ShoppingListService(
      * @return the newly created shopping list.
      */
     suspend fun createList(userId: UserId, name: String): ShoppingList {
+        require(name.isNotBlank()) { "List name must not be blank" }
         val list = repository.createList(userId, name, default = false)
         logger.info { "Shopping list created: userId=$userId, listId=${list.id}" }
         return list
@@ -58,6 +59,7 @@ class ShoppingListService(
      * @return true if the update succeeded, false if not owned.
      */
     suspend fun updateList(userId: UserId, id: Uuid, name: String): Boolean {
+        require(name.isNotBlank()) { "List name must not be blank" }
         if (!repository.isListOwner(userId, id)) {
             logger.debug { "List ownership check failed: userId=$userId, listId=$id" }
             return false
@@ -128,6 +130,9 @@ class ShoppingListService(
         quantity: String?,
         locale: SupportedLocale,
     ): ShoppingItem? {
+        require((catalogItemId != null) xor (freeTextName != null)) {
+            "Exactly one of catalogItemId or freeTextName must be provided"
+        }
         if (!repository.isListOwner(userId, listId)) {
             logger.debug { "List ownership check failed: userId=$userId, listId=$listId" }
             return null
@@ -152,6 +157,11 @@ class ShoppingListService(
         items: List<CreateShoppingItemRequest>,
         locale: SupportedLocale,
     ): List<ShoppingItem>? {
+        items.forEach { item ->
+            require((item.catalogItemId != null) xor (item.freeTextName != null)) {
+                "Exactly one of catalogItemId or freeTextName must be provided per item"
+            }
+        }
         if (!repository.isListOwner(userId, listId)) {
             logger.debug { "List ownership check failed: userId=$userId, listId=$listId" }
             return null

@@ -37,5 +37,5 @@ sealed interface AddRecipeEvent {
 
 sealed interface AddRecipeEffect {
     data object Saved : AddRecipeEffect
-    data class Error(val message: String) : AddRecipeEffect
+    data object Error : AddRecipeEffect
 }
