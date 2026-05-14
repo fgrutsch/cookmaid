@@ -55,6 +55,6 @@ class RecipeDetailViewModel(
 
     override fun onError(e: Exception) {
         updateState { copy(isLoading = false) }
-        sendEffect(RecipeDetailEffect.Error("Something went wrong. Please try again."))
+        sendEffect(RecipeDetailEffect.Error)
     }
 }

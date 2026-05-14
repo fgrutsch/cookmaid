@@ -179,7 +179,7 @@ class AddRecipeViewModel(
 
     override fun onError(e: Exception) {
         updateState { copy(isLoading = false) }
-        sendEffect(AddRecipeEffect.Error("Something went wrong. Please try again."))
+        sendEffect(AddRecipeEffect.Error)
     }
 
 }

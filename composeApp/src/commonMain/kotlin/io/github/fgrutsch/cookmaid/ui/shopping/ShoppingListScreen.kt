@@ -39,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cookmaid.composeapp.generated.resources.Res
+import cookmaid.composeapp.generated.resources.common_error
 import cookmaid.composeapp.generated.resources.common_uncategorized
 import cookmaid.composeapp.generated.resources.ic_delete_sweep
 import cookmaid.composeapp.generated.resources.ic_more_vert
@@ -57,7 +58,9 @@ import io.github.fgrutsch.cookmaid.shopping.ShoppingItem
 import io.github.fgrutsch.cookmaid.shopping.ShoppingList
 import io.github.fgrutsch.cookmaid.ui.common.SwipeItem
 import io.github.fgrutsch.cookmaid.ui.common.resolve
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.rememberResourceEnvironment
 import kotlin.uuid.Uuid
 
 /**
@@ -78,12 +81,14 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
     var editingList by remember { mutableStateOf<Pair<Uuid, String>?>(null) }
     var showMenu by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
+    val env = rememberResourceEnvironment()
 
     LaunchedEffect(Unit) {
         onEvent(ShoppingListEvent.LoadLists)
         viewModel.effects.collect { effect ->
             when (effect) {
-                is ShoppingListEffect.Error -> snackbarHostState.showSnackbar(effect.message)
+                is ShoppingListEffect.Error ->
+                    snackbarHostState.showSnackbar(getString(env, Res.string.common_error))
             }
         }
     }

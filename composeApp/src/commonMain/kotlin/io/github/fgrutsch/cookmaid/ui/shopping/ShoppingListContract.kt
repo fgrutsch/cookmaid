@@ -43,5 +43,5 @@ sealed interface ShoppingListEvent {
 }
 
 sealed interface ShoppingListEffect {
-    data class Error(val message: String) : ShoppingListEffect
+    data object Error : ShoppingListEffect
 }

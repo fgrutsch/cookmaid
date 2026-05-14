@@ -199,7 +199,7 @@ class ShoppingListViewModel(
 
     override fun onError(e: Exception) {
         updateState { copy(isLoading = false, isRefreshing = false) }
-        sendEffect(ShoppingListEffect.Error("Something went wrong. Please try again."))
+        sendEffect(ShoppingListEffect.Error)
     }
 
 }

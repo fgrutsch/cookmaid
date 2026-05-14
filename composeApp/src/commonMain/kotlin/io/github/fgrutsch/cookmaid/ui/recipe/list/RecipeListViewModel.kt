@@ -185,7 +185,7 @@ class RecipeListViewModel(
 
     override fun onError(e: Exception) {
         updateState { copy(isLoading = false, isRefreshing = false, isLoadingMore = false, isLoadingRandom = false) }
-        sendEffect(RecipeListEffect.Error("Something went wrong. Please try again."))
+        sendEffect(RecipeListEffect.Error)
     }
 
     companion object {

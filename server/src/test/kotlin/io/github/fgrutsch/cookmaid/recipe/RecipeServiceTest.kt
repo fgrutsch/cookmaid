@@ -8,6 +8,7 @@ import io.github.fgrutsch.cookmaid.user.UserRepository
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -79,6 +80,34 @@ class RecipeServiceTest : BaseTest() {
         )
 
         assertEquals("Pasta", recipe.name)
+    }
+
+    @Test
+    fun `create fails for blank name`() = runTest {
+        val service = getKoin().get<RecipeService>()
+        val userId = createUser()
+
+        assertFailsWith<IllegalArgumentException> {
+            service.create(
+                userId,
+                RecipeRequest("  ", null, emptyList(), emptyList(), emptyList(), servings = null),
+                SupportedLocale.EN,
+            )
+        }
+    }
+
+    @Test
+    fun `update fails for blank name`() = runTest {
+        val service = getKoin().get<RecipeService>()
+        val (userId, recipe) = createUserWithRecipe()
+
+        assertFailsWith<IllegalArgumentException> {
+            service.update(
+                userId,
+                recipe.id,
+                RecipeRequest("", null, emptyList(), emptyList(), emptyList(), servings = null),
+            )
+        }
     }
 
     @Test

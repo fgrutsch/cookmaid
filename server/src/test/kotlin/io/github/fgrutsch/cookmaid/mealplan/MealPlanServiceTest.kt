@@ -10,6 +10,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDate
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -68,6 +69,27 @@ class MealPlanServiceTest : BaseTest() {
         val recipeId = createRecipe(owner)
 
         assertNull(service.create(other, monday, recipeId = recipeId, note = null))
+    }
+
+    @Test
+    fun `create fails when both recipeId and note are null`() = runTest {
+        val service = getKoin().get<MealPlanService>()
+        val userId = createUser()
+
+        assertFailsWith<IllegalArgumentException> {
+            service.create(userId, monday, recipeId = null, note = null)
+        }
+    }
+
+    @Test
+    fun `create fails when both recipeId and note are provided`() = runTest {
+        val service = getKoin().get<MealPlanService>()
+        val userId = createUser()
+        val recipeId = createRecipe(userId)
+
+        assertFailsWith<IllegalArgumentException> {
+            service.create(userId, monday, recipeId = recipeId, note = "Both")
+        }
     }
 
     @Test

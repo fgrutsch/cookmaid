@@ -20,6 +20,7 @@
     <string name="common_search_recipes">Search recipes…</string>
     <string name="common_uncategorized">Uncategorized</string>
     <string name="common_quantity">Qty</string>
+    <string name="common_error">Something went wrong. Please try again.</string>
 
     <!-- Navigation -->
     <string name="nav_shopping">Shopping</string>

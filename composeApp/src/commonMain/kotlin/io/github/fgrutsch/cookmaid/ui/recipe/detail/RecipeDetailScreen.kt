@@ -12,6 +12,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import cookmaid.composeapp.generated.resources.Res
 import cookmaid.composeapp.generated.resources.common_added_to_meal_plan
+import cookmaid.composeapp.generated.resources.common_error
 import cookmaid.composeapp.generated.resources.common_added_to_shopping_list
 import io.github.fgrutsch.cookmaid.ui.common.SuccessSnackbarHost
 import org.jetbrains.compose.resources.getString
@@ -52,7 +53,8 @@ fun RecipeDetailScreen(
                     snackbarHostState.showSnackbar(getString(env, Res.string.common_added_to_shopping_list))
                 is RecipeDetailEffect.AddedToMealPlan ->
                     snackbarHostState.showSnackbar(getString(env, Res.string.common_added_to_meal_plan))
-                is RecipeDetailEffect.Error -> snackbarHostState.showSnackbar(effect.message)
+                is RecipeDetailEffect.Error ->
+                    snackbarHostState.showSnackbar(getString(env, Res.string.common_error))
             }
         }
     }

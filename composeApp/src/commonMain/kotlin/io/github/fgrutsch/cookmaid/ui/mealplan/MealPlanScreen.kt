@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import cookmaid.composeapp.generated.resources.Res
 import cookmaid.composeapp.generated.resources.common_added_to_shopping_list
+import cookmaid.composeapp.generated.resources.common_error
 import cookmaid.composeapp.generated.resources.ic_today
 import cookmaid.composeapp.generated.resources.meal_plan_go_to_current
 import cookmaid.composeapp.generated.resources.meal_plan_title
@@ -65,7 +66,8 @@ fun MealPlanScreen(
                     snackbarHostState.showSnackbar(getString(env, Res.string.common_added_to_shopping_list))
                 is MealPlanEffect.ShowIngredientPicker ->
                     ingredientPickerState = IngredientPickerState(effect.recipeName, effect.ingredients)
-                is MealPlanEffect.Error -> snackbarHostState.showSnackbar(effect.message)
+                is MealPlanEffect.Error ->
+                    snackbarHostState.showSnackbar(getString(env, Res.string.common_error))
             }
         }
     }
@@ -92,7 +94,7 @@ fun MealPlanScreen(
         },
     ) { padding ->
         PullToRefreshBox(
-            isRefreshing = state.isLoading,
+            isRefreshing = state.isRefreshing,
             onRefresh = { onEvent(MealPlanEvent.Refresh) },
             modifier = Modifier.fillMaxSize().padding(padding),
         ) {
@@ -156,7 +158,7 @@ fun MealPlanScreen(
             recipeName = pickerState.recipeName,
             ingredients = pickerState.ingredients,
             onAdd = { selectedIngredients ->
-                viewModel.addIngredientsToShoppingList(selectedIngredients)
+                onEvent(MealPlanEvent.AddIngredientsToShoppingList(selectedIngredients))
                 ingredientPickerState = null
             },
             onDismiss = { ingredientPickerState = null },

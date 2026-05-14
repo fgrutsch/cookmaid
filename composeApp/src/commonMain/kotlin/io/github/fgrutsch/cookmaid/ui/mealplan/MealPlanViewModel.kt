@@ -29,8 +29,8 @@ class MealPlanViewModel(
 
     override fun handleEvent(event: MealPlanEvent) {
         when (event) {
-            is MealPlanEvent.Load -> loadWeek(showLoading = !state.value.initialized)
-            is MealPlanEvent.Refresh -> loadWeek(showLoading = true)
+            is MealPlanEvent.Load -> loadWeek(isRefresh = false)
+            is MealPlanEvent.Refresh -> loadWeek(isRefresh = true)
             is MealPlanEvent.PreviousWeek -> navigateWeek(-DAYS_IN_WEEK)
             is MealPlanEvent.NextWeek -> navigateWeek(DAYS_IN_WEEK)
             is MealPlanEvent.GoToCurrentWeek -> goToCurrentWeek()
@@ -40,18 +40,24 @@ class MealPlanViewModel(
             is MealPlanEvent.UpdateNote -> updateNote(event.itemId, event.day, event.newNote)
             is MealPlanEvent.DeleteItem -> deleteItem(event.itemId, event.day)
             is MealPlanEvent.AddRecipeToShoppingList -> addRecipeToShoppingList(event.recipeId, event.recipeName)
+            is MealPlanEvent.AddIngredientsToShoppingList -> addIngredientsToShoppingList(event.ingredients)
         }
     }
 
-    private fun loadWeek(showLoading: Boolean) {
+    private fun loadWeek(isRefresh: Boolean) {
         launch {
-            if (showLoading) updateState { copy(isLoading = true) }
+            if (isRefresh) {
+                updateState { copy(isRefreshing = true) }
+            } else if (!state.value.initialized) {
+                updateState { copy(isLoading = true) }
+            }
             val items = fetchWeekItems(state.value.currentWeekStart)
             updateState {
                 copy(
                     initialized = true,
                     days = groupIntoDays(currentWeekStart, items),
                     isLoading = false,
+                    isRefreshing = false,
                 )
             }
         }
@@ -144,7 +150,7 @@ class MealPlanViewModel(
         }
     }
 
-    fun addIngredientsToShoppingList(ingredients: List<RecipeIngredient>) {
+    private fun addIngredientsToShoppingList(ingredients: List<RecipeIngredient>) {
         launch {
             addIngredientsToDefaultShoppingList(shoppingListRepository, ingredients)
             sendEffect(MealPlanEffect.IngredientsAdded)
@@ -166,8 +172,8 @@ class MealPlanViewModel(
     }
 
     override fun onError(e: Exception) {
-        updateState { copy(isLoading = false) }
-        sendEffect(MealPlanEffect.Error("Something went wrong. Please try again."))
+        updateState { copy(isLoading = false, isRefreshing = false) }
+        sendEffect(MealPlanEffect.Error)
     }
 }
 
