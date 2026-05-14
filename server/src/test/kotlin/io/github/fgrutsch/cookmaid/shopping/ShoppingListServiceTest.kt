@@ -7,6 +7,7 @@ import io.github.fgrutsch.cookmaid.user.UserRepository
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -45,6 +46,26 @@ class ShoppingListServiceTest : BaseTest() {
         val list = service.createList(userId, "Groceries")
 
         assertFalse(list.default)
+    }
+
+    @Test
+    fun `createList fails for blank name`() = runTest {
+        val service = getKoin().get<ShoppingListService>()
+        val userId = createUser()
+
+        assertFailsWith<IllegalArgumentException> {
+            service.createList(userId, "  ")
+        }
+    }
+
+    @Test
+    fun `updateList fails for blank name`() = runTest {
+        val service = getKoin().get<ShoppingListService>()
+        val (userId, list) = createUserWithList()
+
+        assertFailsWith<IllegalArgumentException> {
+            service.updateList(userId, list.id, "")
+        }
     }
 
     @Test
@@ -156,6 +177,40 @@ class ShoppingListServiceTest : BaseTest() {
 
         assertNotNull(item)
         assertEquals("Milk", item.item.name)
+    }
+
+    @Test
+    fun `addItem fails when both catalogItemId and freeTextName are null`() = runTest {
+        val service = getKoin().get<ShoppingListService>()
+        val (userId, list) = createUserWithList()
+
+        assertFailsWith<IllegalArgumentException> {
+            service.addItem(userId, list.id, null, null, null, SupportedLocale.EN)
+        }
+    }
+
+    @Test
+    fun `addItem fails when both catalogItemId and freeTextName are provided`() = runTest {
+        val service = getKoin().get<ShoppingListService>()
+        val (userId, list) = createUserWithList()
+
+        assertFailsWith<IllegalArgumentException> {
+            service.addItem(userId, list.id, Uuid.random(), "Extra", null, SupportedLocale.EN)
+        }
+    }
+
+    @Test
+    fun `addItems fails when item has neither catalogItemId nor freeTextName`() = runTest {
+        val service = getKoin().get<ShoppingListService>()
+        val (userId, list) = createUserWithList()
+
+        assertFailsWith<IllegalArgumentException> {
+            service.addItems(
+                userId, list.id,
+                listOf(CreateShoppingItemRequest(null, null, null)),
+                SupportedLocale.EN,
+            )
+        }
     }
 
     @Test
