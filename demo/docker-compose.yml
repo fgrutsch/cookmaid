@@ -55,7 +55,7 @@ services:
       APP_URL: http://localhost:8082
       ENCRYPTION_KEY: 9gsZlxKb0bGfgkFEiczMeC8PkqiWTP1DPry9kZ7U/3U=
       TRUST_PROXY: "true"
-      DB_CONNECTION_STRING: postgres://cookmaid:cookmaid@postgres:5432/pocketid?sslmode=disable
+      DB_CONNECTION_STRING: postgres://cookmaid:cookmaid@postgres:5432/pocketid
     depends_on:
       postgres:
         condition: service_healthy

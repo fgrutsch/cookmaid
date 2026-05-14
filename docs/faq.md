@@ -24,7 +24,7 @@ the list.
 ### How do I delete items?
 
 Swipe an item to the left to delete it. To remove all checked items
-at once, tap the sweep icon in the top bar.
+at once, tap the trash icon above all checked items.
 
 ### Can I have multiple shopping lists?
 
