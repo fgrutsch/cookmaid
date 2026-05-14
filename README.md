@@ -11,11 +11,11 @@ Cookmaid is a self-hosted meal planning app. Manage your recipes, plan meals for
 and generate shopping lists — available on Android and as a Progressive Web App.
 
 <p align="center">
-  <img src="docs/images/shopping_list.png" alt="Shopping list" height="300"/>
-  <img src="docs/images/recipe_list.png" alt="Recipe list" height="300"/>
-  <img src="docs/images/recipe_detail.png" alt="Recipe detail" height="300"/>
-  <img src="docs/images/mealplan.png" alt="Meal plan" height="300"/>
-  <img src="docs/images/settings.png" alt="Meal plan" height="300"/>
+  <img src="docs/images/shopping_list.png" alt="Shopping list" height="400"/>
+  <img src="docs/images/recipe_list.png" alt="Recipe list" height="400"/>
+  <img src="docs/images/recipe_detail.png" alt="Recipe detail" height="400"/>
+  <img src="docs/images/mealplan.png" alt="Meal plan" height="400"/>
+  <img src="docs/images/settings.png" alt="Meal plan" height="400"/>
 </p>
 
 See the [FAQ & Feature Guide](docs/faq.md) for usage tips and common workflows.
