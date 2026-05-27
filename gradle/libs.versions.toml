@@ -46,7 +46,7 @@ kover = "0.9.8"
 
 # Logging
 kotlin-logging = "8.0.03"
-logback = "1.5.32"
+logback = "1.5.33"
 
 # Misc
 coil = "3.4.0"
