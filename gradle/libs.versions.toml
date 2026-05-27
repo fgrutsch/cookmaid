@@ -45,7 +45,7 @@ detekt = "2.0.0-alpha.3"
 kover = "0.9.8"
 
 # Logging
-kotlin-logging = "8.0.03"
+kotlin-logging = "8.0.4"
 logback = "1.5.33"
 
 # Misc
