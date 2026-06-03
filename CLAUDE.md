@@ -100,15 +100,15 @@ Four Gradle modules:
   **before** parameterized routes (`route("/{id}")`) — Ktor matches the
   first route that fits, and a path parameter will swallow literal segments.
 - **JWT authentication**: `AuthModule.kt` validates issuer, JWKS signature,
-  and audience. Config keys: `oidc.issuer`, `oidc.jwks-url`, `oidc.client-id`
-  (all from env vars). `oidc.client-id` has no default — server fails fast
-  if absent. Use `property()` (not `propertyOrNull()`) for security-critical
-  config to prevent silent misconfiguration. For local runs, `:server:run`
-  is hooked in `server/build.gradle.kts` to read `oidc.clientId` from
-  `local.properties` and inject it as `OIDC_CLIENT_ID`, so devs don't need
-  to export env vars. Same early-exit guard as `wasmJsProcessResources`:
+  and audience. Config keys: `oidc.issuer`, `oidc.jwks-url`, `oidc.audience`
+  (all from env vars). `oidc.audience` defaults to `http://localhost:8081/api`
+  in `application.yaml`. Use `property()` (not `propertyOrNull()`) for
+  security-critical config to prevent silent misconfiguration. For local runs,
+  `:server:run` is hooked in `server/build.gradle.kts` to read `oidc.audience`
+  from `dev/local.properties` and inject it as `OIDC_AUDIENCE`, so devs don't
+  need to export env vars. Same early-exit guard as `wasmJsProcessResources`:
   `takeIf { it.exists() } ?: return@named` — CI/production has no
-  `local.properties` and reads the env var directly.
+  `dev/local.properties` and reads the env var directly.
 - **Flyway migrations**: `server/src/main/resources/db/migration/V*__*.sql`
 - **Timestamps**: All tables (except catalog) have `created_at`/`updated_at`
   with a shared `set_updated_at()` trigger.
@@ -269,7 +269,7 @@ runtime image. Artifacts are built by Gradle on the host, then COPYed in.
 - **Runtime image**: `eclipse-temurin:21-jre-alpine` — non-root user `cookmaid`
 - **Entrypoint**: `docker/docker-entrypoint.sh` — runs `envsubst` on
   `index.html` to inject `OIDC_DISCOVERY_URI`, `OIDC_CLIENT_ID`, `OIDC_SCOPE`,
-  `OIDC_ACCOUNT_URI`
+  `OIDC_ACCOUNT_URI`, `OIDC_RESOURCE`
   at container startup. CI builds leave `${VAR}` placeholders intact (no
   `local.properties`); `envsubst` and `expand()` are mutually exclusive per
   variable — never pass a runtime-injected placeholder to Gradle `expand()`.
@@ -281,8 +281,8 @@ Build locally:
 ```
 
 Required env vars at runtime: `DATABASE_URL`, `DATABASE_USER`, `DATABASE_PASSWORD`,
-`OIDC_ISSUER`, `OIDC_JWKS_URL`, `OIDC_DISCOVERY_URI`, `OIDC_CLIENT_ID`, `OIDC_SCOPE`,
-`OIDC_ACCOUNT_URI`.
+`OIDC_ISSUER`, `OIDC_JWKS_URL`, `OIDC_AUDIENCE`, `OIDC_DISCOVERY_URI`, `OIDC_CLIENT_ID`,
+`OIDC_SCOPE`, `OIDC_ACCOUNT_URI`, `OIDC_RESOURCE`.
 
 CI: `ci.yml` builds the Docker image on every push/PR (no `needs:` gate —
 Gradle `buildDockerImage` task's own `dependsOn` handles prerequisites).

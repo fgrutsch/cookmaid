@@ -23,29 +23,17 @@ See the [FAQ & Feature Guide](docs/faq.md) for usage tips and common workflows.
 ## Try It
 
 The [`demo`](demo) directory contains a self-contained Docker Compose
-setup with PostgreSQL, [PocketID](https://github.com/pocket-id/pocket-id)
-(OIDC provider), and Cookmaid — everything you need to try the app locally.
+setup with PostgreSQL, [Logto](https://logto.io/) (OIDC provider), and
+Cookmaid — everything you need to try the app locally.
 
 ```shell
 cd demo
-docker compose up -d postgres nginx pocket-id
+docker compose up -d
 ```
 
-1. Open http://localhost:8082/setup and complete the PocketID setup wizard
-2. Go to **Administration > User Groups**, create a new one and assign your user
-3. Go to **Administration > OIDC Clients** and create a client with:
-    1. `Callback URLs`/`Logout Callback URLs`: `http://localhost:8081/callback`
-    2. Assign user group from 2.
-    3. `Public Client` and note the **Client ID**
-4. Create a `demo/.env` file:
-   ```
-   OIDC_CLIENT_ID=<your-client-id>
-   ```
-5. Start Cookmaid:
-   ```shell
-   docker compose up -d
-   ```
-6. Open http://localhost:8081 and log in
+1. Wait ~15 seconds for Logto to initialize and seed
+2. Open http://localhost:3002 and complete the one-time Logto admin setup wizard
+3. Open http://localhost:8081 and log in with `testuser` / `CookmaidTest2026!`
 
 To stop everything: `docker compose down` (add `-v` to also remove data).
 
@@ -56,7 +44,7 @@ To stop everything: `docker compose down` (add `-v` to also remove data).
 - Ktor server (JVM)
 - Exposed ORM + Flyway migrations on PostgreSQL
 - Koin for DI, kotlinx.serialization + kotlinx.datetime
-- OIDC auth via PocketID
+- OIDC auth via [Logto](https://logto.io/)
 
 Pinned versions live in [`gradle/libs.versions.toml`](gradle/libs.versions.toml).
 
@@ -87,36 +75,25 @@ docker compose up -d
 ```
 
 This starts:
-- **PostgreSQL** on port 5432 (databases: `cookmaid`, `pocketid`)
-- **PocketID** (OIDC provider) fronted by **nginx** on http://localhost:8082
+- **PostgreSQL** on port 5432 (databases: `cookmaid`, `logto`)
+- **Logto** (OIDC provider) on http://localhost:3001 (admin console on http://localhost:3002)
 
-### 2. Configure PocketID
+A seed container automatically configures the Logto application, API
+resource, sign-in experience, and a test user — no manual setup needed.
 
-Open http://localhost:8082 and create an OIDC client for the app.
-Note the client ID for the next step.
+Log in with `testuser` / `CookmaidTest2026!`.
+Logto admin console: http://localhost:3002 (one-time setup wizard on first use).
 
-### 3. Configure local.properties
+### 2. Configure local settings
 
-Add OIDC settings to `local.properties` (gitignored):
-
-```properties
-oidc.discoveryUri=http://localhost:8082/.well-known/openid-configuration
-oidc.clientId=<your-client-id>
-oidc.scope=openid profile email offline_access
-oidc.accountUri=http://localhost:8082/settings
-```
-
-These are injected into the WasmJS web app at build time via Gradle's
-`expand()` in `wasmJsProcessResources`. `:server:run` also picks up
-`oidc.clientId` from the same file and sets it as `OIDC_CLIENT_ID`, so
-no manual env export is needed for local runs.
+Dev OIDC settings live in `dev/local.properties` (checked into version
+control). These match the pre-seeded Logto environment.
 
 The server reads its OIDC config from `application.yaml`. `oidc.issuer`
-and `oidc.jwks-url` default to the local PocketID instance;
-`oidc.client-id` has no default — `:server:run` reads it from
-`local.properties`, production reads it from the `OIDC_CLIENT_ID` env var.
+and `oidc.jwks-url` default to the local Logto instance;
+`oidc.audience` defaults to the local API resource indicator.
 
-### 4. Run
+### 3. Run
 
 ```shell
 # Run server (port 8081)
@@ -125,11 +102,11 @@ and `oidc.jwks-url` default to the local PocketID instance;
 # Run web app (Wasm, port 8080)
 ./gradlew :composeApp:wasmJsBrowserDevelopmentRun
 
-# Build Android app
-./gradlew :androidApp:assembleDebug
+# Run Android app
+./gradlew :androidApp:installDevDebug
 ```
 
-### 5. Run Tests
+### 4. Run Tests
 
 ```shell
 # All tests

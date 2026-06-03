@@ -77,6 +77,54 @@ class UserProfileTest {
     }
 
     @Test
+    fun `falls back to username when name and given_name are missing`() {
+        val token = fakeIdToken("""{"username":"jdoe","email":"john@example.com"}""")
+        val profile = parseUserProfile(token)
+
+        assertEquals("jdoe", profile.name)
+    }
+
+    @Test
+    fun `falls back to email when name and username are missing`() {
+        val token = fakeIdToken("""{"email":"john@example.com"}""")
+        val profile = parseUserProfile(token)
+
+        assertEquals("john@example.com", profile.name)
+    }
+
+    @Test
+    fun `prefers name over username`() {
+        val token = fakeIdToken("""{"name":"John Doe","username":"jdoe","email":"john@example.com"}""")
+        val profile = parseUserProfile(token)
+
+        assertEquals("John Doe", profile.name)
+    }
+
+    @Test
+    fun `prefers username over email`() {
+        val token = fakeIdToken("""{"username":"jdoe","email":"john@example.com"}""")
+        val profile = parseUserProfile(token)
+
+        assertEquals("jdoe", profile.name)
+    }
+
+    @Test
+    fun `falls back to preferred_username when username is missing`() {
+        val token = fakeIdToken("""{"preferred_username":"jdoe","email":"john@example.com"}""")
+        val profile = parseUserProfile(token)
+
+        assertEquals("jdoe", profile.name)
+    }
+
+    @Test
+    fun `prefers username over preferred_username`() {
+        val token = fakeIdToken("""{"username":"logto_user","preferred_username":"oidc_user"}""")
+        val profile = parseUserProfile(token)
+
+        assertEquals("logto_user", profile.name)
+    }
+
+    @Test
     fun `ignores unknown claims`() {
         val token = fakeIdToken("""{"name":"John","unknown_field":"value"}""")
         val profile = parseUserProfile(token)

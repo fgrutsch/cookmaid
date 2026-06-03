@@ -9,6 +9,7 @@ import org.publicvalue.multiplatform.oidc.tokenstore.removeTokens
 import org.publicvalue.multiplatform.oidc.tokenstore.saveTokens
 
 class OidcAuthHandler(
+    private val oidcConfig: OidcConfig,
     private val oidcClient: OpenIdConnectClient,
     private val authFlowFactory: CodeAuthFlowFactory,
     private val tokenStore: TokenStore,
@@ -25,7 +26,19 @@ class OidcAuthHandler(
     override suspend fun login(): AuthResult {
         oidcClient.discover()
         val flow = authFlowFactory.createAuthFlow(oidcClient)
-        val tokens = flow.getAccessToken()
+        val resource = oidcConfig.resource
+        val tokens = if (resource != null) {
+            flow.getAccessToken(
+                configureAuthUrl = {
+                    parameters.append("resource", resource)
+                },
+                configureTokenExchange = {
+                    appendResourceToFormBody(resource)
+                }
+            )
+        } else {
+            flow.getAccessToken()
+        }
         tokenStore.saveTokens(tokens)
 
         val user = userClient.getOrCreateUser()

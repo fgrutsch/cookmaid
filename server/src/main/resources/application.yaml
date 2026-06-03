@@ -13,9 +13,9 @@ database:
   pool-size: ${DATABASE_POOL_SIZE:5}
 
 oidc:
-  issuer: ${OIDC_ISSUER:http://localhost:8082}
-  jwks-url: ${OIDC_JWKS_URL:http://localhost:8082/.well-known/jwks.json}
-  client-id: ${OIDC_CLIENT_ID}
+  issuer: ${OIDC_ISSUER:http://localhost:3001/oidc}
+  jwks-url: ${OIDC_JWKS_URL:http://localhost:3001/oidc/jwks}
+  audience: ${OIDC_AUDIENCE:http://localhost:8081/api}
 
 web:
   dir: ${WEB_DIR:web}

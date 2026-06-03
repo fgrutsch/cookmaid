@@ -23,6 +23,9 @@ private val oidcScope: String = js("window.__CONFIG__.OIDC_SCOPE")
 @OptIn(ExperimentalWasmJsInterop::class)
 private val oidcAccountUri: String = js("window.__CONFIG__.OIDC_ACCOUNT_URI")
 
+@OptIn(ExperimentalWasmJsInterop::class)
+private val oidcResource: String = js("window.__CONFIG__.OIDC_RESOURCE")
+
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
     if (window.location.pathname.startsWith("/callback")) {
@@ -39,6 +42,7 @@ fun main() {
                     redirectUri = "$origin/callback",
                     postLogoutRedirectUri = "$origin/callback",
                     accountUri = oidcAccountUri,
+                    resource = oidcResource.ifBlank { null },
                 ),
                 codeAuthFlowFactory = WebCodeAuthFlowFactory(),
                 tokenStore = SettingsTokenStore(LocalStorageSettingsStore()),

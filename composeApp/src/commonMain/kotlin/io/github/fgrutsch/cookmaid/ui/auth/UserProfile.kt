@@ -19,6 +19,8 @@ private data class IdTokenClaims(
     val picture: String? = null,
     @SerialName("given_name") val givenName: String? = null,
     @SerialName("family_name") val familyName: String? = null,
+    val username: String? = null,
+    @SerialName("preferred_username") val preferredUsername: String? = null,
 )
 
 private val lenientJson = Json { ignoreUnknownKeys = true }
@@ -30,11 +32,16 @@ fun parseUserProfile(idToken: String?): UserProfile {
         val payload = idToken.split(".")[1]
         val json = Base64.UrlSafe.withPadding(Base64.PaddingOption.ABSENT_OPTIONAL).decode(payload).decodeToString()
         val claims = lenientJson.decodeFromString<IdTokenClaims>(json)
-        UserProfile(
-            name = claims.name?.ifBlank { null } ?: listOfNotNull(
+        val name = claims.name?.ifBlank { null }
+            ?: listOfNotNull(
                 claims.givenName?.ifBlank { null },
                 claims.familyName?.ifBlank { null },
-            ).joinToString(" ").ifBlank { null },
+            ).joinToString(" ").ifBlank { null }
+            ?: claims.username?.ifBlank { null }
+            ?: claims.preferredUsername?.ifBlank { null }
+            ?: claims.email?.ifBlank { null }
+        UserProfile(
+            name = name,
             email = claims.email?.ifBlank { null },
             pictureUrl = claims.picture?.ifBlank { null },
         )
