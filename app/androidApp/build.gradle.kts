@@ -36,7 +36,7 @@ android {
     }
     signingConfigs {
         create("release") {
-            val keystorePropsFile = rootProject.file("keystore.properties")
+            val keystorePropsFile = project.file("keystore.properties")
             if (keystorePropsFile.exists()) {
                 storeFile = file(keystoreProps.getProperty("storeFile"))
                 storePassword = keystoreProps.getProperty("storePassword")
@@ -59,11 +59,11 @@ android {
         create("prod") {
             dimension = "environment"
             buildConfigField("String", "BASE_URL", """"https://cookmaid.fgrutsch.dev"""")
-            buildConfigField("String", "OIDC_DISCOVERY_URI", """"https://idp.fgrutsch.dev/.well-known/openid-configuration"""")
-            buildConfigField("String", "OIDC_CLIENT_ID", """"4b0e486c-0dd2-40f4-8f5b-98a4ec815686"""")
-            buildConfigField("String", "OIDC_SCOPE", """"openid profile email offline_access"""")
-            buildConfigField("String", "OIDC_ACCOUNT_URI", """"https://idp.fgrutsch.dev/settings"""")
-            buildConfigField("String", "OIDC_RESOURCE", """""""")
+            buildConfigField("String", "OIDC_DISCOVERY_URI", """"https://sso.fgrutsch.dev/oidc/.well-known/openid-configuration"""")
+            buildConfigField("String", "OIDC_CLIENT_ID", """"n12rjceuk6vgy676z9e3y"""")
+            buildConfigField("String", "OIDC_SCOPE", """"openid profile email"""")
+            buildConfigField("String", "OIDC_ACCOUNT_URI", """"https://sso.fgrutsch.dev/account/security"""")
+            buildConfigField("String", "OIDC_RESOURCE", """"https://cookmaid.fgrutsch.dev/api"""")
         }
     }
     packaging {
