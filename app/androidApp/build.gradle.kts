@@ -15,7 +15,7 @@ private val devLocalProps = Properties().apply {
 }
 
 private val keystoreProps = Properties().apply {
-    rootProject.file("keystore.properties").takeIf { it.exists() }?.reader()?.use { load(it) }
+    project.file("keystore.properties").takeIf { it.exists() }?.reader()?.use { load(it) }
 }
 
 android {
