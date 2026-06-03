@@ -38,11 +38,11 @@ jobs:
       - uses: android-actions/setup-android@v4
       - uses: gradle/actions/setup-gradle@v6
       - name: Decode keystore
-        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > release.jks
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > app/androidApp/release.jks
       - name: Create keystore.properties
         run: |
-          cat > keystore.properties <<EOF
-          storeFile=${{ github.workspace }}/release.jks
+          cat > app/androidApp/keystore.properties <<EOF
+          storeFile=${{ github.workspace }}/app/androidApp/release.jks
           storePassword=${{ secrets.KEYSTORE_PASSWORD }}
           keyAlias=${{ secrets.KEY_ALIAS }}
           keyPassword=${{ secrets.KEY_PASSWORD }}
@@ -54,8 +54,8 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           version="${GITHUB_REF_NAME#v}"
-          apk=$(find androidApp/build/outputs/apk/prod/release -name "*.apk" | head -1)
-          aab=$(find androidApp/build/outputs/bundle/prodRelease -name "*.aab" | head -1)
+          apk=$(find app/androidApp/build/outputs/apk/prod/release -name "*.apk" | head -1)
+          aab=$(find app/androidApp/build/outputs/bundle/prodRelease -name "*.aab" | head -1)
           gh release upload "$GITHUB_REF_NAME" \
             "${apk}#cookmaid-${version}.apk" \
             "${aab}#cookmaid-${version}.aab" \
