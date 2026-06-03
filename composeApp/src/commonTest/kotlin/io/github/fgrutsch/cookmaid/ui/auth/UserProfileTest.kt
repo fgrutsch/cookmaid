@@ -61,8 +61,16 @@ class UserProfileTest {
     }
 
     @Test
-    fun `treats blank name as null`() {
+    fun `treats blank name as null and falls back to email`() {
         val token = fakeIdToken("""{"name":"  ","email":"a@b.com"}""")
+        val profile = parseUserProfile(token)
+
+        assertEquals("a@b.com", profile.name)
+    }
+
+    @Test
+    fun `blank name with no fallback results in null`() {
+        val token = fakeIdToken("""{"name":"  "}""")
         val profile = parseUserProfile(token)
 
         assertNull(profile.name)
