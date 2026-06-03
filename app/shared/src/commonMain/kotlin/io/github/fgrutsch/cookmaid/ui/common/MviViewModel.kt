@@ -22,8 +22,8 @@ abstract class MviViewModel<S, E, F>(initialState: S) : ViewModel() {
 
     private val logger = KotlinLogging.logger {}
 
-    val state: StateFlow<S>
-        field = MutableStateFlow(initialState)
+    private val _state = MutableStateFlow(initialState)
+    val state: StateFlow<S> = _state
 
     private val _effects = Channel<F>(Channel.BUFFERED)
     val effects = _effects.receiveAsFlow()
@@ -40,7 +40,7 @@ abstract class MviViewModel<S, E, F>(initialState: S) : ViewModel() {
      * @param reducer function applied to the current state to produce the new state.
      */
     protected fun updateState(reducer: S.() -> S) {
-        state.update(reducer)
+        _state.update(reducer)
     }
 
     /**
@@ -93,7 +93,7 @@ abstract class MviViewModel<S, E, F>(initialState: S) : ViewModel() {
                 @Suppress("TooGenericExceptionCaught") e: Exception
             ) {
                 logger.error(e) { "Unhandled error in ${this@MviViewModel::class.simpleName}" }
-                state.update { snapshot }
+                _state.update { snapshot }
                 onError(e)
             }
         }

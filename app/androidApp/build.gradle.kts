@@ -85,7 +85,6 @@ android {
 
 kotlin {
     compilerOptions {
-        freeCompilerArgs.add("-Xskip-prerelease-check")
     }
 }
 
