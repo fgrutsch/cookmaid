@@ -41,6 +41,9 @@ jobs:
       - name: Check coverage
         run: ./gradlew :server:koverVerify
 
+      - name: Build distribution
+        run: ./gradlew :server:installDist
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v6
         with:
@@ -80,12 +83,12 @@ jobs:
       - name: Test
         run: ./gradlew :app:shared:allTests
 
-  distribution:
-    name: Distribution
+  webApp:
+    name: WebApp
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
       - uses: jdx/mise-action@v4
       - uses: gradle/actions/setup-gradle@v6
-      - name: Build production artifacts
-        run: ./gradlew :server:installDist :app:webApp:wasmJsBrowserDistribution
+      - name: Build production distribution
+        run: ./gradlew :app:webApp:wasmJsBrowserDistribution

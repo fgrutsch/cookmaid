@@ -5,7 +5,7 @@ pull_request_rules:
       - 'status-success=Detekt'
       - 'status-success=Core'
       - 'status-success=Shared UI'
-      - 'status-success=Distribution'
+      - 'status-success=WebApp'
       - 'status-success=Server'
       - 'status-success=Android'
     actions:
