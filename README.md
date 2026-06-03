@@ -116,5 +116,4 @@ and `oidc.jwks-url` default to the local Logto instance;
 ./gradlew :server:test
 ./gradlew :core:allTests
 ./gradlew :app:shared:allTests
-./gradlew :composeApp:allTests
 ```

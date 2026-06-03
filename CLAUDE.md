@@ -53,7 +53,7 @@ Four Gradle modules:
   Depends on `core`.
 - **`app/androidApp/`** — Android application entry point. Depends on `app/shared`.
   Contains `MainActivity.kt`, manifest, resources, product flavors, buildConfig.
-- **`app/app/webApp/`** — WasmJS application entry point. Depends on `app/shared`.
+- **`app/webApp/`** — WasmJS application entry point. Depends on `app/shared`.
   Web entry point: `main.kt` (via `ComposeViewport`).
 - **`server/`** — Ktor backend (JVM only). Depends on `core`.
   Entry point: `Application.kt` (`embeddedServer` with Netty on port 8081).
