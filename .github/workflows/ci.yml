@@ -67,10 +67,10 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
 
       - name: Build
-        run: ./gradlew :androidApp:assembleDebug
+        run: ./gradlew :app:androidApp:assembleDebug
 
-  composeApp:
-    name: ComposeApp
+  shared:
+    name: Shared UI
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -78,7 +78,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
 
       - name: Test
-        run: ./gradlew :composeApp:allTests
+        run: ./gradlew :app:shared:allTests
 
   distribution:
     name: Distribution
@@ -88,4 +88,4 @@ jobs:
       - uses: jdx/mise-action@v4
       - uses: gradle/actions/setup-gradle@v6
       - name: Build production artifacts
-        run: ./gradlew :server:installDist :webApp:wasmJsBrowserDistribution
+        run: ./gradlew :server:installDist :app:webApp:wasmJsBrowserDistribution
