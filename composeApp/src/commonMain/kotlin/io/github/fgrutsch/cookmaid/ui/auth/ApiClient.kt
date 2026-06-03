@@ -13,9 +13,11 @@ import org.publicvalue.multiplatform.oidc.OpenIdConnectClient
 import org.publicvalue.multiplatform.oidc.ktor.oidcBearer
 import org.publicvalue.multiplatform.oidc.tokenstore.TokenRefreshHandler
 import org.publicvalue.multiplatform.oidc.tokenstore.TokenStore
+import org.publicvalue.multiplatform.oidc.tokenstore.removeTokens
 
 class ApiClient(
     baseUrl: ApiBaseUrl,
+    oidcConfig: OidcConfig,
     tokenStore: TokenStore,
     oidcClient: OpenIdConnectClient,
     private val effectiveLocale: () -> SupportedLocale,
@@ -30,11 +32,27 @@ class ApiClient(
         }
         install(ContentNegotiation) { json() }
         install(Auth) {
-            oidcBearer(
-                tokenStore = tokenStore,
-                refreshHandler = refreshHandler,
-                client = oidcClient,
-            )
+            val resource = oidcConfig.resource
+            if (resource != null) {
+                oidcBearer(
+                    tokenStore = tokenStore,
+                    refreshAndSaveTokens = { oldAccessToken ->
+                        refreshHandler.refreshAndSaveToken(
+                            refreshCall = {
+                                oidcClient.refreshToken(it) { appendResourceToFormBody(resource) }
+                            },
+                            oldAccessToken = oldAccessToken
+                        )
+                    },
+                    onRefreshFailed = { tokenStore.removeTokens() }
+                )
+            } else {
+                oidcBearer(
+                    tokenStore = tokenStore,
+                    refreshHandler = refreshHandler,
+                    client = oidcClient,
+                )
+            }
         }
     }
 }

@@ -10,7 +10,7 @@ val testConfigEntries: List<Pair<String, String>> = listOf(
     "database.pool-size" to "5",
     "oidc.issuer" to TestJwt.issuer,
     "oidc.jwks-url" to TestJwt.jwksUrl,
-    "oidc.client-id" to TestJwt.AUDIENCE,
+    "oidc.audience" to TestJwt.AUDIENCE,
     "web.dir" to "web",
 )
 

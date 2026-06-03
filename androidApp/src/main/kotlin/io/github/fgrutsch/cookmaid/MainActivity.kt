@@ -27,6 +27,7 @@ class MainActivity : ComponentActivity() {
                     redirectUri = "cookmaid://callback",
                     postLogoutRedirectUri = "cookmaid://callback",
                     accountUri = BuildConfig.OIDC_ACCOUNT_URI,
+                    resource = BuildConfig.OIDC_RESOURCE.ifBlank { null },
                 ),
                 codeAuthFlowFactory = codeAuthFlowFactory,
                 tokenStore = SettingsTokenStore(AndroidDataStoreSettingsStore(this)),

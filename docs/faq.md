@@ -104,7 +104,7 @@ Yes. On a recipe item, tap the menu (three dots) and choose
 ### Do I need an account?
 
 Yes. Cookmaid uses OpenID Connect (OIDC) for authentication. Your
-admin sets up the identity provider (e.g., PocketID, Keycloak). You
+admin sets up the identity provider (e.g., Logto, Keycloak). You
 log in with the credentials from that provider.
 
 ### Is my data stored locally?

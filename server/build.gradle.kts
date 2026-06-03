@@ -22,12 +22,12 @@ application {
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
 }
 
-// Inject OIDC_CLIENT_ID from local.properties so `:server:run` works
-// without exporting env vars. Same file the WasmJS build already reads.
+// Inject OIDC_AUDIENCE from dev/local.properties so `:server:run` works
+// without exporting env vars.
 tasks.named<JavaExec>("run") {
-    val localPropsFile = rootProject.file("local.properties").takeIf { it.exists() } ?: return@named
+    val localPropsFile = rootProject.file("dev/local.properties").takeIf { it.exists() } ?: return@named
     val localProps = Properties().apply { localPropsFile.reader().use { load(it) } }
-    localProps.getProperty("oidc.clientId")?.let { environment("OIDC_CLIENT_ID", it) }
+    localProps.getProperty("oidc.audience")?.let { environment("OIDC_AUDIENCE", it) }
 }
 
 tasks.test {

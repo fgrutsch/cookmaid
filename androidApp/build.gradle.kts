@@ -10,6 +10,10 @@ private val localProps = Properties().apply {
     rootProject.file("local.properties").takeIf { it.exists() }?.reader()?.use { load(it) }
 }
 
+private val devLocalProps = Properties().apply {
+    rootProject.file("dev/local.properties").takeIf { it.exists() }?.reader()?.use { load(it) }
+}
+
 private val keystoreProps = Properties().apply {
     rootProject.file("keystore.properties").takeIf { it.exists() }?.reader()?.use { load(it) }
 }
@@ -46,10 +50,11 @@ android {
         create("dev") {
             dimension = "environment"
             buildConfigField("String", "BASE_URL", """"http://localhost:8081"""")
-            buildConfigField("String", "OIDC_DISCOVERY_URI", """"${localProps.getProperty("oidc.discoveryUri")}"""")
-            buildConfigField("String", "OIDC_CLIENT_ID", """"${localProps.getProperty("oidc.clientId")}"""")
-            buildConfigField("String", "OIDC_SCOPE", """"${localProps.getProperty("oidc.scope")}"""")
-            buildConfigField("String", "OIDC_ACCOUNT_URI", """"${localProps.getProperty("oidc.accountUri")}"""")
+            buildConfigField("String", "OIDC_DISCOVERY_URI", """"${devLocalProps.getProperty("oidc.discoveryUri")}"""")
+            buildConfigField("String", "OIDC_CLIENT_ID", """"${devLocalProps.getProperty("oidc.clientId")}"""")
+            buildConfigField("String", "OIDC_SCOPE", """"${devLocalProps.getProperty("oidc.scope")}"""")
+            buildConfigField("String", "OIDC_ACCOUNT_URI", """"${devLocalProps.getProperty("oidc.accountUri")}"""")
+            buildConfigField("String", "OIDC_RESOURCE", """"${devLocalProps.getProperty("oidc.resource") ?: ""}"""")
         }
         create("prod") {
             dimension = "environment"
@@ -58,6 +63,7 @@ android {
             buildConfigField("String", "OIDC_CLIENT_ID", """"4b0e486c-0dd2-40f4-8f5b-98a4ec815686"""")
             buildConfigField("String", "OIDC_SCOPE", """"openid profile email offline_access"""")
             buildConfigField("String", "OIDC_ACCOUNT_URI", """"https://idp.fgrutsch.dev/settings"""")
+            buildConfigField("String", "OIDC_RESOURCE", """""""")
         }
     }
     packaging {
@@ -85,7 +91,7 @@ kotlin {
 
 tasks.register<Exec>("adbReverse") {
     val adb = "${localProps.getProperty("sdk.dir")}/platform-tools/adb"
-    commandLine("sh", "-c", "$adb reverse tcp:8081 tcp:8081 && $adb reverse tcp:8082 tcp:8082")
+    commandLine("sh", "-c", "$adb reverse tcp:8081 tcp:8081 && $adb reverse tcp:3001 tcp:3001")
     isIgnoreExitValue = true
 }
 

@@ -41,7 +41,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import cookmaid.composeapp.generated.resources.Res
-import cookmaid.composeapp.generated.resources.ic_person
+import cookmaid.composeapp.generated.resources.ic_no_accounts
 import cookmaid.composeapp.generated.resources.settings_dark_mode
 import cookmaid.composeapp.generated.resources.settings_language
 import cookmaid.composeapp.generated.resources.settings_manage_account
@@ -243,7 +243,7 @@ private fun UserProfileSection(userProfile: UserProfile) {
             )
         } else {
             Icon(
-                painter = painterResource(Res.drawable.ic_person),
+                painter = painterResource(Res.drawable.ic_no_accounts),
                 contentDescription = Res.string.settings_profile_picture.resolve(),
                 modifier = Modifier.size(80.dp),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,

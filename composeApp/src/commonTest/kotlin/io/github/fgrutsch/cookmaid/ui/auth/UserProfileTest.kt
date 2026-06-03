@@ -61,8 +61,16 @@ class UserProfileTest {
     }
 
     @Test
-    fun `treats blank name as null`() {
+    fun `treats blank name as null and falls back to email`() {
         val token = fakeIdToken("""{"name":"  ","email":"a@b.com"}""")
+        val profile = parseUserProfile(token)
+
+        assertEquals("a@b.com", profile.name)
+    }
+
+    @Test
+    fun `blank name with no fallback results in null`() {
+        val token = fakeIdToken("""{"name":"  "}""")
         val profile = parseUserProfile(token)
 
         assertNull(profile.name)
@@ -74,6 +82,54 @@ class UserProfileTest {
         val profile = parseUserProfile(token)
 
         assertNull(profile.email)
+    }
+
+    @Test
+    fun `falls back to username when name and given_name are missing`() {
+        val token = fakeIdToken("""{"username":"jdoe","email":"john@example.com"}""")
+        val profile = parseUserProfile(token)
+
+        assertEquals("jdoe", profile.name)
+    }
+
+    @Test
+    fun `falls back to email when name and username are missing`() {
+        val token = fakeIdToken("""{"email":"john@example.com"}""")
+        val profile = parseUserProfile(token)
+
+        assertEquals("john@example.com", profile.name)
+    }
+
+    @Test
+    fun `prefers name over username`() {
+        val token = fakeIdToken("""{"name":"John Doe","username":"jdoe","email":"john@example.com"}""")
+        val profile = parseUserProfile(token)
+
+        assertEquals("John Doe", profile.name)
+    }
+
+    @Test
+    fun `prefers username over email`() {
+        val token = fakeIdToken("""{"username":"jdoe","email":"john@example.com"}""")
+        val profile = parseUserProfile(token)
+
+        assertEquals("jdoe", profile.name)
+    }
+
+    @Test
+    fun `falls back to preferred_username when username is missing`() {
+        val token = fakeIdToken("""{"preferred_username":"jdoe","email":"john@example.com"}""")
+        val profile = parseUserProfile(token)
+
+        assertEquals("jdoe", profile.name)
+    }
+
+    @Test
+    fun `prefers username over preferred_username`() {
+        val token = fakeIdToken("""{"username":"logto_user","preferred_username":"oidc_user"}""")
+        val profile = parseUserProfile(token)
+
+        assertEquals("logto_user", profile.name)
     }
 
     @Test

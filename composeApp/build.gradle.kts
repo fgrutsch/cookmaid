@@ -90,10 +90,8 @@ tasks.named<Copy>("wasmJsProcessResources") {
         filter { it.replace("__APP_VERSION__", appVersion) }
     }
 
-    // local.properties is absent in CI/production — early-exit to leave ${VAR} placeholders
-    // intact for docker-entrypoint.sh envsubst. Without this guard, getProperty() returns
-    // null and Gradle writes the literal string "null" into index.html, breaking envsubst.
-    val localPropsFile = rootProject.file("local.properties").takeIf { it.exists() } ?: return@named
+    // Absent in CI/production — early-exit to leave ${VAR} placeholders intact for envsubst.
+    val localPropsFile = rootProject.file("dev/local.properties").takeIf { it.exists() } ?: return@named
     val localProps = Properties().apply { localPropsFile.reader().use { load(it) } }
 
     filesMatching("index.html") {
@@ -102,6 +100,7 @@ tasks.named<Copy>("wasmJsProcessResources") {
             "OIDC_CLIENT_ID" to localProps.getProperty("oidc.clientId"),
             "OIDC_SCOPE" to localProps.getProperty("oidc.scope"),
             "OIDC_ACCOUNT_URI" to localProps.getProperty("oidc.accountUri"),
+            "OIDC_RESOURCE" to (localProps.getProperty("oidc.resource") ?: ""),
         )
     }
 }
