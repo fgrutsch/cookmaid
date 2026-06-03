@@ -47,8 +47,8 @@ jobs:
           fail_ci_if_error: true
           use_oidc: true
 
-  shared:
-    name: Shared
+  core:
+    name: Core
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -56,7 +56,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
 
       - name: Test
-        run: ./gradlew :shared:allTests
+        run: ./gradlew :core:allTests
 
   android:
     name: Android
@@ -88,4 +88,4 @@ jobs:
       - uses: jdx/mise-action@v4
       - uses: gradle/actions/setup-gradle@v6
       - name: Build production artifacts
-        run: ./gradlew :server:installDist :composeApp:wasmJsBrowserDistribution
+        run: ./gradlew :server:installDist :webApp:wasmJsBrowserDistribution

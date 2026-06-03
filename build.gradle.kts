@@ -19,7 +19,7 @@ allprojects {
     version = rootProject.scmVersion.version
 }
 
-val dockerPrereqs = listOf(":server:installDist", ":composeApp:wasmJsBrowserDistribution")
+val dockerPrereqs = listOf(":server:installDist", ":webApp:wasmJsBrowserDistribution")
 
 tasks.register<Exec>("buildDockerImage") {
     group = "docker"
@@ -58,10 +58,11 @@ tasks.register("detektAll") {
     dependsOn(
         ":server:detektMain",
         ":server:detektTest",
-        ":shared:detektMainJvm",
-        ":shared:detektTestJvm",
+        ":core:detektMainJvm",
+        ":core:detektTestJvm",
         ":composeApp:detektMainAndroid",
         ":composeApp:detektCommonTestSourceSet",
         ":composeApp:detektWasmJsMainSourceSet",
+        ":webApp:detektWasmJsMainSourceSet",
     )
 }

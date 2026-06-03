@@ -1,7 +1,6 @@
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -38,7 +37,6 @@ kotlin {
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         browser()
-        binaries.executable()
     }
 
     sourceSets {
@@ -66,7 +64,7 @@ kotlin {
             implementation(libs.coil.network.ktor3)
             implementation(libs.multiplatform.settings.no.arg)
             implementation(libs.kotlin.logging)
-            implementation(projects.shared)
+            implementation(projects.core)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -82,37 +80,3 @@ buildkonfig {
     }
 }
 
-tasks.named<Copy>("wasmJsProcessResources") {
-    val appVersion = project.version.toString()
-
-    // Replace the version placeholder in the service worker cache name.
-    filesMatching("service-worker.js") {
-        filter { it.replace("__APP_VERSION__", appVersion) }
-    }
-
-    // Absent in CI/production — early-exit to leave ${VAR} placeholders intact for envsubst.
-    val localPropsFile = rootProject.file("dev/local.properties").takeIf { it.exists() } ?: return@named
-    val localProps = Properties().apply { localPropsFile.reader().use { load(it) } }
-
-    filesMatching("index.html") {
-        expand(
-            "OIDC_DISCOVERY_URI" to localProps.getProperty("oidc.discoveryUri"),
-            "OIDC_CLIENT_ID" to localProps.getProperty("oidc.clientId"),
-            "OIDC_SCOPE" to localProps.getProperty("oidc.scope"),
-            "OIDC_ACCOUNT_URI" to localProps.getProperty("oidc.accountUri"),
-            "OIDC_RESOURCE" to (localProps.getProperty("oidc.resource") ?: ""),
-        )
-    }
-}
-
-tasks.named<Sync>("wasmJsBrowserDistribution") {
-    doLast {
-        val distDir = destinationDir
-        val jsFile = distDir.listFiles()?.firstOrNull { it.name.matches(Regex("^app\\.[a-f0-9]+\\.js$")) }
-            ?: error("No app.[hash].js found in $distDir")
-
-        // Rewrite the JS bundle reference in index.html.
-        val indexHtml = File(distDir, "index.html")
-        indexHtml.writeText(indexHtml.readText().replace("composeApp.js", jsFile.name))
-    }
-}

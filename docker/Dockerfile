@@ -4,7 +4,7 @@ RUN apk add --no-cache gettext && \
 
 WORKDIR /app
 COPY server/build/install/server/ .
-COPY composeApp/build/dist/wasmJs/productionExecutable/ /app/web/
+COPY webApp/build/dist/wasmJs/productionExecutable/ /app/web/
 COPY docker/docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh && chown -R cookmaid:cookmaid /app
 
