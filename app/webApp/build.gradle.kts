@@ -12,6 +12,7 @@ kotlin {
     compilerOptions {
         optIn.add("org.publicvalue.multiplatform.oidc.ExperimentalOpenIdConnect")
         optIn.add("kotlin.uuid.ExperimentalUuidApi")
+        freeCompilerArgs.add("-Xexplicit-backing-fields")
     }
 
     @OptIn(ExperimentalWasmDsl::class)
