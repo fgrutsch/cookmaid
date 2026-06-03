@@ -101,8 +101,8 @@ Four Gradle modules:
   first route that fits, and a path parameter will swallow literal segments.
 - **JWT authentication**: `AuthModule.kt` validates issuer, JWKS signature,
   and audience. Config keys: `oidc.issuer`, `oidc.jwks-url`, `oidc.audience`
-  (all from env vars). `oidc.audience` defaults to `http://localhost:8081/api`
-  in `application.yaml`. Use `property()` (not `propertyOrNull()`) for
+  (all from env vars). `oidc.audience` has no default — server fails fast
+  if absent. Use `property()` (not `propertyOrNull()`) for
   security-critical config to prevent silent misconfiguration. For local runs,
   `:server:run` is hooked in `server/build.gradle.kts` to read `oidc.audience`
   from `dev/local.properties` and inject it as `OIDC_AUDIENCE`, so devs don't

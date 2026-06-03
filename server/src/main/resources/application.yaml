@@ -15,7 +15,7 @@ database:
 oidc:
   issuer: ${OIDC_ISSUER:http://localhost:3001/oidc}
   jwks-url: ${OIDC_JWKS_URL:http://localhost:3001/oidc/jwks}
-  audience: ${OIDC_AUDIENCE:http://localhost:8081/api}
+  audience: ${OIDC_AUDIENCE}
 
 web:
   dir: ${WEB_DIR:web}
