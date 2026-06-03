@@ -19,11 +19,11 @@ package of `io.github.fgrutsch.cookmaid`.
 ./gradlew :server:run
 
 # Run web app (Wasm, dev)
-./gradlew :composeApp:wasmJsBrowserDevelopmentRun
+./gradlew :webApp:wasmJsBrowserDevelopmentRun
 
 # Build web app (Wasm, production)
-./gradlew :composeApp:wasmJsBrowserDistribution
-# Output: composeApp/build/dist/wasmJs/productionExecutable/
+./gradlew :webApp:wasmJsBrowserDistribution
+# Output: webApp/build/dist/wasmJs/productionExecutable/
 
 # Build Docker image (server + WasmJS bundled)
 ./gradlew buildDockerImage
@@ -33,7 +33,7 @@ package of `io.github.fgrutsch.cookmaid`.
 
 # Run tests per module
 ./gradlew :server:test
-./gradlew :shared:allTests
+./gradlew :core:allTests
 ./gradlew :composeApp:allTests
 
 # Run a single test class (server example)
@@ -47,13 +47,15 @@ package of `io.github.fgrutsch.cookmaid`.
 
 Four Gradle modules:
 
-- **`shared/`** — Multiplatform library (targets: Android, JVM, WasmJS).
+- **`core/`** — Multiplatform library (targets: Android, JVM, WasmJS).
   Data models, DTOs, request/response types shared across all platforms.
 - **`composeApp/`** — Compose Multiplatform UI library (targets: Android, WasmJS).
-  Depends on `shared`. Web entry point: `main.kt` (via `ComposeViewport`).
+  Depends on `core`.
 - **`androidApp/`** — Android application entry point. Depends on `composeApp`.
   Contains `MainActivity.kt`, manifest, resources, product flavors, buildConfig.
-- **`server/`** — Ktor backend (JVM only). Depends on `shared`.
+- **`webApp/`** — WasmJS application entry point. Depends on `composeApp`.
+  Web entry point: `main.kt` (via `ComposeViewport`).
+- **`server/`** — Ktor backend (JVM only). Depends on `core`.
   Entry point: `Application.kt` (`embeddedServer` with Netty on port 8081).
 
 ## Tech Stack
@@ -210,7 +212,7 @@ Four Gradle modules:
   `BuildKonfig` object in package `io.github.fgrutsch.cookmaid`. Configured
   in `composeApp/build.gradle.kts` under `buildkonfig { }`. Use `const = true`
   on `buildConfigField` to generate `const val` (avoids detekt `MayBeConstant`).
-- **WasmJS static assets**: Place in `composeApp/src/wasmJsMain/resources/`.
+- **WasmJS static assets**: Place in `webApp/src/wasmJsMain/resources/`.
   `wasmJsProcessResources` copies them to build output and performs build-time
   substitutions: `expand()` for OIDC config in `index.html`, `filter {}` for
   `__APP_VERSION__` in `service-worker.js`. Two-environment contract:
@@ -223,7 +225,7 @@ Four Gradle modules:
   which breaks `envsubst` silently. Use `__PLACEHOLDER__` convention with `filter {}`
   for non-OIDC substitutions to avoid conflicts with `${}` (Groovy templates / envsubst).
 - **Content-hashed JS bundles**: Production WasmJS builds produce
-  `app.[contenthash].js` via `composeApp/webpack.config.d/output.js` (production
+  `app.[contenthash].js` via `webApp/webpack.config.d/output.js` (production
   mode only — dev keeps `composeApp.js`). The `wasmJsBrowserDistribution` task
   has a `doLast` that rewrites the `<script>` src in `index.html` to match the
   hashed filename. Webpack config snippets in `webpack.config.d/` are auto-merged
@@ -231,7 +233,7 @@ Four Gradle modules:
 - **Service worker versioning**: `service-worker.js` cache name uses
   `__APP_VERSION__` placeholder, replaced at build time. Each release
   invalidates stale caches via the `activate` handler.
-- **PWA icons** (`composeApp/src/wasmJsMain/resources/icon-{192,512,1024}.png`):
+- **PWA icons** (`webApp/src/wasmJsMain/resources/icon-{192,512,1024}.png`):
   solid white background, no transparency, content within the inner 80%
   (maskable safe zone — Android adaptive masks crop the outer 20%).
   `manifest.json` uses `"purpose": "any maskable"` so one asset serves both
