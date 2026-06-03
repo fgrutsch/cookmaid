@@ -50,12 +50,12 @@ Pinned versions live in [`gradle/libs.versions.toml`](gradle/libs.versions.toml)
 
 ## Project Structure
 
-- **`shared/`** — Multiplatform library (Android, JVM, WasmJS). Data models
+- **`core/`** — Multiplatform library (Android, JVM, WasmJS). Data models
   and DTOs shared across client and server.
-- **`composeApp/`** — Compose Multiplatform UI library (Android, WasmJS).
-  Web build ships as an installable Progressive Web App (manifest, service
-  worker, maskable icons for Android adaptive masks, `apple-touch-icon` for iOS).
-- **`androidApp/`** — Android application entry point. Depends on `composeApp`.
+- **`app/shared/`** — Compose Multiplatform UI library (Android, WasmJS).
+- **`app/webApp/`** — WasmJS application entry point. Progressive Web App
+  (manifest, service worker, maskable icons).
+- **`app/androidApp/`** — Android application entry point.
 - **`server/`** — Ktor backend (JVM). Serves API + WasmJS static files.
 - **`dev/`** — Docker Compose setup for local infrastructure
 - **`docker/`** — Production Dockerfile + entrypoint
@@ -100,10 +100,10 @@ and `oidc.jwks-url` default to the local Logto instance;
 ./gradlew :server:run
 
 # Run web app (Wasm, port 8080)
-./gradlew :composeApp:wasmJsBrowserDevelopmentRun
+./gradlew :app:webApp:wasmJsBrowserDevelopmentRun
 
 # Run Android app
-./gradlew :androidApp:installDevDebug
+./gradlew :app:androidApp:installDevDebug
 ```
 
 ### 4. Run Tests
@@ -114,6 +114,6 @@ and `oidc.jwks-url` default to the local Logto instance;
 
 # Per module
 ./gradlew :server:test
-./gradlew :shared:allTests
-./gradlew :composeApp:allTests
+./gradlew :core:allTests
+./gradlew :app:shared:allTests
 ```

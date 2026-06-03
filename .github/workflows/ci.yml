@@ -41,14 +41,17 @@ jobs:
       - name: Check coverage
         run: ./gradlew :server:koverVerify
 
+      - name: Build distribution
+        run: ./gradlew :server:installDist
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v6
         with:
           fail_ci_if_error: true
           use_oidc: true
 
-  shared:
-    name: Shared
+  core:
+    name: Core
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -56,7 +59,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
 
       - name: Test
-        run: ./gradlew :shared:allTests
+        run: ./gradlew :core:allTests
 
   android:
     name: Android
@@ -67,10 +70,10 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
 
       - name: Build
-        run: ./gradlew :androidApp:assembleDebug
+        run: ./gradlew :app:androidApp:assembleDebug
 
-  composeApp:
-    name: ComposeApp
+  shared:
+    name: Shared UI
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -78,14 +81,14 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
 
       - name: Test
-        run: ./gradlew :composeApp:allTests
+        run: ./gradlew :app:shared:allTests
 
-  distribution:
-    name: Distribution
+  webApp:
+    name: WebApp
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
       - uses: jdx/mise-action@v4
       - uses: gradle/actions/setup-gradle@v6
-      - name: Build production artifacts
-        run: ./gradlew :server:installDist :composeApp:wasmJsBrowserDistribution
+      - name: Build production distribution
+        run: ./gradlew :app:webApp:wasmJsBrowserDistribution

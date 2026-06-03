@@ -45,7 +45,7 @@ kover {
 }
 
 dependencies {
-    implementation(projects.shared)
+    implementation(projects.core)
     runtimeOnly(libs.logback)
     implementation(libs.kotlin.logging)
     implementation(libs.bundles.ktor.server)

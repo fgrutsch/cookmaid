@@ -6,7 +6,7 @@ xcuserdata
 !src/**/build/
 /local.properties
 *.jks
-keystore.properties
+app/androidApp/keystore.properties
 .idea
 .DS_Store
 captures

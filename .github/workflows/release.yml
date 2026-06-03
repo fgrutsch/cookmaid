@@ -48,7 +48,7 @@ jobs:
           keyPassword=${{ secrets.KEY_PASSWORD }}
           EOF
       - name: Build APK and AAB
-        run: ./gradlew :androidApp:assembleProdRelease :androidApp:bundleProdRelease
+        run: ./gradlew :app:androidApp:assembleProdRelease :app:androidApp:bundleProdRelease
       - name: Upload to release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

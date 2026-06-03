@@ -3,11 +3,11 @@ pull_request_rules:
     conditions:
       - 'author=dependabot[bot]'
       - 'status-success=Detekt'
-      - 'status-success=Shared'
-      - 'status-success=Distribution'
+      - 'status-success=Core'
+      - 'status-success=Shared UI'
+      - 'status-success=WebApp'
       - 'status-success=Server'
       - 'status-success=Android'
-      - 'status-success=ComposeApp'
     actions:
       merge:
         method: squash
