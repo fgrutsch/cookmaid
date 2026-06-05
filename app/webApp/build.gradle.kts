@@ -76,8 +76,10 @@ val injectLocalOidcConfig by tasks.registering(Copy::class) {
     into(layout.buildDirectory.dir("processedResources/wasmJs/main"))
 }
 
-// The dev server depends on the inject task, so it always serves index.html with
-// dev OIDC config from local.properties. Production paths don't depend on it.
-tasks.named("wasmJsBrowserDevelopmentRun") {
+// The dev resource sync consumes processedResources, so it must run after the
+// inject task overwrites index.html. Wiring the consumer (not just the run task)
+// satisfies Gradle's task-output validation. Production uses its own
+// (Production) sync, which never depends on inject → keeps the ${VAR} placeholders.
+tasks.named("wasmJsDevelopmentExecutableCompileSync") {
     dependsOn(injectLocalOidcConfig)
 }
