@@ -13,7 +13,6 @@ import org.koin.core.context.stopKoin
 import java.io.File
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertNull
 
 class ApplicationTest : BaseIntegrationTest() {
@@ -38,16 +37,15 @@ class ApplicationTest : BaseIntegrationTest() {
     }
 
     @Test
-    fun `csp connect-src uses the oidc issuer origin not its full path`() = testApplication {
+    fun `csp connect-src reflects configured origins`() = testApplication {
         environment {
-            val entries = testConfigEntries.filter { it.first != "oidc.issuer" } +
-                ("oidc.issuer" to "https://idp.example.com/oidc")
+            val entries = testConfigEntries.filter { it.first != "csp.connect-src" } +
+                ("csp.connect-src" to "https://*.example.com")
             config = MapApplicationConfig(*entries.toTypedArray())
         }
         application { module() }
         val csp = client.get("/").headers["Content-Security-Policy"]!!
-        assertContains(csp, "connect-src 'self' https://idp.example.com;")
-        assertFalse(csp.contains("https://idp.example.com/oidc"))
+        assertContains(csp, "connect-src 'self' https://*.example.com;")
         stopKoin()
     }
 
