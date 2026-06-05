@@ -38,7 +38,14 @@ tasks.named<Copy>("wasmJsProcessResources") {
         filter { it.replace("__APP_VERSION__", appVersion) }
     }
 
-    // Absent in CI/production — early-exit to leave ${VAR} placeholders intact for envsubst.
+    // Local dev bakes dev OIDC config into index.html from the checked-in
+    // dev/local.properties. CI (GitHub Actions sets CI=true) skips this, leaving
+    // the ${VAR} placeholders for the Docker entrypoint's envsubst.
+    // providers.environmentVariable (not System.getenv) keeps this
+    // configuration-cache correct — the cache invalidates when CI changes.
+    val isCi = providers.environmentVariable("CI").map { it.toBoolean() }.getOrElse(false)
+    if (isCi) return@named
+
     val localPropsFile = rootProject.file("dev/local.properties").takeIf { it.exists() } ?: return@named
     val localProps = Properties().apply { localPropsFile.reader().use { load(it) } }
 
