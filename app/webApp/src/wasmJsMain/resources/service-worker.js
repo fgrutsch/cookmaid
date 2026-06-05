@@ -13,7 +13,12 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
     const url = new URL(event.request.url);
-    if (url.pathname.startsWith('/api/')) {
+    // Only cache same-origin GETs. Let the browser handle API calls, cross-origin
+    // requests (e.g. OIDC), and non-GET methods directly — Cache.put() rejects
+    // non-GET requests, and auth traffic must not be cached.
+    if (event.request.method !== 'GET' ||
+        url.origin !== self.location.origin ||
+        url.pathname.startsWith('/api/')) {
         return;
     }
     event.respondWith(
