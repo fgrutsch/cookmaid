@@ -19,3 +19,8 @@ oidc:
 
 web:
   dir: ${WEB_DIR:web}
+
+csp:
+  # Space-separated extra connect-src origins (IdP, CDN, …). Origins only, no path.
+  # Production sets a wildcard, e.g. CSP_CONNECT_SRC=https://*.example.com.
+  connect-src: ${CSP_CONNECT_SRC:http://localhost:3001}

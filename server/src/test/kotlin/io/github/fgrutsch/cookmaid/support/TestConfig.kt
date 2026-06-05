@@ -12,6 +12,7 @@ val testConfigEntries: List<Pair<String, String>> = listOf(
     "oidc.jwks-url" to TestJwt.jwksUrl,
     "oidc.audience" to TestJwt.AUDIENCE,
     "web.dir" to "web",
+    "csp.connect-src" to TestJwt.issuer,
 )
 
 val testConfig: ApplicationConfig = MapApplicationConfig(*testConfigEntries.toTypedArray())

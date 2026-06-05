@@ -33,7 +33,6 @@ import io.ktor.server.routing.*
 import org.koin.dsl.module
 import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
-import java.net.URI
 
 private val logger = KotlinLogging.logger {}
 
@@ -66,10 +65,11 @@ private fun Application.configureDI() {
 }
 
 private fun Application.configureHttp() {
-    // CSP connect-src needs the IdP origin, not the issuer URL: a CSP source
-    // with a path only matches that exact path, blocking /oidc/.well-known, /jwks, etc.
-    val oidcIssuer = environment.config.property("oidc.issuer").getString()
-    val oidcOrigin = URI(oidcIssuer).let { "${it.scheme}://${it.authority}" }
+    // connect-src origins (IdP, CDN/avatars, …) come from config so a deployment
+    // can use one wildcard like https://*.example.com. Must be origins, not URLs
+    // with a path — a CSP source with a path matches only that exact path.
+    // 'self' already covers the app's own API.
+    val connectSrc = environment.config.property("csp.connect-src").getString()
     install(ContentNegotiation) { json() }
     install(DefaultHeaders) {
         header("X-Frame-Options", "DENY")
@@ -78,7 +78,7 @@ private fun Application.configureHttp() {
             "Content-Security-Policy",
             "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; worker-src 'self' blob:; " +
                 "style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; " +
-                "connect-src 'self' $oidcOrigin; object-src 'none'",
+                "connect-src 'self' $connectSrc; object-src 'none'",
         )
     }
     install(HSTS)
