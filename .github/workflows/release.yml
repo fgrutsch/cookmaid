@@ -38,11 +38,11 @@ jobs:
       - uses: android-actions/setup-android@v4
       - uses: gradle/actions/setup-gradle@v6
       - name: Decode keystore
-        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > app/androidApp/release.jks
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > release.jks
       - name: Create keystore.properties
         run: |
-          cat > app/androidApp/keystore.properties <<EOF
-          storeFile=${{ github.workspace }}/app/androidApp/release.jks
+          cat > keystore.properties <<EOF
+          storeFile=${{ github.workspace }}/release.jks
           storePassword=${{ secrets.KEYSTORE_PASSWORD }}
           keyAlias=${{ secrets.KEY_ALIAS }}
           keyPassword=${{ secrets.KEY_PASSWORD }}

@@ -86,8 +86,18 @@ Logto admin console: http://localhost:3002 (one-time setup wizard on first use).
 
 ### 2. Configure local settings
 
-Dev OIDC settings live in `dev/local.properties` (checked into version
-control). These match the pre-seeded Logto environment.
+Dev OIDC settings live in `local.properties` (NOT checked into VCS). Add the following:
+
+```properties
+sdk.dir=<path-to-android-sdk>
+
+oidc.discoveryUri=http://localhost:3001/oidc/.well-known/openid-configuration
+oidc.clientId=cookmaid-dev
+oidc.scope=openid profile email
+oidc.accountUri=http://localhost:3001/account/security
+oidc.resource=http://localhost:8081/api
+oidc.audience=http://localhost:8081/api
+```
 
 The server reads its OIDC config from `application.yaml`. `oidc.issuer`
 and `oidc.jwks-url` default to the local Logto instance;
@@ -99,7 +109,7 @@ and `oidc.jwks-url` default to the local Logto instance;
 # Run server (port 8081)
 ./gradlew :server:run
 
-# Run web app (Wasm, port 8080)
+# Run web app (Wasm, port 8080) — injects dev OIDC config from local.properties
 ./gradlew :app:webApp:wasmJsBrowserDevelopmentRun
 
 # Run Android app

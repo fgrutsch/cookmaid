@@ -23,8 +23,8 @@ kotlin {
     sourceSets {
         wasmJsMain.dependencies {
             implementation(projects.app.shared)
-            implementation(compose.runtime)
-            implementation(compose.ui)
+            implementation(libs.compose.runtime)
+            implementation(libs.compose.ui)
             implementation(libs.bundles.oidc)
             implementation(libs.multiplatform.settings.no.arg)
         }
@@ -37,27 +37,6 @@ tasks.named<Copy>("wasmJsProcessResources") {
     filesMatching("service-worker.js") {
         filter { it.replace("__APP_VERSION__", appVersion) }
     }
-
-    // Local dev bakes dev OIDC config into index.html from the checked-in
-    // dev/local.properties. CI (GitHub Actions sets CI=true) skips this, leaving
-    // the ${VAR} placeholders for the Docker entrypoint's envsubst.
-    // providers.environmentVariable (not System.getenv) keeps this
-    // configuration-cache correct — the cache invalidates when CI changes.
-    val isCi = providers.environmentVariable("CI").map { it.toBoolean() }.getOrElse(false)
-    if (isCi) return@named
-
-    val localPropsFile = rootProject.file("dev/local.properties").takeIf { it.exists() } ?: return@named
-    val localProps = Properties().apply { localPropsFile.reader().use { load(it) } }
-
-    filesMatching("index.html") {
-        expand(
-            "OIDC_DISCOVERY_URI" to localProps.getProperty("oidc.discoveryUri"),
-            "OIDC_CLIENT_ID" to localProps.getProperty("oidc.clientId"),
-            "OIDC_SCOPE" to localProps.getProperty("oidc.scope"),
-            "OIDC_ACCOUNT_URI" to localProps.getProperty("oidc.accountUri"),
-            "OIDC_RESOURCE" to (localProps.getProperty("oidc.resource") ?: ""),
-        )
-    }
 }
 
 tasks.named<Sync>("wasmJsBrowserDistribution") {
@@ -69,4 +48,36 @@ tasks.named<Sync>("wasmJsBrowserDistribution") {
         val indexHtml = File(distDir, "index.html")
         indexHtml.writeText(indexHtml.readText().replace("webApp.js", jsFile.name))
     }
+}
+
+// Overwrites the processed index.html with dev OIDC values from local.properties.
+// Only the dev server depends on it, so production builds (wasmJsBrowserDistribution,
+// the Docker image) never run it and keep the ${VAR} placeholders for the
+// entrypoint's envsubst. Reads from source each run, so it stays idempotent.
+val injectLocalOidcConfig by tasks.registering(Copy::class) {
+    dependsOn("wasmJsProcessResources")
+
+    val localPropsFile = rootProject.file("local.properties")
+    require(localPropsFile.exists()) {
+        "runLocal needs local.properties with oidc.* keys — see README → Configure local settings"
+    }
+    val localProps = Properties().apply { localPropsFile.reader().use { load(it) } }
+
+    from("src/wasmJsMain/resources") {
+        include("index.html")
+        expand(
+            "OIDC_DISCOVERY_URI" to localProps.getProperty("oidc.discoveryUri"),
+            "OIDC_CLIENT_ID" to localProps.getProperty("oidc.clientId"),
+            "OIDC_SCOPE" to localProps.getProperty("oidc.scope"),
+            "OIDC_ACCOUNT_URI" to localProps.getProperty("oidc.accountUri"),
+            "OIDC_RESOURCE" to (localProps.getProperty("oidc.resource") ?: ""),
+        )
+    }
+    into(layout.buildDirectory.dir("processedResources/wasmJs/main"))
+}
+
+// The dev server depends on the inject task, so it always serves index.html with
+// dev OIDC config from local.properties. Production paths don't depend on it.
+tasks.named("wasmJsBrowserDevelopmentRun") {
+    dependsOn(injectLocalOidcConfig)
 }
