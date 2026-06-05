@@ -6,6 +6,13 @@ plugins {
     alias(libs.plugins.composeCompiler)
 }
 
+val localProps = Properties().apply {
+    rootProject.file("local.properties").takeIf { it.exists() }?.reader()?.use { load(it) }
+}
+
+val keystoreProps = rootProject.file("keystore.properties").takeIf { it.exists() }
+    ?.let { file -> Properties().apply { file.reader().use { load(it) } } }
+
 android {
     namespace = "io.github.fgrutsch.cookmaid"
     compileSdk = libs.versions.android.targetCompileSdk.get().toInt()
@@ -24,29 +31,24 @@ android {
     }
     signingConfigs {
         create("release") {
-            project.file("keystore.properties").takeIf { it.exists() }
-                ?.let { file -> Properties().apply { file.reader().use { load(it) } } }
-                ?.let { props ->
-                    storeFile = file(props.getProperty("storeFile"))
-                    storePassword = props.getProperty("storePassword")
-                    keyAlias = props.getProperty("keyAlias")
-                    keyPassword = props.getProperty("keyPassword")
-                }
+            keystoreProps?.let { props ->
+                storeFile = file(props.getProperty("storeFile"))
+                storePassword = props.getProperty("storePassword")
+                keyAlias = props.getProperty("keyAlias")
+                keyPassword = props.getProperty("keyPassword")
+            }
         }
     }
     flavorDimensions += "environment"
     productFlavors {
         create("dev") {
             dimension = "environment"
-            val devProps = Properties().apply {
-                rootProject.file("dev/local.properties").inputStream().use { load(it) }
-            }
             buildConfigField("String", "BASE_URL", """"http://localhost:8081"""")
-            buildConfigField("String", "OIDC_DISCOVERY_URI", """"${devProps.getProperty("oidc.discoveryUri")}"""")
-            buildConfigField("String", "OIDC_CLIENT_ID", """"${devProps.getProperty("oidc.clientId")}"""")
-            buildConfigField("String", "OIDC_SCOPE", """"${devProps.getProperty("oidc.scope")}"""")
-            buildConfigField("String", "OIDC_ACCOUNT_URI", """"${devProps.getProperty("oidc.accountUri")}"""")
-            buildConfigField("String", "OIDC_RESOURCE", """"${devProps.getProperty("oidc.resource") ?: ""}"""")
+            buildConfigField("String", "OIDC_DISCOVERY_URI", """"${localProps.getProperty("oidc.discoveryUri")}"""")
+            buildConfigField("String", "OIDC_CLIENT_ID", """"${localProps.getProperty("oidc.clientId")}"""")
+            buildConfigField("String", "OIDC_SCOPE", """"${localProps.getProperty("oidc.scope")}"""")
+            buildConfigField("String", "OIDC_ACCOUNT_URI", """"${localProps.getProperty("oidc.accountUri")}"""")
+            buildConfigField("String", "OIDC_RESOURCE", """"${localProps.getProperty("oidc.resource") ?: ""}"""")
         }
         create("prod") {
             dimension = "environment"
@@ -86,9 +88,6 @@ kotlin {
 
 tasks.register<Exec>("adbReverse") {
     description = "Reverse-forward adb ports so the emulator/device reaches the local server and Logto"
-    val localProps = Properties().apply {
-        rootProject.file("local.properties").inputStream().use { load(it) }
-    }
     val adb = "${localProps.getProperty("sdk.dir")}/platform-tools/adb"
     commandLine("sh", "-c", "$adb reverse tcp:8081 tcp:8081 && $adb reverse tcp:3001 tcp:3001")
     isIgnoreExitValue = true

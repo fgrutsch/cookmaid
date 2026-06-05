@@ -107,10 +107,10 @@ Four Gradle modules:
   if absent. Use `property()` (not `propertyOrNull()`) for
   security-critical config to prevent silent misconfiguration. For local runs,
   `:server:run` is hooked in `server/build.gradle.kts` to read `oidc.audience`
-  from `dev/local.properties` and inject it as `OIDC_AUDIENCE`, so devs don't
+  from `local.properties` and inject it as `OIDC_AUDIENCE`, so devs don't
   need to export env vars. Same early-exit guard as `wasmJsProcessResources`:
   `takeIf { it.exists() } ?: return@named` — CI/production has no
-  `dev/local.properties` and reads the env var directly.
+  `local.properties` and reads the env var directly.
 - **Flyway migrations**: `server/src/main/resources/db/migration/V*__*.sql`
 - **Timestamps**: All tables (except catalog) have `created_at`/`updated_at`
   with a shared `set_updated_at()` trigger.
@@ -214,12 +214,15 @@ Four Gradle modules:
   on `buildConfigField` to generate `const val` (avoids detekt `MayBeConstant`).
 - **WasmJS static assets**: Place in `app/webApp/src/wasmJsMain/resources/`.
   `wasmJsProcessResources` copies them to build output and performs build-time
-  substitutions: `expand()` for OIDC config in `index.html`, `filter {}` for
-  `__APP_VERSION__` in `service-worker.js`. Two-environment contract:
-  local dev (`local.properties` present) → `expand()` runs, substituting OIDC values
-  at build time; CI/production (`local.properties` absent) → task exits early via
-  `return@named`, leaving `${VAR}` placeholders intact for `envsubst` at container
-  startup. Guard pattern: `val f = rootProject.file("local.properties").takeIf { it.exists() } ?: return@named`.
+  substitutions: only `filter {}` for `__APP_VERSION__` in `service-worker.js`.
+  OIDC substitution lives in a separate `injectLocalOidcConfig` Copy task that
+  re-expands `index.html` from `local.properties` into the processed resources.
+  The dev server (`wasmJsBrowserDevelopmentRun`) depends on it, so it always
+  serves dev OIDC config; every other path (CI, `wasmJsBrowserDistribution`, the
+  Docker image) never runs it and keeps the `${VAR}` placeholders for `envsubst`
+  at container startup. Production can never bake dev values — no env/CI gate,
+  no conditional in `wasmJsProcessResources`. `wasmJsBrowserDevelopmentRun`
+  requires `local.properties` (the inject task fails fast if it's missing).
   Never pass `Properties.getProperty()` results to `expand()` without guaranteeing
   non-null — Gradle silently writes the literal string `"null"` for null values,
   which breaks `envsubst` silently. Use `__PLACEHOLDER__` convention with `filter {}`

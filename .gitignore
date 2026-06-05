@@ -4,9 +4,9 @@
 **/build/
 xcuserdata
 !src/**/build/
-/local.properties
+local.properties
 *.jks
-app/androidApp/keystore.properties
+keystore.properties
 .idea
 .DS_Store
 captures
@@ -20,7 +20,6 @@ captures
 **/xcshareddata/WorkspaceSettings.xcsettings
 node_modules/
 dev/postgres-data/
-demo/.env
 .claude/
 .context/
 sandbox/
