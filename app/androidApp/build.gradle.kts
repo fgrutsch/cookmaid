@@ -1,21 +1,9 @@
-import java.util.Properties
+import java.util.*
 
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
-}
-
-private val localProps = Properties().apply {
-    rootProject.file("local.properties").takeIf { it.exists() }?.reader()?.use { load(it) }
-}
-
-private val devLocalProps = Properties().apply {
-    rootProject.file("dev/local.properties").takeIf { it.exists() }?.reader()?.use { load(it) }
-}
-
-private val keystoreProps = Properties().apply {
-    project.file("keystore.properties").takeIf { it.exists() }?.reader()?.use { load(it) }
 }
 
 android {
@@ -36,30 +24,38 @@ android {
     }
     signingConfigs {
         create("release") {
-            val keystorePropsFile = project.file("keystore.properties")
-            if (keystorePropsFile.exists()) {
-                storeFile = file(keystoreProps.getProperty("storeFile"))
-                storePassword = keystoreProps.getProperty("storePassword")
-                keyAlias = keystoreProps.getProperty("keyAlias")
-                keyPassword = keystoreProps.getProperty("keyPassword")
-            }
+            project.file("keystore.properties").takeIf { it.exists() }
+                ?.let { file -> Properties().apply { file.reader().use { load(it) } } }
+                ?.let { props ->
+                    storeFile = file(props.getProperty("storeFile"))
+                    storePassword = props.getProperty("storePassword")
+                    keyAlias = props.getProperty("keyAlias")
+                    keyPassword = props.getProperty("keyPassword")
+                }
         }
     }
     flavorDimensions += "environment"
     productFlavors {
         create("dev") {
             dimension = "environment"
+            val devProps = Properties().apply {
+                rootProject.file("dev/local.properties").inputStream().use { load(it) }
+            }
             buildConfigField("String", "BASE_URL", """"http://localhost:8081"""")
-            buildConfigField("String", "OIDC_DISCOVERY_URI", """"${devLocalProps.getProperty("oidc.discoveryUri")}"""")
-            buildConfigField("String", "OIDC_CLIENT_ID", """"${devLocalProps.getProperty("oidc.clientId")}"""")
-            buildConfigField("String", "OIDC_SCOPE", """"${devLocalProps.getProperty("oidc.scope")}"""")
-            buildConfigField("String", "OIDC_ACCOUNT_URI", """"${devLocalProps.getProperty("oidc.accountUri")}"""")
-            buildConfigField("String", "OIDC_RESOURCE", """"${devLocalProps.getProperty("oidc.resource") ?: ""}"""")
+            buildConfigField("String", "OIDC_DISCOVERY_URI", """"${devProps.getProperty("oidc.discoveryUri")}"""")
+            buildConfigField("String", "OIDC_CLIENT_ID", """"${devProps.getProperty("oidc.clientId")}"""")
+            buildConfigField("String", "OIDC_SCOPE", """"${devProps.getProperty("oidc.scope")}"""")
+            buildConfigField("String", "OIDC_ACCOUNT_URI", """"${devProps.getProperty("oidc.accountUri")}"""")
+            buildConfigField("String", "OIDC_RESOURCE", """"${devProps.getProperty("oidc.resource") ?: ""}"""")
         }
         create("prod") {
             dimension = "environment"
             buildConfigField("String", "BASE_URL", """"https://cookmaid.fgrutsch.dev"""")
-            buildConfigField("String", "OIDC_DISCOVERY_URI", """"https://sso.fgrutsch.dev/oidc/.well-known/openid-configuration"""")
+            buildConfigField(
+                "String",
+                "OIDC_DISCOVERY_URI",
+                """"https://sso.fgrutsch.dev/oidc/.well-known/openid-configuration""""
+            )
             buildConfigField("String", "OIDC_CLIENT_ID", """"n12rjceuk6vgy676z9e3y"""")
             buildConfigField("String", "OIDC_SCOPE", """"openid profile email"""")
             buildConfigField("String", "OIDC_ACCOUNT_URI", """"https://sso.fgrutsch.dev/account/security"""")
@@ -89,6 +85,10 @@ kotlin {
 }
 
 tasks.register<Exec>("adbReverse") {
+    description = "Reverse-forward adb ports so the emulator/device reaches the local server and Logto"
+    val localProps = Properties().apply {
+        rootProject.file("local.properties").inputStream().use { load(it) }
+    }
     val adb = "${localProps.getProperty("sdk.dir")}/platform-tools/adb"
     commandLine("sh", "-c", "$adb reverse tcp:8081 tcp:8081 && $adb reverse tcp:3001 tcp:3001")
     isIgnoreExitValue = true

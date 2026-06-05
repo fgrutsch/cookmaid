@@ -92,3 +92,5 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
       - name: Build production distribution
         run: ./gradlew :app:webApp:wasmJsBrowserDistribution
+      - name: Verify OIDC placeholders survived (not baked with dev config)
+        run: grep -q '${OIDC_DISCOVERY_URI}' app/webApp/build/dist/wasmJs/productionExecutable/index.html
