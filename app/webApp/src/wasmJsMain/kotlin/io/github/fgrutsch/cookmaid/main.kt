@@ -4,6 +4,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.ComposeViewport
 import io.github.fgrutsch.cookmaid.ui.auth.LocalStorageSettingsStore
 import io.github.fgrutsch.cookmaid.ui.auth.OidcConfig
+import io.github.fgrutsch.cookmaid.navigation.Deeplink
 import kotlinx.browser.window
 import org.publicvalue.multiplatform.oidc.appsupport.PlatformCodeAuthFlow
 import org.publicvalue.multiplatform.oidc.appsupport.WebCodeAuthFlowFactory
@@ -31,6 +32,9 @@ fun main() {
     if (window.location.pathname.startsWith("/callback")) {
         PlatformCodeAuthFlow.handleRedirect()
     } else {
+        if (window.location.pathname == "/${Deeplink.DELETE_ACCOUNT}") {
+            window.localStorage.setItem(Deeplink.KEY, Deeplink.DELETE_ACCOUNT)
+        }
         val origin = window.location.origin
         ComposeViewport {
             App(

@@ -27,6 +27,8 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
+import com.russhwolf.settings.Settings
+import io.github.fgrutsch.cookmaid.navigation.Deeplink
 import io.github.fgrutsch.cookmaid.navigation.Route
 import io.github.fgrutsch.cookmaid.navigation.TopLevelRoute
 import io.github.fgrutsch.cookmaid.navigation.navConfig
@@ -140,6 +142,15 @@ private fun MainContent(
     accountUri: String,
 ) {
     val backStack = rememberNavBackStack(navConfig, Route.ShoppingList)
+
+    LaunchedEffect(Unit) {
+        val settings = Settings()
+        if (settings.getStringOrNull(Deeplink.KEY) == Deeplink.DELETE_ACCOUNT) {
+            settings.remove(Deeplink.KEY)
+            backStack.add(Route.DeleteAccount)
+        }
+    }
+
     var selectedTab by remember { mutableStateOf(TopLevelRoute.Shopping) }
 
     Scaffold(
