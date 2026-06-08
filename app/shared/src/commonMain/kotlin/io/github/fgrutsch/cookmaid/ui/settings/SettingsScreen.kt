@@ -100,6 +100,7 @@ fun SettingsScreen(
     }
 }
 
+@Suppress("LongParameterList")
 @Composable
 private fun SettingsContent(
     userProfile: UserProfile,
