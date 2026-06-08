@@ -7,7 +7,9 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import kotlin.uuid.Uuid
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -125,6 +127,50 @@ class AuthViewModelTest : BaseViewModelTest() {
         val state = viewModel.state.value
         assertEquals(AuthState.Status.Unauthenticated, state.status)
         assertNull(state.user)
+    }
+
+    @Test
+    fun `account deleted clears session, calls logout, and flags message`() = viewModelTest {
+        val user = User(id = Uuid.random(), oidcSubject = "sub-1")
+        fakeHandler.resultToReturn = AuthResult(user, UserProfile(name = "Al"))
+        val viewModel = createInitializedViewModel()
+        assertEquals(AuthState.Status.Authenticated, viewModel.state.value.status)
+
+        viewModel.onEvent(AuthEvent.AccountDeleted)
+        advanceUntilIdle()
+
+        val state = viewModel.state.value
+        assertEquals(AuthState.Status.Unauthenticated, state.status)
+        assertNull(state.user)
+        assertTrue(state.accountDeleted)
+        // tokens are cleared so a reload can't re-provision the user via auto-login
+        assertTrue(fakeHandler.logoutCalled)
+    }
+
+    @Test
+    fun `account deleted message shown clears the flag`() = viewModelTest {
+        val user = User(id = Uuid.random(), oidcSubject = "sub-1")
+        fakeHandler.resultToReturn = AuthResult(user, UserProfile())
+        val viewModel = createInitializedViewModel()
+        viewModel.onEvent(AuthEvent.AccountDeleted)
+        advanceUntilIdle()
+        assertTrue(viewModel.state.value.accountDeleted)
+
+        viewModel.onEvent(AuthEvent.AccountDeletedMessageShown)
+
+        assertFalse(viewModel.state.value.accountDeleted)
+    }
+
+    @Test
+    fun `logout does not flag account deleted`() = viewModelTest {
+        val user = User(id = Uuid.random(), oidcSubject = "sub-1")
+        fakeHandler.resultToReturn = AuthResult(user, UserProfile())
+        val viewModel = createInitializedViewModel()
+
+        viewModel.onEvent(AuthEvent.Logout)
+        advanceUntilIdle()
+
+        assertFalse(viewModel.state.value.accountDeleted)
     }
 
     @Test

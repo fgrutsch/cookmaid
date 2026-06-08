@@ -11,18 +11,23 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import cookmaid.app.shared.generated.resources.Res
 import cookmaid.app.shared.generated.resources.auth_app_logo
 import cookmaid.app.shared.generated.resources.auth_sign_in
+import cookmaid.app.shared.generated.resources.delete_account_snackbar
 import cookmaid.app.shared.generated.resources.logo
 import org.jetbrains.compose.resources.painterResource
 import io.github.fgrutsch.cookmaid.ui.common.resolve
@@ -36,44 +41,57 @@ import io.github.fgrutsch.cookmaid.ui.common.resolve
 fun LoginScreen(viewModel: AuthViewModel) {
     val state by viewModel.state.collectAsState()
     val loginError = state.loginError
+    val snackbarHostState = remember { SnackbarHostState() }
+    val accountDeletedMessage = Res.string.delete_account_snackbar.resolve()
 
-    Surface(modifier = Modifier.fillMaxSize()) {
-    Column(
-        modifier = Modifier.fillMaxSize().padding(32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-    ) {
-        Image(
-            painter = painterResource(Res.drawable.logo),
-            contentDescription = Res.string.auth_app_logo.resolve(),
-            modifier = Modifier.size(240.dp),
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            text = "Cookmaid",
-            style = MaterialTheme.typography.headlineLarge,
-            color = MaterialTheme.colorScheme.primary,
-        )
-
-        Spacer(modifier = Modifier.height(48.dp))
-
-        Button(
-            onClick = { viewModel.onEvent(AuthEvent.Login) },
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Text(Res.string.auth_sign_in.resolve())
-        }
-
-        if (loginError != null) {
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = loginError,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
-            )
+    LaunchedEffect(Unit) {
+        if (state.accountDeleted) {
+            viewModel.onEvent(AuthEvent.AccountDeletedMessageShown)
+            snackbarHostState.showSnackbar(accountDeletedMessage)
         }
     }
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+    ) { padding ->
+        Surface(modifier = Modifier.fillMaxSize().padding(padding)) {
+            Column(
+                modifier = Modifier.fillMaxSize().padding(32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Image(
+                    painter = painterResource(Res.drawable.logo),
+                    contentDescription = Res.string.auth_app_logo.resolve(),
+                    modifier = Modifier.size(240.dp),
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = "Cookmaid",
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+
+                Spacer(modifier = Modifier.height(48.dp))
+
+                Button(
+                    onClick = { viewModel.onEvent(AuthEvent.Login) },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(Res.string.auth_sign_in.resolve())
+                }
+
+                if (loginError != null) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = loginError,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+            }
+        }
     }
 }

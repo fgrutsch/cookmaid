@@ -280,7 +280,7 @@ private fun AppNavDisplay(
                 DeleteAccountScreen(
                     viewModel = remember { DeleteAccountViewModel(koin.get()) },
                     onBack = { backStack.removeLastOrNull() },
-                    onFinish = { authViewModel.onEvent(AuthEvent.Logout) },
+                    onDeleted = { authViewModel.onEvent(AuthEvent.AccountDeleted) },
                 )
             }
         },

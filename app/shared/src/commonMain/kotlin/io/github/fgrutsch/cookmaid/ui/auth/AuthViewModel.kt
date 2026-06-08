@@ -14,7 +14,9 @@ class AuthViewModel(
         when (event) {
             is AuthEvent.Initialize -> initialize()
             is AuthEvent.Login -> login()
-            is AuthEvent.Logout -> logout()
+            is AuthEvent.Logout -> clearSession(accountDeleted = false)
+            is AuthEvent.AccountDeleted -> clearSession(accountDeleted = true)
+            is AuthEvent.AccountDeletedMessageShown -> updateState { copy(accountDeleted = false) }
         }
     }
 
@@ -71,7 +73,15 @@ class AuthViewModel(
         }
     }
 
-    private fun logout() {
+    /**
+     * Clears the session: flips identity to Unauthenticated and clears tokens.
+     *
+     * @param accountDeleted when true, also raises the one-shot account-deleted
+     *   confirmation flag for the login screen. Set after the user's account was
+     *   deleted server-side — clearing tokens here prevents a reload from
+     *   re-provisioning the user via auto-login while the IdP session is still valid.
+     */
+    private fun clearSession(accountDeleted: Boolean) {
         // Flip identity to Unauthenticated synchronously so the Koin session
         // reset keyed on `user.id` in App.kt fires immediately — before any
         // observer sees `status == Authenticated && user == null`.
@@ -81,9 +91,10 @@ class AuthViewModel(
                 user = null,
                 profile = UserProfile(),
                 loginError = null,
+                accountDeleted = accountDeleted,
             )
         }
-        logger.debug { "Logout initiated" }
+        logger.debug { if (accountDeleted) "Account deleted, clearing session" else "Logout initiated" }
         launch {
             try {
                 authHandler.logout()

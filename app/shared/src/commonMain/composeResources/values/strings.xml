@@ -142,7 +142,5 @@
     <string name="delete_account_confirm_message">This cannot be undone.</string>
     <string name="delete_account_confirm">Delete</string>
     <string name="delete_account_error">Couldn't delete your account. Please try again.</string>
-    <string name="delete_account_deleted_title">Account deleted</string>
-    <string name="delete_account_deleted_message">Your account and all associated data have been deleted.</string>
-    <string name="delete_account_finish">Finish</string>
+    <string name="delete_account_snackbar">Your account has been deleted.</string>
 </resources>
