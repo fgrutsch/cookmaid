@@ -57,9 +57,11 @@ provider management credentials.
   registered in `navConfig`'s polymorphic block (`navigation/NavConfig.kt`).
 - **`UserClient.deleteAccount()`** (`ui/user/UserClient.kt`):
   `apiClient.httpClient.delete("/api/users/me")` — mirrors `getOrCreateUser()`.
-- **`DeleteAccountViewModel`** (MVI, new): `State(deleting, deleted, error)`;
-  `confirm()` → `launch { userClient.deleteAccount() }` → on success
-  `deleted = true`; catch sets `error` (and does **not** mark deleted).
+- **`DeleteAccountViewModel`** (MVI, new): `State(deleting, error)`, effect
+  `DeleteAccountEffect.Deleted`; `confirm()` (guarded by `if (deleting) return`)
+  → `launch { userClient.deleteAccount(); sendEffect(Deleted) }`. `deleting`
+  stays true through success (the screen hands off to logout and is torn down,
+  so the button must not flash back). Catch sets `error`.
   Injected with `UserClient` (from `appModules` — survives logout).
   **Scope:** created via `remember { }` in the nav entry (like the `AddRecipe`
   VM), **not** in `sessionModules` — logout tears those down and would GC the
@@ -67,9 +69,10 @@ provider management credentials.
 - **`DeleteAccountScreen`** + contract (`ui/deleteaccount/`):
   - Default state: explains what gets deleted (scope the copy to the Cookmaid
     account/data); destructive "Delete my account" button → **confirm dialog**.
-  - `state.deleting || state.deleted`: button shows a spinner / is disabled
-    (the screen is about to be torn down by the logout that follows success).
-  - `state.deleted`: a `LaunchedEffect` fires the `onDeleted` callback once.
+  - `state.deleting`: button shows a spinner / is disabled, and the top-bar
+    back button is disabled (don't abandon an in-flight irreversible delete).
+  - On `DeleteAccountEffect.Deleted` (collected via `viewModel.effects`): calls
+    `onDeleted` once.
   - `state.error`: inline error; user stays authenticated, can retry.
 - **Settings entry** (`ui/settings/SettingsScreen.kt`): a destructive
   "Delete account" item → `backStack.add(Route.DeleteAccount)`.
@@ -83,15 +86,16 @@ torn down first. There is **no in-app success screen** — on success the app
 logs out and returns to the login screen with a one-shot snackbar.
 
 1. `confirm()` → server `DELETE /api/users/me` while still authenticated.
-2. Success → `state.deleted = true` → screen's `LaunchedEffect` calls
+2. Success → `DeleteAccountEffect.Deleted` → screen's effect collector calls
    `onDeleted` → `AuthEvent.AccountDeleted`.
 3. `AuthViewModel` (via shared `clearSession(accountDeleted = true)`): flips
-   `status = Unauthenticated` + `user = null` synchronously, sets a one-shot
-   `accountDeleted` flag, then `authHandler.logout()` clears tokens. Session
-   modules unload; app shows `LoginScreen`.
-4. `LoginScreen` shows a snackbar (`delete_account_snackbar`) when
-   `accountDeleted` is set, then dispatches `AuthEvent.AccountDeletedMessageShown`
-   to clear the flag (consume-once).
+   `status = Unauthenticated` + `user = null` synchronously, emits
+   `AuthEffect.AccountDeleted`, then `authHandler.logout()` clears tokens.
+   Session modules unload; app shows `LoginScreen`.
+4. `LoginScreen` collects `viewModel.effects`; on `AuthEffect.AccountDeleted`
+   it shows a one-shot snackbar (`delete_account_snackbar`) via the shared
+   `SuccessSnackbarHost`. The Effect channel is consume-once by nature — no
+   state flag to clear.
 
 **Why clear tokens on success (not on a later tap):** the Logto identity is
 left intact (data-only), so the IdP session stays valid. If tokens were kept,
@@ -103,7 +107,9 @@ data-only model.)
 
 `DeleteAccountViewModel` never touches `AuthState`; it signals completion via
 the `onDeleted` callback wired in `App.kt`. Session teardown stays centralized
-in `AuthViewModel`, per the project's logout discipline.
+in `AuthViewModel`, per the project's logout discipline. The one-shot snackbar
+uses the existing Effect-channel pattern (as in `ShoppingListScreen`) rather
+than a transient flag on the persistent `AuthState`.
 
 ## Web deeplink + login survival (web-only)
 
