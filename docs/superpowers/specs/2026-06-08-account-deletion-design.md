@@ -114,9 +114,11 @@ an `onFinish` callback wired in `App.kt`. Session teardown stays centralized in
 - **Client**: `launch {}` catch logs at `error`, rethrows
   `CancellationException` first, then sets `state.error`. Failure leaves the
   user authenticated — no logout, retry allowed.
-- **Server**: 204 success; 404 if unregistered (via `call.userId()` →
-  `UserNotRegisteredException`); 500 from the StatusPages catch-all. Re-deleting
-  an already-deleted account → 404 (acceptable).
+- **Server**: 204 success; **401** if unregistered (via `call.userId()` →
+  `UserNotRegisteredException`, mapped to `Unauthorized` with body
+  `{"error":"user_not_registered"}` in `Application.kt`); 500 from the
+  StatusPages catch-all. Re-deleting an already-deleted account → 401
+  (acceptable).
 
 ## Testing
 
