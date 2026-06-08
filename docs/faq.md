@@ -121,3 +121,16 @@ shopping lists. Users on the same server do not see each other's data.
 
 Yes. In Settings you can switch between light, dark, and auto
 (system) theme, and choose between English and German.
+
+### How do I delete my account?
+
+You can permanently delete your Cookmaid account and all associated
+data (recipes, meal plans, and shopping lists) at any time:
+
+- **In the app** — open **Settings → Delete account**, then confirm.
+- **On the web** — visit `/delete-account` (you'll be asked to sign in
+  first).
+
+Deletion is immediate and cannot be undone. It removes all data
+Cookmaid stores about you. Your sign-in identity at the identity
+provider is managed separately and is not removed by this action.
