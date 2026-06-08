@@ -7,25 +7,32 @@ Status: Approved (brainstorm)
 
 Let users delete their Cookmaid account and all associated data, satisfying
 Google Play's account-deletion requirement (in-app path + public web URL).
-The central Logto identity is left intact; users are pointed to Logto's
-Account Center to delete it separately.
+
+Scope is deliberately **data-only**: deletion removes everything Cookmaid
+owns (the `users` row + all cascaded data). The identity provider (Logto, or
+any OIDC provider) is **not** touched. This keeps the solution generic for an
+open-source project — it works with any OIDC provider and requires no
+provider management credentials.
 
 ## Decisions
 
-- **Logto identity: leave intact.** The server deletes only the Cookmaid
-  `users` row (which cascades all app data) and logs the user out. The Logto
-  login survives — it is the identity provider (same model as "Sign in with
-  Google"), ready for a future multi-app setup. No server-side Logto
-  Management API client is added.
+- **Data-only deletion.** `DELETE /api/users/me` deletes the Cookmaid `users`
+  row, which cascades all app data. The OIDC identity is left intact. This
+  alone satisfies "delete the app account + associated data" for any
+  deployment, regardless of identity provider.
+- **No identity-provider deletion, no abstraction.** We do not call any IdP
+  management API and do not introduce an `IdentityDeleter`-style interface now
+  — a single-implementation abstraction would be premature. The seam can be
+  added later if identity deletion is ever built (see Future).
 - **Web URL: authed deeplink** `/delete-account` into the WasmJS app, running
   the real deletion flow in-browser. Submitted to Play Console as the
   "request deletion" URL.
 - **Confirmation: dedicated screen + confirm dialog.** No type-to-confirm.
 - **Compliance posture:** deleting the `users` row + all app data deletes the
-  Cookmaid "app account". The flow also surfaces the Logto Account Center link
-  so the user can delete the upstream identity themselves. This is disclosed
-  in the Play Data Safety form. Partial deletion / disclosed retention is
-  explicitly permitted by Google.
+  Cookmaid "app account". Disclosed in the Play Data Safety form. Partial
+  deletion / disclosed retention is explicitly permitted by Google. The shared
+  OIDC identity is a login mechanism (akin to "Sign in with Google") and is
+  out of scope for this flow.
 
 ## Server: `DELETE /api/users/me`
 
@@ -58,18 +65,14 @@ Account Center to delete it separately.
   VM), **not** in `sessionModules` — logout tears those down and would GC the
   VM mid-flow.
 - **`DeleteAccountScreen`** + contract (`ui/deleteaccount/`):
-  - Default state: explains what gets deleted; destructive
-    "Delete my account" button → **confirm dialog**.
-  - `state.deleted`: success state showing "Account deleted" copy + the Logto
-    Account Center link (`accountUri`, opened via `LocalUriHandler`) + a
-    **Finish** button.
+  - Default state: explains what gets deleted (scope the copy to the Cookmaid
+    account/data); destructive "Delete my account" button → **confirm dialog**.
+  - `state.deleted`: success state ("Account deleted") + a **Finish** button.
   - `state.error`: inline error; user stays authenticated, can retry.
 - **Settings entry** (`ui/settings/SettingsScreen.kt`): a destructive
-  "Delete account" item → `backStack.add(Route.DeleteAccount)`. Reuses the
-  same `accountUri` already plumbed into Settings.
+  "Delete account" item → `backStack.add(Route.DeleteAccount)`.
 - **`App.kt` nav entry**: `entry<Route.DeleteAccount>` constructs the VM via
-  `remember { }`, passes `accountUri`, and wires `onFinish` → the existing
-  logout callback.
+  `remember { }` and wires `onFinish` → the existing logout callback.
 
 ## Logout ordering (critical)
 
@@ -131,13 +134,33 @@ an `onFinish` callback wired in `App.kt`. Session teardown stays centralized in
 ## Non-code follow-ups (owner)
 
 - Play Console Data Safety: submit `https://<host>/delete-account` as the
-  account-deletion URL; declare account + associated data deletion; disclose
-  that the central Logto login is deleted separately via Account Center.
+  account-deletion URL; declare account + associated data deletion.
 - Update `docs/faq.md` with an account-deletion section.
+
+## Future (documented, not built)
+
+These are deliberately out of scope now and recorded so the decision is
+captured, not implemented:
+
+- **Identity-provider deletion.** If a deployment ever wants to also delete the
+  user at the IdP, introduce a small provider seam at that point (e.g. an
+  `IdentityDeleter` interface with a Logto implementation using the Management
+  API, selected by config; default no-op). Do not build it speculatively.
+- **Multi-app "delete everything" flow.** If Cookmaid's identity is ever shared
+  across multiple apps, do **not** reference-count from individual apps. Follow
+  the industry pattern (FusionAuth/Twitter/Atlassian): a central account
+  deletion flow that fans out to each app via the IdP's `user.deleted` webhook,
+  where each app purges its own data. `UserService.delete` becomes the purge
+  handler that webhook calls — no rework of the core endpoint.
+- **Per-app data deletion ("keep my other apps")** needs nothing extra: each
+  app's `DELETE /api/users/me` already deletes only that app's data.
 
 ## Explicitly out of scope (YAGNI)
 
+- IdP / Logto identity deletion, Management API, M2M client.
+- `IdentityDeleter` (or any) provider abstraction — single-impl premature.
+- Organization / role-based reference counting.
 - Type-to-confirm gating.
 - Email/manual-request fallback (the authed web deeplink satisfies the policy).
-- Server-side Logto Management API client / programmatic identity deletion.
+- Soft-delete grace period; re-authentication before delete.
 - Android app-link / intent filter for the deeplink.
