@@ -4,7 +4,7 @@
 
 **Goal:** Let users permanently delete their Cookmaid account and all data via an in-app screen and a public web deeplink, satisfying Google Play's account-deletion requirement.
 
-**Architecture:** A new `DELETE /api/users/me` endpoint deletes the `users` row (Postgres `ON DELETE CASCADE` removes all owned data) and evicts the user cache. A dedicated Compose `DeleteAccountScreen` (shared by Android + Web) confirms, calls the endpoint, then logs out. The web app exposes `/delete-account` as an authed deeplink; the path is stashed in localStorage before login and consumed after authentication. The identity provider (Logto/OIDC) is **not** touched — deletion is data-only and generic across providers.
+**Architecture:** A new `DELETE /api/users/me` endpoint deletes the `users` row (Postgres `ON DELETE CASCADE` removes all owned data) and evicts the user cache. A dedicated Compose `DeleteAccountScreen` (shared by Android + Web) confirms, calls the endpoint, then logs out. The web app exposes `/delete-account` as an authed deeplink: `main.kt` derives the deeplink from `window.location` and passes it into `App(startDeeplink=...)`, which navigates to it once authenticated (the wasmJS OIDC flow is a popup, so the main window keeps the URL through login — no persistence needed). The identity provider (Logto/OIDC) is **not** touched — deletion is data-only and generic across providers.
 
 **Tech Stack:** Kotlin Multiplatform, Ktor (server), Exposed, Compose Multiplatform, Koin, kotlinx-serialization, JUnit5 + Testcontainers (server), kotlin.test + coroutines-test (shared).
 
@@ -970,6 +970,13 @@ git commit -m "feat(app): reach DeleteAccountScreen from Settings and nav"
 ---
 
 ## Task 10: Web — `/delete-account` deeplink with login survival
+
+> **Superseded:** this task was first built with a localStorage stash (the
+> code blocks below), then refactored to pass the deeplink via an
+> `App(startDeeplink=...)` parameter — the wasmJS OIDC login flow is a popup,
+> so the main window keeps the URL through login and no persistence is needed.
+> See the spec's "Web deeplink + login survival" section for the final design.
+> The blocks below are kept for history.
 
 A web visitor opening `https://<host>/delete-account` is routed to the Delete Account screen after authentication. The path is stashed in `localStorage` before any OIDC redirect and consumed once authenticated. Reading uses the cross-platform `Settings` (localStorage on web, no-op on Android).
 

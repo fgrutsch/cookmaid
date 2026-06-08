@@ -92,22 +92,28 @@ an `onFinish` callback wired in `App.kt`. Session teardown stays centralized in
 
 ## Web deeplink + login survival (web-only)
 
+The `multiplatform-oidc` wasmJS login flow is a **popup** (`postMessage`), so
+the main window never leaves the deeplink URL during login. No persistence
+(localStorage / OIDC `state`) is required — the in-memory value survives.
+
 - **`main.kt`** (`app/webApp/.../main.kt`): the entry already branches on
-  `window.location.pathname` for `/callback`. In the non-callback branch, if
-  `pathname == "/delete-account"`, write
-  `localStorage["cookmaid.deeplink"] = "delete-account"` **before**
-  `ComposeViewport { App(...) }`. The server already serves the app at this
-  path via the static `default("index.html")` SPA fallback.
-- **`App.kt`**: once `AuthState` becomes `Authenticated`, if the stash key is
-  present, clear it and `backStack.add(Route.DeleteAccount)`. Handles both
-  already-authenticated arrival (seed immediately) and logged-out arrival
-  (stash survives the OIDC round-trip, seeded after `/callback`).
-- Stashing *before* any redirect makes this robust regardless of whether the
-  `multiplatform-oidc` web flow is popup- or full-redirect-based. Confirm which
-  during implementation — a popup preserves the path anyway, making the stash
-  belt-and-suspenders.
-- **Android** needs no app-link; the Settings entry is its in-app path. Play
-  only requires the *web* URL.
+  `window.location.pathname` for `/callback`. In the non-callback branch,
+  derive `startDeeplink = "delete-account".takeIf { pathname == "/delete-account" }`
+  and pass it into `App(startDeeplink = ...)`. The server already serves the app
+  at this path via the static `default("index.html")` SPA fallback.
+- **`App.kt`**: `App` gains `startDeeplink: String? = null`, threaded to
+  `MainContent`. Once `Authenticated`, a `LaunchedEffect(Unit)` does
+  `if (startDeeplink == Deeplink.DELETE_ACCOUNT) backStack.add(Route.DeleteAccount)`.
+  Handles both already-authenticated arrival (seed immediately) and logged-out
+  arrival (the popup keeps the main window on `/delete-account`, so the param
+  is still set after login).
+- **`MainActivity`** passes nothing (param defaults to null) — Android reaches
+  the screen via the Settings entry only. Play only requires the *web* URL.
+- Caveat: the in-memory param works *because* the flow is a popup. If the lib
+  ever fell back to a full-page redirect, durable storage (localStorage or the
+  OIDC `state` param) would be needed instead. The lib is popup-only for wasm,
+  so this is acceptable; verify with a one-time browser test of the logged-out
+  deeplink path.
 
 ## Error handling
 
