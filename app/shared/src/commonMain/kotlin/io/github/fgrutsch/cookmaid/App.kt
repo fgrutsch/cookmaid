@@ -27,6 +27,7 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
+import io.github.fgrutsch.cookmaid.navigation.Deeplink
 import io.github.fgrutsch.cookmaid.navigation.Route
 import io.github.fgrutsch.cookmaid.navigation.TopLevelRoute
 import io.github.fgrutsch.cookmaid.navigation.navConfig
@@ -46,6 +47,8 @@ import io.github.fgrutsch.cookmaid.ui.recipe.edit.AddRecipeScreen
 import io.github.fgrutsch.cookmaid.ui.recipe.edit.AddRecipeViewModel
 import io.github.fgrutsch.cookmaid.ui.recipe.list.RecipeListScreen
 import io.github.fgrutsch.cookmaid.ui.recipe.list.RecipeListViewModel
+import io.github.fgrutsch.cookmaid.ui.deleteaccount.DeleteAccountScreen
+import io.github.fgrutsch.cookmaid.ui.deleteaccount.DeleteAccountViewModel
 import io.github.fgrutsch.cookmaid.ui.settings.SettingsScreen
 import io.github.fgrutsch.cookmaid.ui.settings.SettingsViewModel
 import io.github.fgrutsch.cookmaid.ui.shopping.ShoppingListScreen
@@ -66,6 +69,8 @@ import org.publicvalue.multiplatform.oidc.tokenstore.TokenStore
  * @param apiBaseUrl the base URL for the backend API.
  * @param oidcConfig the OpenID Connect configuration.
  * @param codeAuthFlowFactory factory for the OIDC authorization code flow.
+ * @param startDeeplink an optional [io.github.fgrutsch.cookmaid.navigation.Deeplink]
+ *   id derived from the initial web URL; navigated to once authenticated. Null on Android.
  */
 @Composable
 fun App(
@@ -73,6 +78,7 @@ fun App(
     oidcConfig: OidcConfig,
     codeAuthFlowFactory: CodeAuthFlowFactory,
     tokenStore: TokenStore,
+    startDeeplink: String? = null,
 ) {
     val platformModule = module {
         single { apiBaseUrl }
@@ -86,6 +92,10 @@ fun App(
         val settingsState by settingsViewModel.state.collectAsState()
         val authViewModel = koinInject<AuthViewModel>()
         val authState by authViewModel.state.collectAsState()
+
+        // Held above the identity `key`, so it survives login but is consumed
+        // exactly once — a deeplink must not re-fire on every subsequent login.
+        var pendingDeeplink by remember { mutableStateOf(startDeeplink) }
 
         LaunchedEffect(Unit) {
             authViewModel.onEvent(AuthEvent.Initialize)
@@ -121,6 +131,8 @@ fun App(
                                 authViewModel = authViewModel,
                                 userProfile = authState.profile,
                                 accountUri = oidcConfig.accountUri,
+                                startDeeplink = pendingDeeplink,
+                                onDeeplinkConsumed = { pendingDeeplink = null },
                             )
                         }
                     }
@@ -136,8 +148,18 @@ private fun MainContent(
     authViewModel: AuthViewModel,
     userProfile: UserProfile,
     accountUri: String,
+    startDeeplink: String? = null,
+    onDeeplinkConsumed: () -> Unit = {},
 ) {
     val backStack = rememberNavBackStack(navConfig, Route.ShoppingList)
+
+    LaunchedEffect(Unit) {
+        if (startDeeplink == Deeplink.DELETE_ACCOUNT) {
+            backStack.add(Route.DeleteAccount)
+            onDeeplinkConsumed()
+        }
+    }
+
     var selectedTab by remember { mutableStateOf(TopLevelRoute.Shopping) }
 
     Scaffold(
@@ -256,6 +278,16 @@ private fun AppNavDisplay(
                     userProfile = userProfile,
                     accountUri = accountUri,
                     onLogout = { authViewModel.onEvent(AuthEvent.Logout) },
+                    onDeleteAccount = { backStack.add(Route.DeleteAccount) },
+                )
+            }
+
+            entry<Route.DeleteAccount> {
+                val koin = getKoin()
+                DeleteAccountScreen(
+                    viewModel = remember { DeleteAccountViewModel(koin.get()) },
+                    onBack = { backStack.removeLastOrNull() },
+                    onDeleted = { authViewModel.onEvent(AuthEvent.AccountDeleted) },
                 )
             }
         },

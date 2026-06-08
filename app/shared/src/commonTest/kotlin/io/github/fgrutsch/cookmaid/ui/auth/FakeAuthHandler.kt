@@ -12,6 +12,7 @@ class FakeAuthHandler : AuthHandler {
     var shouldFail: Boolean = false
     var shouldFailOnLogout: Boolean = false
     var failMessage: String = "Auth failed"
+    var logoutCalled: Boolean = false
 
     override suspend fun tryAutoLogin(): AuthResult {
         if (shouldFail) throw IllegalStateException(failMessage)
@@ -24,6 +25,7 @@ class FakeAuthHandler : AuthHandler {
     }
 
     override suspend fun logout() {
+        logoutCalled = true
         if (shouldFailOnLogout) throw IllegalStateException(failMessage)
     }
 }

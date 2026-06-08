@@ -61,6 +61,19 @@ class UserService(
         return user
     }
 
+    /**
+     * Deletes the user identified by [userId] and evicts the cached lookup
+     * for [oidcSubject]. All owned data is removed via database cascade.
+     *
+     * @param userId the id of the user to delete.
+     * @param oidcSubject the OIDC subject whose cache entry must be evicted.
+     */
+    suspend fun delete(userId: UserId, oidcSubject: String) {
+        repository.delete(userId)
+        cache.remove(oidcSubject)
+        logger.info { "User deleted: id=${userId.value}" }
+    }
+
     private fun evictExpired() {
         cache.entries.removeIf { it.value.expiresAt.hasPassedNow() }
     }

@@ -1,9 +1,11 @@
 package io.github.fgrutsch.cookmaid.user
 
-import io.ktor.server.auth.jwt.JWTPrincipal
-import io.ktor.server.auth.principal
+import io.github.fgrutsch.cookmaid.common.ktor.oidcSubject
+import io.github.fgrutsch.cookmaid.common.ktor.userId
+import io.ktor.http.HttpStatusCode
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
+import io.ktor.server.routing.delete
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import org.koin.core.module.dsl.singleOf
@@ -21,9 +23,13 @@ fun Route.userRoutes() {
 
     route("/users") {
         post("/me") {
-            val principal = requireNotNull(call.principal<JWTPrincipal>()) { "JWT principal missing" }
-            val user = service.getOrCreate(oidcSubject = principal.payload.subject)
+            val user = service.getOrCreate(oidcSubject = call.oidcSubject())
             call.respond(user)
+        }
+        delete("/me") {
+            val userId = call.userId()
+            service.delete(userId, call.oidcSubject())
+            call.respond(HttpStatusCode.NoContent)
         }
     }
 }

@@ -3,6 +3,7 @@ package io.github.fgrutsch.cookmaid.user
 import org.jetbrains.exposed.v1.core.Table
 import org.jetbrains.exposed.v1.datetime.timestamp
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insertReturning
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
@@ -26,6 +27,14 @@ interface UserRepository {
      * @return the newly created user.
      */
     suspend fun create(oidcSubject: String): User
+
+    /**
+     * Deletes the user with the given [userId]. All owned data
+     * (recipes, meal plan items, shopping lists) is removed via FK cascade.
+     *
+     * @param userId the id of the user to delete.
+     */
+    suspend fun delete(userId: UserId)
 }
 
 class PostgresUserRepository : UserRepository {
@@ -51,6 +60,10 @@ class PostgresUserRepository : UserRepository {
             id = row[UsersTable.id],
             oidcSubject = row[UsersTable.oidcSubject],
         )
+    }
+
+    override suspend fun delete(userId: UserId): Unit = suspendTransaction {
+        UsersTable.deleteWhere { id eq userId.value }
     }
 }
 

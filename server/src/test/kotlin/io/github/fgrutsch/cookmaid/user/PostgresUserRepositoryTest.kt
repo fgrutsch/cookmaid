@@ -45,4 +45,24 @@ class PostgresUserRepositoryTest : BaseTest() {
         assertEquals("oidc-subject-1", user1.oidcSubject)
         assertEquals("oidc-subject-2", user2.oidcSubject)
     }
+
+    @Test
+    fun `delete removes the user`() = runTest {
+        val user = repository.create("oidc-subject-1")
+
+        repository.delete(UserId(user.id))
+
+        assertNull(repository.findByOidcSubject("oidc-subject-1"))
+    }
+
+    @Test
+    fun `delete only removes the targeted user`() = runTest {
+        val user1 = repository.create("oidc-subject-1")
+        repository.create("oidc-subject-2")
+
+        repository.delete(UserId(user1.id))
+
+        assertNull(repository.findByOidcSubject("oidc-subject-1"))
+        assertNotNull(repository.findByOidcSubject("oidc-subject-2"))
+    }
 }
