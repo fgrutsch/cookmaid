@@ -55,4 +55,36 @@ class UserServiceTest : BaseTest() {
     fun `findIdByOidcSubject returns null for unknown subject`() = runTest {
         assertNull(service.findIdByOidcSubject("unknown"))
     }
+
+    @Test
+    fun `delete removes the user and evicts the cache`() = runTest {
+        val user = service.getOrCreate("oidc-subject-1")
+        service.findIdByOidcSubject("oidc-subject-1") // prime the cache
+
+        service.delete(UserId(user.id), "oidc-subject-1")
+
+        assertNull(service.findIdByOidcSubject("oidc-subject-1"))
+    }
+
+    @Test
+    fun `delete cascades to the user's shopping lists`() = runTest {
+        val shoppingListRepo by inject<ShoppingListRepository>()
+        val user = service.getOrCreate("oidc-subject-1")
+        assertEquals(1, shoppingListRepo.find(UserId(user.id)).size)
+
+        service.delete(UserId(user.id), "oidc-subject-1")
+
+        assertEquals(0, shoppingListRepo.find(UserId(user.id)).size)
+    }
+
+    @Test
+    fun `delete does not affect other users`() = runTest {
+        val user1 = service.getOrCreate("oidc-subject-1")
+        val user2 = service.getOrCreate("oidc-subject-2")
+
+        service.delete(UserId(user1.id), "oidc-subject-1")
+
+        assertNull(service.findIdByOidcSubject("oidc-subject-1"))
+        assertEquals(user2.id, service.findIdByOidcSubject("oidc-subject-2")?.value)
+    }
 }
