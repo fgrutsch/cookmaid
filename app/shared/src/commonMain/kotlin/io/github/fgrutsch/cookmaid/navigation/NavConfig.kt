@@ -13,6 +13,7 @@ val navConfig = SavedStateConfiguration {
             subclass(Route.RecipeList::class, Route.RecipeList.serializer())
             subclass(Route.MealPlan::class, Route.MealPlan.serializer())
             subclass(Route.Settings::class, Route.Settings.serializer())
+            subclass(Route.DeleteAccount::class, Route.DeleteAccount.serializer())
             subclass(Route.RecipeDetail::class, Route.RecipeDetail.serializer())
             subclass(Route.AddRecipe::class, Route.AddRecipe.serializer())
             subclass(Route.EditRecipe::class, Route.EditRecipe.serializer())

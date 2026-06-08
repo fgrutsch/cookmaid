@@ -18,6 +18,9 @@ sealed interface Route : NavKey {
     data object Settings : Route
 
     @Serializable
+    data object DeleteAccount : Route
+
+    @Serializable
     data class RecipeDetail(val id: Uuid) : Route
 
     @Serializable
