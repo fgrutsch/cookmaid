@@ -41,6 +41,7 @@
     <string name="settings_language_en">English</string>
     <string name="settings_language_de">German</string>
     <string name="settings_manage_account">Manage account</string>
+    <string name="settings_delete_account">Delete account</string>
     <string name="settings_sign_out">Sign out</string>
     <string name="settings_profile_picture">Profile picture</string>
 
@@ -132,4 +133,16 @@
     <string name="day_friday">Friday</string>
     <string name="day_saturday">Saturday</string>
     <string name="day_sunday">Sunday</string>
+
+    <!-- Delete Account -->
+    <string name="delete_account_title">Delete account</string>
+    <string name="delete_account_warning">This permanently deletes your Cookmaid account and all your data — recipes, meal plans and shopping lists. This cannot be undone.</string>
+    <string name="delete_account_button">Delete my account</string>
+    <string name="delete_account_confirm_title">Delete account?</string>
+    <string name="delete_account_confirm_message">This cannot be undone.</string>
+    <string name="delete_account_confirm">Delete</string>
+    <string name="delete_account_error">Couldn't delete your account. Please try again.</string>
+    <string name="delete_account_deleted_title">Account deleted</string>
+    <string name="delete_account_deleted_message">Your account and all associated data have been deleted.</string>
+    <string name="delete_account_finish">Finish</string>
 </resources>
