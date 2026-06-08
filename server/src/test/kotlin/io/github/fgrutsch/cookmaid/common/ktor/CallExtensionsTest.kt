@@ -6,6 +6,10 @@ import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.http.HttpStatusCode
+import io.ktor.server.response.respondText
+import io.ktor.server.routing.get
+import io.ktor.server.routing.routing
+import io.ktor.server.testing.testApplication
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
@@ -38,5 +42,20 @@ class CallExtensionsTest : BaseIntegrationTest() {
 
         assertEquals(HttpStatusCode.OK, response1.status)
         assertEquals(HttpStatusCode.OK, response2.status)
+    }
+
+    @Test
+    fun `oidcSubject errors when JWT principal is missing`() = testApplication {
+        // A route outside any `authenticate {}` block reaches oidcSubject() with
+        // no principal — the guard must throw rather than return an empty subject.
+        application {
+            routing {
+                get("/no-principal") { call.respondText(call.oidcSubject()) }
+            }
+        }
+
+        val response = client.get("/no-principal")
+
+        assertEquals(HttpStatusCode.InternalServerError, response.status)
     }
 }
