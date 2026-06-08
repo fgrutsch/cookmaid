@@ -67,28 +67,43 @@ provider management credentials.
 - **`DeleteAccountScreen`** + contract (`ui/deleteaccount/`):
   - Default state: explains what gets deleted (scope the copy to the Cookmaid
     account/data); destructive "Delete my account" button → **confirm dialog**.
-  - `state.deleted`: success state ("Account deleted") + a **Finish** button.
+  - `state.deleting || state.deleted`: button shows a spinner / is disabled
+    (the screen is about to be torn down by the logout that follows success).
+  - `state.deleted`: a `LaunchedEffect` fires the `onDeleted` callback once.
   - `state.error`: inline error; user stays authenticated, can retry.
 - **Settings entry** (`ui/settings/SettingsScreen.kt`): a destructive
   "Delete account" item → `backStack.add(Route.DeleteAccount)`.
 - **`App.kt` nav entry**: `entry<Route.DeleteAccount>` constructs the VM via
-  `remember { }` and wires `onFinish` → the existing logout callback.
+  `remember { }` and wires `onDeleted` → `authViewModel.onEvent(AuthEvent.AccountDeleted)`.
 
-## Logout ordering (critical)
+## Logout ordering + post-deletion UX (critical)
 
 The DELETE call requires a **valid bearer token**, so the session must not be
-torn down first:
+torn down first. There is **no in-app success screen** — on success the app
+logs out and returns to the login screen with a one-shot snackbar.
 
 1. `confirm()` → server `DELETE /api/users/me` while still authenticated.
-2. Success → screen shows the confirmation state. Tokens remain intact; the
-   screen makes no further API calls (a stray call would 401/404).
-3. **Finish** → existing `AuthViewModel.logout()` clears tokens, flips
-   `status = Unauthenticated` + `user = null` synchronously, session modules
-   unload, app returns to the login screen.
+2. Success → `state.deleted = true` → screen's `LaunchedEffect` calls
+   `onDeleted` → `AuthEvent.AccountDeleted`.
+3. `AuthViewModel` (via shared `clearSession(accountDeleted = true)`): flips
+   `status = Unauthenticated` + `user = null` synchronously, sets a one-shot
+   `accountDeleted` flag, then `authHandler.logout()` clears tokens. Session
+   modules unload; app shows `LoginScreen`.
+4. `LoginScreen` shows a snackbar (`delete_account_snackbar`) when
+   `accountDeleted` is set, then dispatches `AuthEvent.AccountDeletedMessageShown`
+   to clear the flag (consume-once).
+
+**Why clear tokens on success (not on a later tap):** the Logto identity is
+left intact (data-only), so the IdP session stays valid. If tokens were kept,
+a hard reload would auto-login and `getOrCreate` would **re-provision the
+deleted user**. Clearing tokens immediately closes that window — a reload then
+has no bearer, auto-login fails, and the user stays logged out. (Signing in
+again deliberately creates a fresh empty account; that is acceptable for the
+data-only model.)
 
 `DeleteAccountViewModel` never touches `AuthState`; it signals completion via
-an `onFinish` callback wired in `App.kt`. Session teardown stays centralized in
-`AuthViewModel`, per the project's logout discipline.
+the `onDeleted` callback wired in `App.kt`. Session teardown stays centralized
+in `AuthViewModel`, per the project's logout discipline.
 
 ## Web deeplink + login survival (web-only)
 
