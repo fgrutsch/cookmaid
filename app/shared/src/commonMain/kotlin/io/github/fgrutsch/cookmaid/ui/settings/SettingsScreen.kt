@@ -46,6 +46,7 @@ import cookmaid.app.shared.generated.resources.settings_dark_mode
 import cookmaid.app.shared.generated.resources.settings_language
 import cookmaid.app.shared.generated.resources.settings_manage_account
 import cookmaid.app.shared.generated.resources.settings_profile_picture
+import cookmaid.app.shared.generated.resources.settings_delete_account
 import cookmaid.app.shared.generated.resources.settings_sign_out
 import cookmaid.app.shared.generated.resources.settings_title
 import io.github.fgrutsch.cookmaid.BuildKonfig
@@ -60,6 +61,7 @@ import org.jetbrains.compose.resources.painterResource
  * @param userProfile the authenticated user's profile.
  * @param accountUri the IDP account management URL to open in the browser.
  * @param onLogout called when the user logs out.
+ * @param onDeleteAccount called when the user initiates account deletion.
  */
 @Composable
 fun SettingsScreen(
@@ -67,6 +69,7 @@ fun SettingsScreen(
     userProfile: UserProfile,
     accountUri: String,
     onLogout: () -> Unit,
+    onDeleteAccount: () -> Unit,
 ) {
     val state by viewModel.state.collectAsState()
 
@@ -90,6 +93,7 @@ fun SettingsScreen(
             locale = state.locale,
             onLocaleSelected = { viewModel.onEvent(SettingsEvent.SetLocale(it)) },
             onLogout = onLogout,
+            onDeleteAccount = onDeleteAccount,
             appVersion = BuildKonfig.APP_VERSION,
             modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp),
         )
@@ -105,6 +109,7 @@ private fun SettingsContent(
     locale: SupportedLocale?,
     onLocaleSelected: (SupportedLocale?) -> Unit,
     onLogout: () -> Unit,
+    onDeleteAccount: () -> Unit,
     appVersion: String,
     modifier: Modifier = Modifier,
 ) {
@@ -146,6 +151,16 @@ private fun SettingsContent(
             modifier = Modifier.fillMaxWidth(),
         ) {
             Text(Res.string.settings_sign_out.resolve())
+        }
+
+        TextButton(
+            onClick = onDeleteAccount,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(
+                text = Res.string.settings_delete_account.resolve(),
+                color = MaterialTheme.colorScheme.error,
+            )
         }
 
         Spacer(modifier = Modifier.height(24.dp))

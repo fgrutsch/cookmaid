@@ -46,6 +46,8 @@ import io.github.fgrutsch.cookmaid.ui.recipe.edit.AddRecipeScreen
 import io.github.fgrutsch.cookmaid.ui.recipe.edit.AddRecipeViewModel
 import io.github.fgrutsch.cookmaid.ui.recipe.list.RecipeListScreen
 import io.github.fgrutsch.cookmaid.ui.recipe.list.RecipeListViewModel
+import io.github.fgrutsch.cookmaid.ui.deleteaccount.DeleteAccountScreen
+import io.github.fgrutsch.cookmaid.ui.deleteaccount.DeleteAccountViewModel
 import io.github.fgrutsch.cookmaid.ui.settings.SettingsScreen
 import io.github.fgrutsch.cookmaid.ui.settings.SettingsViewModel
 import io.github.fgrutsch.cookmaid.ui.shopping.ShoppingListScreen
@@ -256,6 +258,16 @@ private fun AppNavDisplay(
                     userProfile = userProfile,
                     accountUri = accountUri,
                     onLogout = { authViewModel.onEvent(AuthEvent.Logout) },
+                    onDeleteAccount = { backStack.add(Route.DeleteAccount) },
+                )
+            }
+
+            entry<Route.DeleteAccount> {
+                val koin = getKoin()
+                DeleteAccountScreen(
+                    viewModel = remember { DeleteAccountViewModel(koin.get()) },
+                    onBack = { backStack.removeLastOrNull() },
+                    onFinish = { authViewModel.onEvent(AuthEvent.Logout) },
                 )
             }
         },
