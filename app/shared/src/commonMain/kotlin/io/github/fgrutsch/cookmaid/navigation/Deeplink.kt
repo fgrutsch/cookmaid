@@ -1,12 +1,15 @@
 package io.github.fgrutsch.cookmaid.navigation
 
 /**
- * Constants for the web deeplink hand-off. The web entry point stashes a
- * pending deeplink in storage before authentication; [io.github.fgrutsch.cookmaid.App]
- * consumes it once the user is authenticated. Keyed via the cross-platform
- * Settings store (localStorage on web, SharedPreferences on Android).
+ * Identifiers for web deeplinks. The web entry point maps the initial
+ * `window.location` path to one of these and passes it into
+ * [io.github.fgrutsch.cookmaid.App] as `startDeeplink`; [io.github.fgrutsch.cookmaid.App]
+ * navigates to the matching route once the user is authenticated.
+ *
+ * No persistence is needed: the wasmJS OIDC login flow is a popup, so the main
+ * window stays on the deeplink URL throughout login and the in-memory value
+ * survives.
  */
 object Deeplink {
-    const val KEY: String = "cookmaid.deeplink"
     const val DELETE_ACCOUNT: String = "delete-account"
 }

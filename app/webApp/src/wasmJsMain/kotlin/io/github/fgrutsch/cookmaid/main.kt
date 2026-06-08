@@ -32,13 +32,13 @@ fun main() {
     if (window.location.pathname.startsWith("/callback")) {
         PlatformCodeAuthFlow.handleRedirect()
     } else {
-        if (window.location.pathname == "/${Deeplink.DELETE_ACCOUNT}") {
-            window.localStorage.setItem(Deeplink.KEY, Deeplink.DELETE_ACCOUNT)
-        }
+        val startDeeplink = Deeplink.DELETE_ACCOUNT
+            .takeIf { window.location.pathname == "/$it" }
         val origin = window.location.origin
         ComposeViewport {
             App(
                 apiBaseUrl = ApiBaseUrl(origin),
+                startDeeplink = startDeeplink,
                 oidcConfig = OidcConfig(
                     discoveryUri = oidcDiscoveryUri,
                     clientId = oidcClientId,

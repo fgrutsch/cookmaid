@@ -27,7 +27,6 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
-import com.russhwolf.settings.Settings
 import io.github.fgrutsch.cookmaid.navigation.Deeplink
 import io.github.fgrutsch.cookmaid.navigation.Route
 import io.github.fgrutsch.cookmaid.navigation.TopLevelRoute
@@ -70,6 +69,8 @@ import org.publicvalue.multiplatform.oidc.tokenstore.TokenStore
  * @param apiBaseUrl the base URL for the backend API.
  * @param oidcConfig the OpenID Connect configuration.
  * @param codeAuthFlowFactory factory for the OIDC authorization code flow.
+ * @param startDeeplink an optional [io.github.fgrutsch.cookmaid.navigation.Deeplink]
+ *   id derived from the initial web URL; navigated to once authenticated. Null on Android.
  */
 @Composable
 fun App(
@@ -77,6 +78,7 @@ fun App(
     oidcConfig: OidcConfig,
     codeAuthFlowFactory: CodeAuthFlowFactory,
     tokenStore: TokenStore,
+    startDeeplink: String? = null,
 ) {
     val platformModule = module {
         single { apiBaseUrl }
@@ -125,6 +127,7 @@ fun App(
                                 authViewModel = authViewModel,
                                 userProfile = authState.profile,
                                 accountUri = oidcConfig.accountUri,
+                                startDeeplink = startDeeplink,
                             )
                         }
                     }
@@ -140,13 +143,12 @@ private fun MainContent(
     authViewModel: AuthViewModel,
     userProfile: UserProfile,
     accountUri: String,
+    startDeeplink: String? = null,
 ) {
     val backStack = rememberNavBackStack(navConfig, Route.ShoppingList)
 
     LaunchedEffect(Unit) {
-        val settings = Settings()
-        if (settings.getStringOrNull(Deeplink.KEY) == Deeplink.DELETE_ACCOUNT) {
-            settings.remove(Deeplink.KEY)
+        if (startDeeplink == Deeplink.DELETE_ACCOUNT) {
             backStack.add(Route.DeleteAccount)
         }
     }
