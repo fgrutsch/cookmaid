@@ -10,7 +10,7 @@ import io.github.fgrutsch.cookmaid.ui.user.UserClient
  */
 class DeleteAccountViewModel(
     private val userClient: UserClient,
-) : MviViewModel<DeleteAccountState, DeleteAccountEvent, Nothing>(DeleteAccountState()) {
+) : MviViewModel<DeleteAccountState, DeleteAccountEvent, DeleteAccountEffect>(DeleteAccountState()) {
 
     override fun handleEvent(event: DeleteAccountEvent) {
         when (event) {
@@ -19,11 +19,13 @@ class DeleteAccountViewModel(
     }
 
     private fun confirm() {
-        if (state.value.deleting || state.value.deleted) return
+        if (state.value.deleting) return
         updateState { copy(deleting = true, error = false) }
         launch {
             userClient.deleteAccount()
-            updateState { copy(deleting = false, deleted = true) }
+            // Keep `deleting = true`: the screen hands off to logout on this
+            // effect and is torn down, so the button must not flash back to active.
+            sendEffect(DeleteAccountEffect.Deleted)
         }
     }
 

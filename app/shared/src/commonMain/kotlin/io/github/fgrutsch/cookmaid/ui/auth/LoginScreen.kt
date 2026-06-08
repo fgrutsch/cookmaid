@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -29,8 +28,11 @@ import cookmaid.app.shared.generated.resources.auth_app_logo
 import cookmaid.app.shared.generated.resources.auth_sign_in
 import cookmaid.app.shared.generated.resources.delete_account_snackbar
 import cookmaid.app.shared.generated.resources.logo
-import org.jetbrains.compose.resources.painterResource
+import io.github.fgrutsch.cookmaid.ui.common.SuccessSnackbarHost
 import io.github.fgrutsch.cookmaid.ui.common.resolve
+import org.jetbrains.compose.resources.getString
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.rememberResourceEnvironment
 
 /**
  * Login screen that initiates the OIDC authentication flow.
@@ -42,17 +44,19 @@ fun LoginScreen(viewModel: AuthViewModel) {
     val state by viewModel.state.collectAsState()
     val loginError = state.loginError
     val snackbarHostState = remember { SnackbarHostState() }
-    val accountDeletedMessage = Res.string.delete_account_snackbar.resolve()
+    val env = rememberResourceEnvironment()
 
     LaunchedEffect(Unit) {
-        if (state.accountDeleted) {
-            viewModel.onEvent(AuthEvent.AccountDeletedMessageShown)
-            snackbarHostState.showSnackbar(accountDeletedMessage)
+        viewModel.effects.collect { effect ->
+            when (effect) {
+                is AuthEffect.AccountDeleted ->
+                    snackbarHostState.showSnackbar(getString(env, Res.string.delete_account_snackbar))
+            }
         }
     }
 
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = { SuccessSnackbarHost(snackbarHostState) },
     ) { padding ->
         Surface(modifier = Modifier.fillMaxSize().padding(padding)) {
             Column(

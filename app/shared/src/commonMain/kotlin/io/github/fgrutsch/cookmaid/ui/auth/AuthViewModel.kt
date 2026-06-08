@@ -16,7 +16,6 @@ class AuthViewModel(
             is AuthEvent.Login -> login()
             is AuthEvent.Logout -> clearSession(accountDeleted = false)
             is AuthEvent.AccountDeleted -> clearSession(accountDeleted = true)
-            is AuthEvent.AccountDeletedMessageShown -> updateState { copy(accountDeleted = false) }
         }
     }
 
@@ -91,9 +90,9 @@ class AuthViewModel(
                 user = null,
                 profile = UserProfile(),
                 loginError = null,
-                accountDeleted = accountDeleted,
             )
         }
+        if (accountDeleted) sendEffect(AuthEffect.AccountDeleted)
         logger.debug { if (accountDeleted) "Account deleted, clearing session" else "Logout initiated" }
         launch {
             try {

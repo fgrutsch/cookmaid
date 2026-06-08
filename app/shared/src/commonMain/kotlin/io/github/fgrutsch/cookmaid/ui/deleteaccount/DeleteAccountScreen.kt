@@ -60,9 +60,11 @@ fun DeleteAccountScreen(
     val state by viewModel.state.collectAsState()
     var showConfirm by remember { mutableStateOf(false) }
 
-    LaunchedEffect(state.deleted) {
-        if (state.deleted) {
-            onDeleted()
+    LaunchedEffect(Unit) {
+        viewModel.effects.collect { effect ->
+            when (effect) {
+                is DeleteAccountEffect.Deleted -> onDeleted()
+            }
         }
     }
 
@@ -76,7 +78,7 @@ fun DeleteAccountScreen(
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
                 ),
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(onClick = onBack, enabled = !state.deleting) {
                         Icon(
                             painterResource(Res.drawable.ic_arrow_back),
                             contentDescription = Res.string.common_back.resolve(),
@@ -87,7 +89,7 @@ fun DeleteAccountScreen(
         },
     ) { padding ->
         DeleteContent(
-            busy = state.deleting || state.deleted,
+            busy = state.deleting,
             error = state.error,
             onDeleteClick = { showConfirm = true },
             modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp),

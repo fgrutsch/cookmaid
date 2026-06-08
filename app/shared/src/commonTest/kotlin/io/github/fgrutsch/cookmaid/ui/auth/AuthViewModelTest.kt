@@ -3,11 +3,11 @@ package io.github.fgrutsch.cookmaid.ui.auth
 import io.github.fgrutsch.cookmaid.support.BaseViewModelTest
 import io.github.fgrutsch.cookmaid.user.User
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.uuid.Uuid
@@ -130,11 +130,14 @@ class AuthViewModelTest : BaseViewModelTest() {
     }
 
     @Test
-    fun `account deleted clears session, calls logout, and flags message`() = viewModelTest {
+    fun `account deleted clears session, calls logout, and emits effect`() = viewModelTest {
         val user = User(id = Uuid.random(), oidcSubject = "sub-1")
         fakeHandler.resultToReturn = AuthResult(user, UserProfile(name = "Al"))
         val viewModel = createInitializedViewModel()
         assertEquals(AuthState.Status.Authenticated, viewModel.state.value.status)
+
+        var effect: AuthEffect? = null
+        val job = launch { viewModel.effects.collect { effect = it } }
 
         viewModel.onEvent(AuthEvent.AccountDeleted)
         advanceUntilIdle()
@@ -142,35 +145,27 @@ class AuthViewModelTest : BaseViewModelTest() {
         val state = viewModel.state.value
         assertEquals(AuthState.Status.Unauthenticated, state.status)
         assertNull(state.user)
-        assertTrue(state.accountDeleted)
         // tokens are cleared so a reload can't re-provision the user via auto-login
         assertTrue(fakeHandler.logoutCalled)
+        assertEquals(AuthEffect.AccountDeleted, effect)
+        job.cancel()
     }
 
     @Test
-    fun `account deleted message shown clears the flag`() = viewModelTest {
+    fun `logout does not emit account deleted effect`() = viewModelTest {
         val user = User(id = Uuid.random(), oidcSubject = "sub-1")
         fakeHandler.resultToReturn = AuthResult(user, UserProfile())
         val viewModel = createInitializedViewModel()
-        viewModel.onEvent(AuthEvent.AccountDeleted)
-        advanceUntilIdle()
-        assertTrue(viewModel.state.value.accountDeleted)
 
-        viewModel.onEvent(AuthEvent.AccountDeletedMessageShown)
-
-        assertFalse(viewModel.state.value.accountDeleted)
-    }
-
-    @Test
-    fun `logout does not flag account deleted`() = viewModelTest {
-        val user = User(id = Uuid.random(), oidcSubject = "sub-1")
-        fakeHandler.resultToReturn = AuthResult(user, UserProfile())
-        val viewModel = createInitializedViewModel()
+        var effect: AuthEffect? = null
+        val job = launch { viewModel.effects.collect { effect = it } }
 
         viewModel.onEvent(AuthEvent.Logout)
         advanceUntilIdle()
 
-        assertFalse(viewModel.state.value.accountDeleted)
+        assertEquals(AuthState.Status.Unauthenticated, viewModel.state.value.status)
+        assertNull(effect)
+        job.cancel()
     }
 
     @Test

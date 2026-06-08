@@ -13,6 +13,15 @@ import org.koin.ktor.ext.get
 private val UserIdKey = AttributeKey<UserId>("userId")
 
 /**
+ * Returns the authenticated user's OIDC subject claim from the JWT principal.
+ *
+ * @return the `sub` claim.
+ * @throws IllegalArgumentException if the JWT principal is missing.
+ */
+fun ApplicationCall.oidcSubject(): String =
+    requireNotNull(principal<JWTPrincipal>()) { "JWT principal missing" }.payload.subject
+
+/**
  * Extracts the authenticated [UserId] from the JWT principal, caching it on the call attributes.
  *
  * @return the authenticated user's id.
@@ -23,7 +32,7 @@ suspend fun ApplicationCall.userId(): UserId {
     val cached = attributes.getOrNull(UserIdKey)
     if (cached != null) return cached
 
-    val subject = requireNotNull(principal<JWTPrincipal>()) { "JWT principal missing" }.payload.subject
+    val subject = oidcSubject()
     val userService = application.get<UserService>()
     val userId = userService.findIdByOidcSubject(subject) ?: throw UserNotRegisteredException()
     attributes.put(UserIdKey, userId)

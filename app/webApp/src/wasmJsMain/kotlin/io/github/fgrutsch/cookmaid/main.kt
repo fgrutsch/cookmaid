@@ -32,8 +32,8 @@ fun main() {
     if (window.location.pathname.startsWith("/callback")) {
         PlatformCodeAuthFlow.handleRedirect()
     } else {
-        val startDeeplink = Deeplink.DELETE_ACCOUNT
-            .takeIf { window.location.pathname == "/$it" }
+        val path = window.location.pathname.removeSuffix("/")
+        val startDeeplink = Deeplink.DELETE_ACCOUNT.takeIf { path == "/$it" }
         val origin = window.location.origin
         ComposeViewport {
             App(

@@ -7,7 +7,6 @@ data class AuthState(
     val user: User? = null,
     val profile: UserProfile = UserProfile(),
     val loginError: String? = null,
-    val accountDeleted: Boolean = false,
 ) {
     enum class Status { Initializing, Unauthenticated, Authenticated }
 }
@@ -17,11 +16,11 @@ sealed interface AuthEvent {
     data object Login : AuthEvent
     data object Logout : AuthEvent
 
-    /** Logs out after the user's account was deleted, flagging a one-shot confirmation message. */
+    /** Logs out after the user's account was deleted, emitting [AuthEffect.AccountDeleted]. */
     data object AccountDeleted : AuthEvent
-
-    /** Clears the one-shot account-deleted message after it has been shown. */
-    data object AccountDeletedMessageShown : AuthEvent
 }
 
-sealed interface AuthEffect
+sealed interface AuthEffect {
+    /** The account was deleted; the login screen shows a one-shot confirmation. */
+    data object AccountDeleted : AuthEffect
+}

@@ -93,6 +93,10 @@ fun App(
         val authViewModel = koinInject<AuthViewModel>()
         val authState by authViewModel.state.collectAsState()
 
+        // Held above the identity `key`, so it survives login but is consumed
+        // exactly once — a deeplink must not re-fire on every subsequent login.
+        var pendingDeeplink by remember { mutableStateOf(startDeeplink) }
+
         LaunchedEffect(Unit) {
             authViewModel.onEvent(AuthEvent.Initialize)
         }
@@ -127,7 +131,8 @@ fun App(
                                 authViewModel = authViewModel,
                                 userProfile = authState.profile,
                                 accountUri = oidcConfig.accountUri,
-                                startDeeplink = startDeeplink,
+                                startDeeplink = pendingDeeplink,
+                                onDeeplinkConsumed = { pendingDeeplink = null },
                             )
                         }
                     }
@@ -144,12 +149,14 @@ private fun MainContent(
     userProfile: UserProfile,
     accountUri: String,
     startDeeplink: String? = null,
+    onDeeplinkConsumed: () -> Unit = {},
 ) {
     val backStack = rememberNavBackStack(navConfig, Route.ShoppingList)
 
     LaunchedEffect(Unit) {
         if (startDeeplink == Deeplink.DELETE_ACCOUNT) {
             backStack.add(Route.DeleteAccount)
+            onDeeplinkConsumed()
         }
     }
 
