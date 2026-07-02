@@ -2,7 +2,7 @@
 # Android
 agp = "9.2.0"
 android-minSdk = "28"
-android-targetCompileSdk = "36"
+android-targetCompileSdk = "37"
 androidx-activity = "1.13.0"
 androidx-lifecycle = "2.10.0"
 
