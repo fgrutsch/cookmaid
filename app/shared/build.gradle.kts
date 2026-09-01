@@ -21,7 +21,7 @@ kotlin {
 
     android {
         namespace = "io.github.fgrutsch.cookmaid.ui"
-        compileSdk = libs.versions.android.targetCompileSdk.get().toInt()
+        compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
 
         compilerOptions {
@@ -36,6 +36,8 @@ kotlin {
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         browser()
+        // Compose 1.12 requires an executable binary so webpack bundles the Skiko runtime for wasmJs tests.
+        binaries.executable()
     }
 
     sourceSets {
