@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -34,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.LinkAnnotation
@@ -42,14 +44,18 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
 import cookmaid.app.shared.generated.resources.Res
 import cookmaid.app.shared.generated.resources.common_add_to_meal_plan
+import cookmaid.app.shared.generated.resources.ic_add
 import cookmaid.app.shared.generated.resources.ic_arrow_back
 import cookmaid.app.shared.generated.resources.ic_more_vert
+import cookmaid.app.shared.generated.resources.ic_remove
 import cookmaid.app.shared.generated.resources.common_add_to_shopping_list
 import cookmaid.app.shared.generated.resources.common_back
 import cookmaid.app.shared.generated.resources.common_delete
 import cookmaid.app.shared.generated.resources.common_edit
 import cookmaid.app.shared.generated.resources.common_options
+import cookmaid.app.shared.generated.resources.recipe_detail_decrease_servings
 import cookmaid.app.shared.generated.resources.recipe_detail_description
+import cookmaid.app.shared.generated.resources.recipe_detail_increase_servings
 import cookmaid.app.shared.generated.resources.recipe_detail_ingredients
 import cookmaid.app.shared.generated.resources.recipe_detail_not_found
 
@@ -57,8 +63,10 @@ import cookmaid.app.shared.generated.resources.recipe_edit_servings_label
 import cookmaid.app.shared.generated.resources.recipe_detail_steps
 import cookmaid.app.shared.generated.resources.recipe_detail_tags
 import cookmaid.app.shared.generated.resources.recipe_detail_title
+import io.github.fgrutsch.cookmaid.common.SupportedLocale
 import io.github.fgrutsch.cookmaid.recipe.Recipe
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
+import io.github.fgrutsch.cookmaid.ui.common.LocalAppLocale
 import io.github.fgrutsch.cookmaid.ui.common.resolve
 import org.jetbrains.compose.resources.painterResource
 
@@ -122,7 +130,12 @@ internal data class RecipeMenuActions(
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun RecipeContent(recipe: Recipe, padding: PaddingValues) {
+internal fun RecipeContent(
+    recipe: Recipe,
+    servings: Int?,
+    onServingsChange: (Int) -> Unit,
+    padding: PaddingValues,
+) {
     val uriHandler = LocalUriHandler.current
 
     Column(
@@ -140,22 +153,19 @@ internal fun RecipeContent(recipe: Recipe, padding: PaddingValues) {
                 onLinkClick = { uriHandler.openUri(it) },
             )
         }
-        recipe.servings?.let { servings ->
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(
-                    Res.string.recipe_edit_servings_label.resolve(),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-                Text(
-                    servings.toString(),
-                    style = MaterialTheme.typography.bodyLarge,
-                )
-            }
+        // A recipe without configured servings scales to 0, which leaves quantities untouched.
+        val baseServings = recipe.servings ?: 0
+        val currentServings = servings ?: baseServings
+
+        if (baseServings > 0) {
+            ServingsStepper(servings = currentServings, onServingsChange = onServingsChange)
         }
         if (recipe.ingredients.isNotEmpty()) {
-            IngredientsSection(ingredients = recipe.ingredients)
+            IngredientsSection(
+                ingredients = recipe.ingredients,
+                servings = currentServings,
+                baseServings = baseServings,
+            )
         }
         if (recipe.steps.isNotEmpty()) {
             StepsSection(steps = recipe.steps)
@@ -221,8 +231,56 @@ internal fun TagsSection(tags: List<String>) {
     }
 }
 
+/**
+ * Read-only servings control for the detail screen. Distinct from the edit screen's
+ * `ServingsSelector`, which can unset servings entirely; here the count never drops below 1.
+ */
 @Composable
-internal fun IngredientsSection(ingredients: List<RecipeIngredient>) {
+private fun ServingsStepper(servings: Int, onServingsChange: (Int) -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(
+            Res.string.recipe_edit_servings_label.resolve(),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary,
+        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            IconButton(
+                onClick = { onServingsChange(servings - 1) },
+                enabled = servings > 1,
+            ) {
+                Icon(
+                    painterResource(Res.drawable.ic_remove),
+                    contentDescription = Res.string.recipe_detail_decrease_servings.resolve(),
+                )
+            }
+            Text(
+                servings.toString(),
+                style = MaterialTheme.typography.bodyLarge,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.widthIn(min = 32.dp),
+            )
+            IconButton(onClick = { onServingsChange(servings + 1) }) {
+                Icon(
+                    painterResource(Res.drawable.ic_add),
+                    contentDescription = Res.string.recipe_detail_increase_servings.resolve(),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+internal fun IngredientsSection(ingredients: List<RecipeIngredient>, servings: Int, baseServings: Int) {
+    // Amounts the user wrote without decimals fall back to the separator their language uses.
+    // LocalAppLocale carries a full locale ("de_DE", "de-AT"), so compare the language subtag.
+    val language = LocalAppLocale.current.substringBefore('_').substringBefore('-')
+    val decimalSeparator = if (SupportedLocale.fromCode(language) == SupportedLocale.DE) ',' else '.'
+
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
             Res.string.recipe_detail_ingredients.resolve(),
@@ -248,7 +306,7 @@ internal fun IngredientsSection(ingredients: List<RecipeIngredient>) {
                 )
                 ingredient.quantity?.let { qty ->
                     Text(
-                        qty,
+                        scaleQuantity(qty, servings, baseServings, decimalSeparator),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

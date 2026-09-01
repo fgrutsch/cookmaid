@@ -21,6 +21,7 @@ class RecipeDetailViewModel(
             is RecipeDetailEvent.Delete -> deleteRecipe()
             is RecipeDetailEvent.AddIngredientsToShoppingList -> addToShoppingList(event)
             is RecipeDetailEvent.AddToMealPlan -> addToMealPlan(event.recipeId, event.day)
+            is RecipeDetailEvent.SetServings -> updateState { copy(servings = event.servings.coerceAtLeast(1)) }
         }
     }
 
@@ -28,7 +29,7 @@ class RecipeDetailViewModel(
         launch {
             updateState { copy(isLoading = true) }
             val recipe = recipeRepository.getById(recipeId)
-            updateState { copy(recipe = recipe, isLoading = false) }
+            updateState { copy(recipe = recipe, isLoading = false, servings = recipe?.servings) }
         }
     }
 
