@@ -15,7 +15,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.FilterChip
@@ -34,6 +33,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
@@ -61,7 +62,10 @@ import cookmaid.app.shared.generated.resources.recipe_edit_servings_label
 import cookmaid.app.shared.generated.resources.recipe_edit_tag_name_label
 import io.github.fgrutsch.cookmaid.catalog.Item
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
+import io.github.fgrutsch.cookmaid.ui.common.NO_SUGGESTION
+import io.github.fgrutsch.cookmaid.ui.common.SuggestionMenu
 import io.github.fgrutsch.cookmaid.ui.common.resolve
+import io.github.fgrutsch.cookmaid.ui.common.textFieldKeyboardControl
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
@@ -311,51 +315,103 @@ internal fun IngredientAddField(
     onAddFreeText: () -> Unit,
     onAddCatalogItem: (Item.Catalog) -> Unit,
 ) {
-    val showSuggestions = suggestions.isNotEmpty() && query.isNotEmpty()
+    // Confirming leaves the exact item name in the field, which still matches its own
+    // suggestion. Remember that name so the dropdown stays shut until the query changes again.
+    var confirmedQuery by remember { mutableStateOf<String?>(null) }
+    val visibleSuggestions = if (query.isNotEmpty() && query != confirmedQuery) suggestions else emptyList()
+
+    var highlighted by remember(visibleSuggestions) { mutableStateOf(NO_SUGGESTION) }
+    val nameFocus = remember { FocusRequester() }
+    val quantityFocus = remember { FocusRequester() }
+
+    // Enter walks the row: name accepts any highlighted suggestion and moves to the quantity,
+    // quantity adds the ingredient and returns to the name for the next one.
+    val confirmName: () -> Unit = {
+        val name = visibleSuggestions.getOrNull(highlighted)?.name
+        if (name != null) onQueryChange(name)
+        confirmedQuery = name ?: query
+        quantityFocus.requestFocus()
+    }
+    val addIngredient: () -> Unit = {
+        onAddFreeText()
+        nameFocus.requestFocus()
+    }
 
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        ExposedDropdownMenuBox(
-            expanded = showSuggestions,
-            onExpandedChange = { },
+        IngredientNameField(
+            query = query,
+            suggestions = visibleSuggestions,
+            highlighted = highlighted,
+            focusRequester = nameFocus,
+            onQueryChange = onQueryChange,
+            onHighlightedChange = { highlighted = it },
+            onConfirm = confirmName,
+            onSelectSuggestion = onAddCatalogItem,
             modifier = Modifier.weight(1f),
-        ) {
-            OutlinedTextField(
-                value = query,
-                onValueChange = onQueryChange,
-                label = { Text(Res.string.recipe_edit_add_ingredient.resolve()) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable),
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(onDone = { onAddFreeText() }),
-            )
-            ExposedDropdownMenu(
-                expanded = showSuggestions,
-                onDismissRequest = { },
-            ) {
-                suggestions.forEach { catalogItem ->
-                    DropdownMenuItem(
-                        text = { Text(catalogItem.name) },
-                        onClick = { onAddCatalogItem(catalogItem) },
-                    )
-                }
-            }
-        }
+        )
         OutlinedTextField(
             value = quantityInput,
             onValueChange = onQuantityChange,
             label = { Text(Res.string.common_quantity.resolve()) },
             singleLine = true,
-            modifier = Modifier.width(85.dp),
+            modifier = Modifier
+                .width(85.dp)
+                .focusRequester(quantityFocus)
+                .textFieldKeyboardControl(onCommit = addIngredient),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(onDone = { addIngredient() }),
         )
         IconButton(onClick = onAddFreeText) {
             Icon(painterResource(Res.drawable.ic_send), contentDescription = Res.string.common_add.resolve())
         }
+    }
+}
+
+@Composable
+private fun IngredientNameField(
+    query: String,
+    suggestions: List<Item.Catalog>,
+    highlighted: Int,
+    focusRequester: FocusRequester,
+    onQueryChange: (String) -> Unit,
+    onHighlightedChange: (Int) -> Unit,
+    onConfirm: () -> Unit,
+    onSelectSuggestion: (Item.Catalog) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val showSuggestions = suggestions.isNotEmpty()
+
+    ExposedDropdownMenuBox(expanded = showSuggestions, onExpandedChange = { }, modifier = modifier) {
+        OutlinedTextField(
+            value = query,
+            onValueChange = onQueryChange,
+            label = { Text(Res.string.recipe_edit_add_ingredient.resolve()) },
+            // Must precede menuAnchor: it installs its own onPreviewKeyEvent, and previews run
+            // outer-to-inner, so anything after it never sees Enter or the arrow keys.
+            modifier = Modifier
+                .fillMaxWidth()
+                .focusRequester(focusRequester)
+                .textFieldKeyboardControl(
+                    onCommit = onConfirm,
+                    suggestionCount = if (showSuggestions) suggestions.size else 0,
+                    highlighted = highlighted,
+                    onHighlightedChange = onHighlightedChange,
+                )
+                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable),
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            keyboardActions = KeyboardActions(onNext = { onConfirm() }),
+        )
+        SuggestionMenu(
+            expanded = showSuggestions,
+            suggestions = suggestions,
+            highlighted = highlighted,
+            onSelect = onSelectSuggestion,
+        )
     }
 }
 
@@ -369,7 +425,7 @@ internal fun ServingsSelector(
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         Text(
             Res.string.recipe_edit_servings_label.resolve(),
