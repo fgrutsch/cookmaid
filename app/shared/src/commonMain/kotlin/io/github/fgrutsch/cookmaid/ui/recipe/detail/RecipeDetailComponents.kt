@@ -151,17 +151,18 @@ internal fun RecipeContent(
                 onLinkClick = { uriHandler.openUri(it) },
             )
         }
-        recipe.servings?.let { baseServings ->
-            ServingsSelector(
-                servings = servings ?: baseServings,
-                onServingsChange = onServingsChange,
-            )
+        // A recipe without configured servings scales to 0, which leaves quantities untouched.
+        val baseServings = recipe.servings ?: 0
+        val currentServings = servings ?: baseServings
+
+        if (baseServings > 0) {
+            ServingsStepper(servings = currentServings, onServingsChange = onServingsChange)
         }
         if (recipe.ingredients.isNotEmpty()) {
             IngredientsSection(
                 ingredients = recipe.ingredients,
-                servings = servings ?: 0,
-                baseServings = recipe.servings ?: 0,
+                servings = currentServings,
+                baseServings = baseServings,
             )
         }
         if (recipe.steps.isNotEmpty()) {
@@ -228,8 +229,12 @@ internal fun TagsSection(tags: List<String>) {
     }
 }
 
+/**
+ * Read-only servings control for the detail screen. Distinct from the edit screen's
+ * `ServingsSelector`, which can unset servings entirely; here the count never drops below 1.
+ */
 @Composable
-private fun ServingsSelector(servings: Int, onServingsChange: (Int) -> Unit) {
+private fun ServingsStepper(servings: Int, onServingsChange: (Int) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(
             Res.string.recipe_edit_servings_label.resolve(),
