@@ -63,8 +63,10 @@ import cookmaid.app.shared.generated.resources.recipe_edit_servings_label
 import cookmaid.app.shared.generated.resources.recipe_detail_steps
 import cookmaid.app.shared.generated.resources.recipe_detail_tags
 import cookmaid.app.shared.generated.resources.recipe_detail_title
+import io.github.fgrutsch.cookmaid.common.SupportedLocale
 import io.github.fgrutsch.cookmaid.recipe.Recipe
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
+import io.github.fgrutsch.cookmaid.ui.common.LocalAppLocale
 import io.github.fgrutsch.cookmaid.ui.common.resolve
 import org.jetbrains.compose.resources.painterResource
 
@@ -235,7 +237,11 @@ internal fun TagsSection(tags: List<String>) {
  */
 @Composable
 private fun ServingsStepper(servings: Int, onServingsChange: (Int) -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
         Text(
             Res.string.recipe_edit_servings_label.resolve(),
             style = MaterialTheme.typography.titleMedium,
@@ -270,6 +276,9 @@ private fun ServingsStepper(servings: Int, onServingsChange: (Int) -> Unit) {
 
 @Composable
 internal fun IngredientsSection(ingredients: List<RecipeIngredient>, servings: Int, baseServings: Int) {
+    // Amounts the user wrote without decimals fall back to the separator their language uses.
+    val decimalSeparator = if (LocalAppLocale.current == SupportedLocale.DE.code) ',' else '.'
+
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
             Res.string.recipe_detail_ingredients.resolve(),
@@ -295,7 +304,7 @@ internal fun IngredientsSection(ingredients: List<RecipeIngredient>, servings: I
                 )
                 ingredient.quantity?.let { qty ->
                     Text(
-                        scaleQuantity(qty, servings, baseServings),
+                        scaleQuantity(qty, servings, baseServings, decimalSeparator),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

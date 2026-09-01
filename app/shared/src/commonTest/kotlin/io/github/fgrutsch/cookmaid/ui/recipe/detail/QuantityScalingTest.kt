@@ -13,27 +13,35 @@ class QuantityScalingTest {
     }
 
     @Test
-    fun `renders halves as mixed fractions`() {
-        assertEquals("2 1/2", scaleQuantity("5", servings = 1, baseServings = 2))
-        assertEquals("1/2 TL", scaleQuantity("1 TL", servings = 1, baseServings = 2))
+    fun `keeps the separator the input was written with`() {
+        assertEquals("1,25kg", scaleQuantity("2,5kg", servings = 1, baseServings = 2))
+        assertEquals("1.25kg", scaleQuantity("2.5kg", servings = 1, baseServings = 2))
+    }
+
+    @Test
+    fun `falls back to the given separator when the input has none`() {
+        assertEquals("2.5", scaleQuantity("5", servings = 1, baseServings = 2))
+        assertEquals("2,5", scaleQuantity("5", servings = 1, baseServings = 2, decimalSeparator = ','))
+        assertEquals("0,5 TL", scaleQuantity("1 TL", servings = 1, baseServings = 2, decimalSeparator = ','))
     }
 
     @Test
     fun `scales fraction input`() {
         assertEquals("1 TL", scaleQuantity("1/2 TL", servings = 4, baseServings = 2))
         assertEquals("5 cups", scaleQuantity("2 1/2 cups", servings = 4, baseServings = 2))
-        assertEquals("1/4 tsp", scaleQuantity("1/2 tsp", servings = 1, baseServings = 2))
+        assertEquals("0.25 tsp", scaleQuantity("1/2 tsp", servings = 1, baseServings = 2))
     }
 
     @Test
-    fun `scales decimal input with dot or comma`() {
+    fun `rounds to two decimals`() {
+        assertEquals("66.67 ml", scaleQuantity("200 ml", servings = 1, baseServings = 3))
+        assertEquals("0.33", scaleQuantity("1", servings = 1, baseServings = 3))
+    }
+
+    @Test
+    fun `drops trailing zeros`() {
         assertEquals("3 kg", scaleQuantity("1,5 kg", servings = 4, baseServings = 2))
-        assertEquals("1 1/2 l", scaleQuantity("0.5 l", servings = 3, baseServings = 1))
-    }
-
-    @Test
-    fun `keeps thirds exact`() {
-        assertEquals("66 2/3 ml", scaleQuantity("200 ml", servings = 1, baseServings = 3))
+        assertEquals("1,5 l", scaleQuantity("0,5 l", servings = 3, baseServings = 1))
     }
 
     @Test
