@@ -27,6 +27,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -319,6 +320,11 @@ internal fun IngredientAddField(
     // suggestion. Remember that name so the dropdown stays shut until the query changes again.
     var confirmedQuery by remember { mutableStateOf<String?>(null) }
     val visibleSuggestions = if (query.isNotEmpty() && query != confirmedQuery) suggestions else emptyList()
+
+    // Adding clears the field; forget the confirmed name so re-entering it still suggests.
+    LaunchedEffect(query) {
+        if (query.isEmpty()) confirmedQuery = null
+    }
 
     var highlighted by remember(visibleSuggestions) { mutableStateOf(NO_SUGGESTION) }
     val nameFocus = remember { FocusRequester() }

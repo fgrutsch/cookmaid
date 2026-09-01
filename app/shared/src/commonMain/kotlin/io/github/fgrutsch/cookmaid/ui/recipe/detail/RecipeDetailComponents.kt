@@ -277,7 +277,9 @@ private fun ServingsStepper(servings: Int, onServingsChange: (Int) -> Unit) {
 @Composable
 internal fun IngredientsSection(ingredients: List<RecipeIngredient>, servings: Int, baseServings: Int) {
     // Amounts the user wrote without decimals fall back to the separator their language uses.
-    val decimalSeparator = if (LocalAppLocale.current == SupportedLocale.DE.code) ',' else '.'
+    // LocalAppLocale carries a full locale ("de_DE", "de-AT"), so compare the language subtag.
+    val language = LocalAppLocale.current.substringBefore('_').substringBefore('-')
+    val decimalSeparator = if (SupportedLocale.fromCode(language) == SupportedLocale.DE) ',' else '.'
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
