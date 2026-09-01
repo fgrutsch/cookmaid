@@ -51,6 +51,15 @@ Open the recipe and tap the menu (three dots) in the top bar. Choose
 **Edit** to modify or **Delete** to remove the recipe. Swipe-to-delete
 is not available on the recipe list.
 
+### Can I cook a recipe for a different number of servings?
+
+Yes. If the recipe has servings configured, the detail screen shows
+**−** and **+** buttons next to them. Changing the count rescales the
+ingredient quantities on screen — `200 ml` becomes `100 ml`, `5` becomes
+`2 1/2`. Quantities without a leading number ("a pinch") stay as they
+are. Nothing is saved: reopening the recipe shows the original servings,
+and the shopping list always gets the recipe's original quantities.
+
 ### Can I search for recipes?
 
 Yes. Tap the search icon in the top bar to search by name. You can

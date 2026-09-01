@@ -80,7 +80,12 @@ fun RecipeDetailScreen(
         },
     ) { padding ->
         state.recipe?.let { r ->
-            RecipeContent(recipe = r, padding = padding)
+            RecipeContent(
+                recipe = r,
+                servings = state.servings,
+                onServingsChange = { onEvent(RecipeDetailEvent.SetServings(it)) },
+                padding = padding,
+            )
         } ?: RecipeNotFound(padding = padding)
     }
 

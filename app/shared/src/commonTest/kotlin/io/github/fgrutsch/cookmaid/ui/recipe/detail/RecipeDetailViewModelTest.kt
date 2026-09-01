@@ -96,12 +96,48 @@ class RecipeDetailViewModelTest : BaseViewModelTest() {
         job.cancel()
     }
 
+    @Test
+    fun `load recipe starts at the configured servings`() = viewModelTest {
+        val recipe = recipe("Pasta", servings = 2)
+        fakeRecipeRepo.recipes.add(recipe)
+
+        val viewModel = RecipeDetailViewModel(recipe.id, fakeRecipeRepo, fakeShoppingRepo, fakeMealPlanRepo)
+        viewModel.onEvent(RecipeDetailEvent.Load)
+        advanceUntilIdle()
+
+        assertEquals(2, viewModel.state.value.servings)
+    }
+
+    @Test
+    fun `set servings updates state and never drops below one`() = viewModelTest {
+        val recipe = recipe("Pasta", servings = 2)
+        fakeRecipeRepo.recipes.add(recipe)
+
+        val viewModel = RecipeDetailViewModel(recipe.id, fakeRecipeRepo, fakeShoppingRepo, fakeMealPlanRepo)
+        viewModel.onEvent(RecipeDetailEvent.Load)
+        advanceUntilIdle()
+
+        viewModel.onEvent(RecipeDetailEvent.SetServings(6))
+        assertEquals(6, viewModel.state.value.servings)
+
+        viewModel.onEvent(RecipeDetailEvent.SetServings(0))
+        assertEquals(1, viewModel.state.value.servings)
+    }
+
     companion object {
         private fun recipe(
             name: String,
             ingredients: List<RecipeIngredient> = emptyList(),
             steps: List<String> = emptyList(),
             tags: List<String> = emptyList(),
-        ) = Recipe(id = Uuid.random(), name = name, ingredients = ingredients, steps = steps, tags = tags)
+            servings: Int? = null,
+        ) = Recipe(
+            id = Uuid.random(),
+            name = name,
+            ingredients = ingredients,
+            steps = steps,
+            tags = tags,
+            servings = servings,
+        )
     }
 }

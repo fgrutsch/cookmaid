@@ -63,6 +63,8 @@
     <string name="recipe_detail_tags">Tags</string>
     <string name="recipe_detail_ingredients">Zutaten</string>
     <string name="recipe_detail_steps">Schritte</string>
+    <string name="recipe_detail_decrease_servings">Weniger Portionen</string>
+    <string name="recipe_detail_increase_servings">Mehr Portionen</string>
 
 
     <!-- Recipe Edit -->
