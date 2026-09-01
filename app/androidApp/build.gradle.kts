@@ -15,7 +15,7 @@ val keystoreProps = rootProject.file("keystore.properties").takeIf { it.exists()
 
 android {
     namespace = "io.github.fgrutsch.cookmaid"
-    compileSdk = libs.versions.android.targetCompileSdk.get().toInt()
+    compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     buildFeatures {
         buildConfig = true
@@ -23,7 +23,7 @@ android {
     defaultConfig {
         applicationId = "io.github.fgrutsch.cookmaid"
         minSdk = libs.versions.android.minSdk.get().toInt()
-        targetSdk = libs.versions.android.targetCompileSdk.get().toInt()
+        targetSdk = libs.versions.android.targetSdk.get().toInt()
         val parts = project.version.toString().split("-")[0].split(".")
         versionCode = parts[0].toInt() * 10000 + parts[1].toInt() * 100 + parts[2].toInt()
         versionName = project.version.toString()
