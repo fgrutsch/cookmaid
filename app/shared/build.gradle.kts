@@ -31,6 +31,9 @@ kotlin {
         androidResources {
             enable = true
         }
+
+        // Runs commonTest on the JVM as well, so the shared tests are not browser-only.
+        withHostTest { }
     }
 
     @OptIn(ExperimentalWasmDsl::class)
