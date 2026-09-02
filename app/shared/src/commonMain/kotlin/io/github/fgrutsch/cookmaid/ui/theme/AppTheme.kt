@@ -29,15 +29,16 @@ fun AppTheme(
  * Colors shared by every top app bar. Use this rather than `TopAppBarDefaults.topAppBarColors()`
  * at the call site — a bar that sets its own colors will drift away from the rest of the chrome.
  *
- * The container is a neutral surface, not brand navy: a filled colored app bar is Material 2's
- * pattern, and Material 3 puts `surface` there. The brand shows up in the title and icons
- * instead, which is far less navy on screen for the same amount of identity.
+ * The container is `surface`, Material 3's default — a filled colored app bar is Material 2's
+ * pattern. `surfaceContainer` was no better: it lands 1.1:1 from the page, so it read as a
+ * smudge rather than a band. The bar and the page are deliberately one field, and the brand
+ * shows up in the title and icons instead.
  *
  * @return the [TopAppBarColors] every screen's top bar should use.
  */
 @Composable
 fun appTopAppBarColors(): TopAppBarColors = TopAppBarDefaults.topAppBarColors(
-    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+    containerColor = MaterialTheme.colorScheme.surface,
     titleContentColor = MaterialTheme.colorScheme.primary,
     navigationIconContentColor = MaterialTheme.colorScheme.primary,
     actionIconContentColor = MaterialTheme.colorScheme.primary,

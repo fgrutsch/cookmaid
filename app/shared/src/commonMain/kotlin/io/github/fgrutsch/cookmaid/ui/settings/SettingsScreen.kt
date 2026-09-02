@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -42,8 +41,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import cookmaid.app.shared.generated.resources.Res
-import cookmaid.app.shared.generated.resources.common_back
-import cookmaid.app.shared.generated.resources.ic_arrow_back
 import cookmaid.app.shared.generated.resources.ic_no_accounts
 import cookmaid.app.shared.generated.resources.settings_dark_mode
 import cookmaid.app.shared.generated.resources.settings_language
@@ -66,7 +63,6 @@ import org.jetbrains.compose.resources.painterResource
  * @param accountUri the IDP account management URL to open in the browser.
  * @param onLogout called when the user logs out.
  * @param onDeleteAccount called when the user initiates account deletion.
- * @param onBack called when the back arrow is tapped.
  */
 @Composable
 fun SettingsScreen(
@@ -75,7 +71,6 @@ fun SettingsScreen(
     accountUri: String,
     onLogout: () -> Unit,
     onDeleteAccount: () -> Unit,
-    onBack: () -> Unit,
 ) {
     val state by viewModel.state.collectAsState()
 
@@ -85,14 +80,6 @@ fun SettingsScreen(
             TopAppBar(
                 title = { Text(Res.string.settings_title.resolve()) },
                 colors = appTopAppBarColors(),
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            painterResource(Res.drawable.ic_arrow_back),
-                            contentDescription = Res.string.common_back.resolve(),
-                        )
-                    }
-                },
             )
         },
     ) { padding ->

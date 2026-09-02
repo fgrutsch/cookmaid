@@ -28,7 +28,6 @@ import cookmaid.app.shared.generated.resources.ic_today
 import cookmaid.app.shared.generated.resources.meal_plan_go_to_current
 import cookmaid.app.shared.generated.resources.meal_plan_title
 import io.github.fgrutsch.cookmaid.mealplan.MealPlanItem
-import io.github.fgrutsch.cookmaid.ui.common.SettingsOverflowMenu
 import io.github.fgrutsch.cookmaid.ui.common.SuccessSnackbarHost
 import io.github.fgrutsch.cookmaid.ui.common.resolve
 import io.github.fgrutsch.cookmaid.ui.theme.appTopAppBarColors
@@ -44,14 +43,12 @@ import kotlin.uuid.Uuid
  *
  * @param viewModel the meal plan view model.
  * @param onRecipeClick called when a recipe item is tapped.
- * @param onSettingsClick called when the settings gear is tapped.
  */
 @Composable
 @Suppress("LongMethod")
 fun MealPlanScreen(
     viewModel: MealPlanViewModel,
     onRecipeClick: (Uuid) -> Unit,
-    onSettingsClick: () -> Unit,
 ) {
     val state by viewModel.state.collectAsState()
     val onEvent = viewModel::onEvent
@@ -90,7 +87,6 @@ fun MealPlanScreen(
                             contentDescription = Res.string.meal_plan_go_to_current.resolve(),
                         )
                     }
-                    SettingsOverflowMenu(onSettingsClick = onSettingsClick)
                 },
             )
         },

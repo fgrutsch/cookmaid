@@ -43,7 +43,6 @@ import cookmaid.app.shared.generated.resources.common_error
 import cookmaid.app.shared.generated.resources.common_uncategorized
 import cookmaid.app.shared.generated.resources.ic_delete_sweep
 import cookmaid.app.shared.generated.resources.ic_more_vert
-import cookmaid.app.shared.generated.resources.nav_settings
 import cookmaid.app.shared.generated.resources.shopping_checked_count
 import cookmaid.app.shared.generated.resources.shopping_delete_checked
 import cookmaid.app.shared.generated.resources.shopping_delete_list
@@ -70,15 +69,11 @@ import kotlin.uuid.Uuid
  * and swipe-to-delete/edit.
  *
  * @param viewModel the shopping list view model.
- * @param onSettingsClick called when the settings gear is tapped.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 @Suppress("LongMethod")
-fun ShoppingListScreen(
-    viewModel: ShoppingListViewModel,
-    onSettingsClick: () -> Unit,
-) {
+fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
     val state by viewModel.state.collectAsState()
     val onEvent = viewModel::onEvent
 
@@ -105,7 +100,6 @@ fun ShoppingListScreen(
         topBar = {
             ShoppingListTopBar(
                 showMenu = showMenu,
-                onSettingsClick = onSettingsClick,
                 selectedList = state.selectedList,
                 listCount = state.lists.size,
                 onShowMenu = { showMenu = true },
@@ -195,7 +189,6 @@ fun ShoppingListScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-@Suppress("LongParameterList")
 private fun ShoppingListTopBar(
     showMenu: Boolean,
     selectedList: ShoppingList?,
@@ -205,7 +198,6 @@ private fun ShoppingListTopBar(
     onNewList: () -> Unit,
     onRenameList: (Uuid, String) -> Unit,
     onDeleteList: (Uuid) -> Unit,
-    onSettingsClick: () -> Unit,
 ) {
     TopAppBar(
         title = { Text(Res.string.shopping_title.resolve()) },
@@ -222,7 +214,6 @@ private fun ShoppingListTopBar(
                 onDismissRequest = onDismissMenu,
             ) {
                 DropdownMenuItem(text = { Text(Res.string.shopping_new_list.resolve()) }, onClick = onNewList)
-                DropdownMenuItem(text = { Text(Res.string.nav_settings.resolve()) }, onClick = onSettingsClick)
                 if (selectedList != null) {
                     DropdownMenuItem(
                         text = { Text(Res.string.shopping_rename_list.resolve()) },

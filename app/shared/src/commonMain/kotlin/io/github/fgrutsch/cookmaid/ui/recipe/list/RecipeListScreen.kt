@@ -46,7 +46,6 @@ private const val PAGINATION_THRESHOLD = 5
  * @param viewModel the recipe list view model.
  * @param onRecipeClick called when a recipe is tapped.
  * @param onAddRecipe called when the add FAB is tapped.
- * @param onSettingsClick called when the settings gear is tapped.
  */
 @Composable
 @Suppress("LongMethod")
@@ -54,7 +53,6 @@ fun RecipeListScreen(
     viewModel: RecipeListViewModel,
     onRecipeClick: (Uuid) -> Unit,
     onAddRecipe: () -> Unit,
-    onSettingsClick: () -> Unit,
 ) {
     val state by viewModel.state.collectAsState()
     val onEvent = viewModel::onEvent
@@ -109,7 +107,6 @@ fun RecipeListScreen(
                 onCloseSearch = { onEvent(RecipeListEvent.SetSearchActive(false)) },
                 onOpenSearch = { onEvent(RecipeListEvent.SetSearchActive(true)) },
                 onRandomRecipe = { onEvent(RecipeListEvent.RollRandomRecipe) },
-                onSettingsClick = onSettingsClick,
             )
         },
         floatingActionButton = {

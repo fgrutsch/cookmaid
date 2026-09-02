@@ -19,8 +19,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -28,6 +26,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -71,13 +70,13 @@ import cookmaid.app.shared.generated.resources.recipe_list_title
 import cookmaid.app.shared.generated.resources.recipe_card_summary
 import cookmaid.app.shared.generated.resources.recipe_list_view_details
 import io.github.fgrutsch.cookmaid.recipe.Recipe
-import io.github.fgrutsch.cookmaid.ui.common.SettingsOverflowMenu
 import io.github.fgrutsch.cookmaid.ui.common.resolve
 import io.github.fgrutsch.cookmaid.ui.theme.appTopAppBarColors
 import org.jetbrains.compose.resources.painterResource
 import kotlin.uuid.Uuid
 
 private const val DROPDOWN_HEIGHT = 0.6f
+private val FAB_CLEARANCE = 88.dp
 
 @Suppress("LongMethod", "LongParameterList")
 @Composable
@@ -93,7 +92,6 @@ internal fun RecipeListTopBar(
     onCloseSearch: () -> Unit,
     onOpenSearch: () -> Unit,
     onRandomRecipe: () -> Unit,
-    onSettingsClick: () -> Unit,
 ) {
     TopAppBar(
         title = {
@@ -149,7 +147,6 @@ internal fun RecipeListTopBar(
                         contentDescription = Res.string.recipe_list_random.resolve(),
                     )
                 }
-                SettingsOverflowMenu(onSettingsClick = onSettingsClick)
             }
         },
     )
@@ -238,7 +235,8 @@ internal fun RecipeListContent(
             LazyColumn(
                 state = listState,
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                // Bottom clearance for the FAB, which otherwise covers the last row's menu.
+                contentPadding = PaddingValues(start = 12.dp, top = 8.dp, end = 12.dp, bottom = FAB_CLEARANCE),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 items(state.recipes, key = { it.id }) { recipe ->
@@ -273,12 +271,11 @@ internal fun RecipeCard(
 ) {
     var showMenu by remember { mutableStateOf(false) }
 
-    Card(
+    // Outlined, not filled: every container tone in the light ramp sits within 1.1:1 of the
+    // page behind it, so a filled card is invisible and only its border can separate it.
+    OutlinedCard(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        ),
     ) {
         Row(
             modifier = Modifier
@@ -295,7 +292,16 @@ internal fun RecipeCard(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Medium,
                 )
-                if (recipe.ingredients.isNotEmpty()) {
+                // Tags, not the ingredient/step count: the counts are near-identical across
+                // recipes, so they cannot help you pick one. Tags vary, and they give the rows
+                // different heights. Untagged recipes keep the counts rather than nothing.
+                if (recipe.tags.isNotEmpty()) {
+                    Text(
+                        recipe.tags.joinToString(" · "),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                } else if (recipe.ingredients.isNotEmpty()) {
                     Text(
                         Res.string.recipe_card_summary.resolve(
                             recipe.ingredients.size,

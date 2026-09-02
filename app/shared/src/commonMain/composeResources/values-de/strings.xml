@@ -26,7 +26,7 @@
     <string name="nav_shopping">Einkaufen</string>
     <string name="nav_recipes">Rezepte</string>
     <string name="nav_meal_plan">Essensplan</string>
-    <string name="nav_settings">Einstellungen</string>
+    <string name="nav_account">Konto</string>
 
     <!-- Auth -->
     <string name="auth_app_logo">Cookmaid</string>
