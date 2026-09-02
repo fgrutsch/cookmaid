@@ -20,7 +20,7 @@ class ApiClient(
     oidcConfig: OidcConfig,
     tokenStore: TokenStore,
     oidcClient: OpenIdConnectClient,
-    private val effectiveLocale: () -> SupportedLocale,
+    effectiveLocale: () -> SupportedLocale,
 ) {
     private val refreshHandler = TokenRefreshHandler(tokenStore)
 
