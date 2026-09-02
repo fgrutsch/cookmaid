@@ -21,7 +21,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -62,6 +62,7 @@ import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import io.github.fgrutsch.cookmaid.ui.common.resolve
+import io.github.fgrutsch.cookmaid.ui.theme.appCardElevation
 import kotlinx.datetime.plus
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
@@ -161,9 +162,9 @@ internal fun DayCard(
     onDeleteItem: (Uuid) -> Unit,
     onAddToShoppingList: (MealPlanItem) -> Unit,
 ) {
-    // Outlined, not filled: every container tone in the light ramp sits within 1.1:1 of the
-    // page behind it, so a filled card is invisible and only its border can separate it.
-    OutlinedCard(modifier = Modifier.fillMaxWidth()) {
+    // Elevated, not outlined: tone alone cannot separate a card from the page in a light
+    // neutral ramp, so the shadow carries it.
+    ElevatedCard(modifier = Modifier.fillMaxWidth(), elevation = appCardElevation()) {
         Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),

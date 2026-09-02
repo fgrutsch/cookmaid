@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 private val Navy20 = Color(0xFF1B2A38)
 private val Navy26 = Color(0xFF2D3E50)
 private val Navy40 = Color(0xFF4A5F76)
+private val Navy75 = Color(0xFFA6BCD6)
 private val Navy80 = Color(0xFFB4C6DC)
 private val Navy90 = Color(0xFFD6E4F5)
 
@@ -41,22 +42,28 @@ private val Orange60 = Color(0xFFE2732E)
 private val Orange80 = Color(0xFFFFA766)
 private val Orange90 = Color(0xFFFFDBC8)
 
-// Neutral surfaces — barely-tinted cool grey, kept low so surfaces read as paper
-private val Neutral4 = Color(0xFF0D0E10)
+// Neutral surfaces — barely-tinted cool grey.
+//
+// The spread across the light tones is deliberately wider than Material's own ramp, which packs
+// every light container within about 1.1:1 of the page. At that spacing the page, the app bar and
+// the cards are one indistinguishable white field. Here the page sits at tone 94 so it reads as
+// recessed ground and near-white cards can rise off it: 1.12:1 from tone, the rest from shadow.
+private val Neutral3 = Color(0xFF0A0B0C)
+private val Neutral5 = Color(0xFF0E0F11)
 private val Neutral6 = Color(0xFF121315)
 private val Neutral10 = Color(0xFF1A1C1D)
-private val Neutral12 = Color(0xFF1F2021)
-private val Neutral17 = Color(0xFF292A2C)
+private val Neutral12 = Color(0xFF1E2022)
+private val Neutral15 = Color(0xFF26282A)
+private val Neutral19 = Color(0xFF303234)
 private val Neutral20 = Color(0xFF2F3032)
-private val Neutral22 = Color(0xFF343537)
-private val Neutral24 = Color(0xFF38393B)
-private val Neutral87 = Color(0xFFDBD9DC)
-private val Neutral90 = Color(0xFFE3E2E4)
-private val Neutral92 = Color(0xFFE9E8EA)
-private val Neutral94 = Color(0xFFEFEDF0)
+private val Neutral23 = Color(0xFF3A3C3E)
+private val Neutral82 = Color(0xFFCFCED6)
+private val Neutral87 = Color(0xFFDBDAE1)
+private val Neutral90 = Color(0xFFE2E1E7)
+private val Neutral92 = Color(0xFFE8E7ED)
+private val Neutral94 = Color(0xFFEFEEF2)
 private val Neutral95 = Color(0xFFF2F0F2)
-private val Neutral96 = Color(0xFFF4F3F5)
-private val Neutral98 = Color(0xFFFAF9FB)
+private val Neutral99 = Color(0xFFFCFBFD)
 private val Neutral100 = Color(0xFFFFFFFF)
 
 // Neutral variant — same cool hue, a touch more chroma for outlines
@@ -66,9 +73,9 @@ private val NeutralVar60 = Color(0xFF8E9196)
 private val NeutralVar80 = Color(0xFFC4C6CC)
 
 /**
- * Light scheme. `secondaryContainer` is [Navy80] rather than the lighter [Navy90] Material's
- * ramp would suggest: as the bottom-nav indicator it sits on `surfaceContainer`, and [Navy90]
- * only reaches 1.1:1 against it, so the selected pill disappears.
+ * Light scheme. `secondaryContainer` is [Navy75] rather than the lighter [Navy90] Material's
+ * ramp would suggest: as the bottom-nav indicator it sits on `surfaceContainer`, where [Navy90]
+ * reaches only 1.1:1 and the selected pill disappears. [Navy75] holds 1.6:1.
  *
  * [Navy26] fills both `primary` and `primaryContainer` on purpose: buttons and
  * app bars are meant to read as the same brand navy, so they share one value rather than
@@ -86,15 +93,15 @@ internal val LightColors = lightColorScheme(
     inversePrimary = Navy80,
     secondary = Navy40,
     onSecondary = Neutral100,
-    secondaryContainer = Navy80,
+    secondaryContainer = Navy75,
     onSecondaryContainer = Navy20,
     tertiary = Orange60,
     onTertiary = Orange10,
     tertiaryContainer = Orange90,
     onTertiaryContainer = Orange20,
-    background = Neutral98,
+    background = Neutral94,
     onBackground = Neutral10,
-    surface = Neutral98,
+    surface = Neutral94,
     onSurface = Neutral10,
     surfaceVariant = Neutral90,
     onSurfaceVariant = NeutralVar30,
@@ -108,13 +115,13 @@ internal val LightColors = lightColorScheme(
     outline = NeutralVar50,
     outlineVariant = NeutralVar80,
     scrim = Color(0xFF000000),
-    surfaceBright = Neutral98,
-    surfaceDim = Neutral87,
+    surfaceBright = Neutral100,
+    surfaceDim = Neutral82,
     surfaceContainerLowest = Neutral100,
-    surfaceContainerLow = Neutral96,
-    surfaceContainer = Neutral94,
-    surfaceContainerHigh = Neutral92,
-    surfaceContainerHighest = Neutral90,
+    surfaceContainerLow = Neutral99,
+    surfaceContainer = Neutral92,
+    surfaceContainerHigh = Neutral90,
+    surfaceContainerHighest = Neutral87,
 )
 
 /**
@@ -152,11 +159,11 @@ internal val DarkColors = darkColorScheme(
     outline = NeutralVar60,
     outlineVariant = NeutralVar30,
     scrim = Color(0xFF000000),
-    surfaceBright = Neutral24,
-    surfaceDim = Neutral6,
-    surfaceContainerLowest = Neutral4,
-    surfaceContainerLow = Neutral10,
-    surfaceContainer = Neutral12,
-    surfaceContainerHigh = Neutral17,
-    surfaceContainerHighest = Neutral22,
+    surfaceBright = Neutral23,
+    surfaceDim = Neutral5,
+    surfaceContainerLowest = Neutral3,
+    surfaceContainerLow = Neutral12,
+    surfaceContainer = Neutral15,
+    surfaceContainerHigh = Neutral19,
+    surfaceContainerHighest = Neutral23,
 )

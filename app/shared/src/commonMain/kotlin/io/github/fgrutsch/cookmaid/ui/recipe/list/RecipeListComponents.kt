@@ -26,7 +26,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -71,6 +71,7 @@ import cookmaid.app.shared.generated.resources.recipe_card_summary
 import cookmaid.app.shared.generated.resources.recipe_list_view_details
 import io.github.fgrutsch.cookmaid.recipe.Recipe
 import io.github.fgrutsch.cookmaid.ui.common.resolve
+import io.github.fgrutsch.cookmaid.ui.theme.appCardElevation
 import io.github.fgrutsch.cookmaid.ui.theme.appTopAppBarColors
 import org.jetbrains.compose.resources.painterResource
 import kotlin.uuid.Uuid
@@ -271,11 +272,12 @@ internal fun RecipeCard(
 ) {
     var showMenu by remember { mutableStateOf(false) }
 
-    // Outlined, not filled: every container tone in the light ramp sits within 1.1:1 of the
-    // page behind it, so a filled card is invisible and only its border can separate it.
-    OutlinedCard(
+    // Elevated, not outlined: tone alone cannot separate a card from the page in a light
+    // neutral ramp, so the shadow carries it.
+    ElevatedCard(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
+        elevation = appCardElevation(),
     ) {
         Row(
             modifier = Modifier

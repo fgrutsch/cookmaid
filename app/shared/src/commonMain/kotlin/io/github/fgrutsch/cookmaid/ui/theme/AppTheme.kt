@@ -1,9 +1,12 @@
 package io.github.fgrutsch.cookmaid.ui.theme
 
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CardElevation
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.dp
 
 /**
  * Applies the app-wide Material3 theme with dynamic dark/light mode.
@@ -43,3 +46,15 @@ fun appTopAppBarColors(): TopAppBarColors = TopAppBarDefaults.topAppBarColors(
     navigationIconContentColor = MaterialTheme.colorScheme.primary,
     actionIconContentColor = MaterialTheme.colorScheme.primary,
 )
+
+/**
+ * Elevation shared by every card, so cards lift off the page by the same amount everywhere.
+ *
+ * Higher than Material's 1dp default because tone cannot help here: the page and a card are only
+ * 1.12:1 apart, which is the most a light neutral ramp can give before the page turns dirty grey.
+ * The shadow is what actually separates a card from the page, so it has to be visible.
+ *
+ * @return the [CardElevation] every card should use.
+ */
+@Composable
+fun appCardElevation(): CardElevation = CardDefaults.elevatedCardElevation(defaultElevation = 3.dp)
