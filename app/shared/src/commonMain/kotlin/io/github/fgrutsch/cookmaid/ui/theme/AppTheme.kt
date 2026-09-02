@@ -21,6 +21,7 @@ fun AppTheme(
     SystemBarAppearance(lightIcons = isDark)
     MaterialTheme(
         colorScheme = if (isDark) DarkColors else LightColors,
+        typography = appTypography(),
         content = content,
     )
 }

@@ -143,7 +143,6 @@ internal fun WeekNavigationBar(
         Text(
             text = label,
             style = MaterialTheme.typography.titleSmall,
-            fontWeight = FontWeight.Medium,
         )
         IconButton(onClick = onNext) {
             Icon(
