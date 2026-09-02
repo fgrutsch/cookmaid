@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -104,6 +105,7 @@ internal fun AddItemField(
 @Composable
 internal fun ShoppingItemRow(
     item: ShoppingItem,
+    accent: Color,
     onToggle: () -> Unit,
 ) {
     ListItem(
@@ -116,7 +118,16 @@ internal fun ShoppingItemRow(
         },
         modifier = Modifier.clickable(onClick = onToggle),
         leadingContent = {
-            Checkbox(checked = item.checked, onCheckedChange = { onToggle() })
+            Checkbox(
+                checked = item.checked,
+                onCheckedChange = { onToggle() },
+                // Carries the category colour so the accent repeats down the row, not just in
+                // the header.
+                colors = CheckboxDefaults.colors(
+                    checkedColor = accent,
+                    uncheckedColor = accent,
+                ),
+            )
         },
         trailingContent = item.quantity?.let { qty ->
             {
