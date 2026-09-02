@@ -226,7 +226,10 @@ private fun AppNavDisplay(
         modifier = modifier,
         entryProvider = entryProvider {
             entry<Route.ShoppingList> {
-                ShoppingListScreen(viewModel = koinInject<ShoppingListViewModel>())
+                ShoppingListScreen(
+                    viewModel = koinInject<ShoppingListViewModel>(),
+                    onSettingsClick = { backStack.add(Route.Settings) },
+                )
             }
 
             entry<Route.RecipeList> {
@@ -234,6 +237,7 @@ private fun AppNavDisplay(
                     viewModel = koinInject<RecipeListViewModel>(),
                     onRecipeClick = { id -> backStack.add(Route.RecipeDetail(id)) },
                     onAddRecipe = { backStack.add(Route.AddRecipe) },
+                    onSettingsClick = { backStack.add(Route.Settings) },
                 )
             }
 
@@ -272,6 +276,7 @@ private fun AppNavDisplay(
                 MealPlanScreen(
                     viewModel = koinInject<MealPlanViewModel>(),
                     onRecipeClick = { id -> backStack.add(Route.RecipeDetail(id)) },
+                    onSettingsClick = { backStack.add(Route.Settings) },
                 )
             }
 
@@ -282,6 +287,7 @@ private fun AppNavDisplay(
                     accountUri = accountUri,
                     onLogout = { authViewModel.onEvent(AuthEvent.Logout) },
                     onDeleteAccount = { backStack.add(Route.DeleteAccount) },
+                    onBack = { backStack.removeLastOrNull() },
                 )
             }
 

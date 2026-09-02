@@ -71,6 +71,7 @@ import cookmaid.app.shared.generated.resources.recipe_list_title
 import cookmaid.app.shared.generated.resources.recipe_card_summary
 import cookmaid.app.shared.generated.resources.recipe_list_view_details
 import io.github.fgrutsch.cookmaid.recipe.Recipe
+import io.github.fgrutsch.cookmaid.ui.common.SettingsIconButton
 import io.github.fgrutsch.cookmaid.ui.common.resolve
 import io.github.fgrutsch.cookmaid.ui.theme.appTopAppBarColors
 import org.jetbrains.compose.resources.painterResource
@@ -92,6 +93,7 @@ internal fun RecipeListTopBar(
     onCloseSearch: () -> Unit,
     onOpenSearch: () -> Unit,
     onRandomRecipe: () -> Unit,
+    onSettingsClick: () -> Unit,
 ) {
     TopAppBar(
         title = {
@@ -119,6 +121,8 @@ internal fun RecipeListTopBar(
             }
         },
         colors = appTopAppBarColors(),
+        // Hidden while searching — the text field needs the full width.
+        navigationIcon = { if (!searchActive) SettingsIconButton(onClick = onSettingsClick) },
         actions = {
             if (searchActive) {
                 IconButton(onClick = onCloseSearch) {

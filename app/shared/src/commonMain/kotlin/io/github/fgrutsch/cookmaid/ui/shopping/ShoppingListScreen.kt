@@ -53,6 +53,7 @@ import cookmaid.app.shared.generated.resources.shopping_new_list
 import cookmaid.app.shared.generated.resources.shopping_rename_list
 import cookmaid.app.shared.generated.resources.shopping_title
 import io.github.fgrutsch.cookmaid.catalog.Item
+import io.github.fgrutsch.cookmaid.ui.common.SettingsIconButton
 import io.github.fgrutsch.cookmaid.ui.common.SuccessSnackbarHost
 import io.github.fgrutsch.cookmaid.shopping.ShoppingItem
 import io.github.fgrutsch.cookmaid.shopping.ShoppingList
@@ -69,11 +70,15 @@ import kotlin.uuid.Uuid
  * and swipe-to-delete/edit.
  *
  * @param viewModel the shopping list view model.
+ * @param onSettingsClick called when the settings gear is tapped.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 @Suppress("LongMethod")
-fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
+fun ShoppingListScreen(
+    viewModel: ShoppingListViewModel,
+    onSettingsClick: () -> Unit,
+) {
     val state by viewModel.state.collectAsState()
     val onEvent = viewModel::onEvent
 
@@ -100,6 +105,7 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
         topBar = {
             ShoppingListTopBar(
                 showMenu = showMenu,
+                onSettingsClick = onSettingsClick,
                 selectedList = state.selectedList,
                 listCount = state.lists.size,
                 onShowMenu = { showMenu = true },
@@ -189,6 +195,7 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+@Suppress("LongParameterList")
 private fun ShoppingListTopBar(
     showMenu: Boolean,
     selectedList: ShoppingList?,
@@ -198,10 +205,12 @@ private fun ShoppingListTopBar(
     onNewList: () -> Unit,
     onRenameList: (Uuid, String) -> Unit,
     onDeleteList: (Uuid) -> Unit,
+    onSettingsClick: () -> Unit,
 ) {
     TopAppBar(
         title = { Text(Res.string.shopping_title.resolve()) },
         colors = appTopAppBarColors(),
+        navigationIcon = { SettingsIconButton(onClick = onSettingsClick) },
         actions = {
             IconButton(onClick = onShowMenu) {
                 Icon(

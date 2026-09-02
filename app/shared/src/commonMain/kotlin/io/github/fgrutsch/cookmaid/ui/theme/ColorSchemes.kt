@@ -5,22 +5,25 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
 
 /**
- * Hand-authored color schemes built from the three colors the logo actually uses:
- * navy `#2D3E50` (hexagon frame, wordmark), orange `#E2732E` (hexagon frame, "MAID"),
- * and sage `#92C0BD` (apron, chef hat).
+ * Hand-authored color schemes built from two of the logo's colors: navy `#2D3E50` (hexagon
+ * frame, wordmark) and orange `#E2732E` (hexagon frame, "MAID").
  *
  * These replace seed-generated palettes because Material's generator reads only the hue off a
  * seed and caps chroma itself, so no literal brand hex can reach the UI — and a single seed
- * cannot express three brand colors at once.
+ * cannot express two brand colors at once.
  *
- * Role assignment mirrors how the logo weights its colors:
- * - primary — navy: chrome (top app bars), buttons, accent icons
- * - secondary — sage: supporting accents, bottom-nav indicator, selected chips
- * - tertiary — orange: the action pop, carried by the FAB
+ * Two colors, two jobs, so the user can learn the rule without being taught it:
+ * - navy — structure. Top app bars, buttons, accent icons, the bottom-nav indicator. Furniture.
+ * - orange — action, via `tertiary`. At most one orange element per screen (the recipe list FAB,
+ *   the sign-in button). A second one costs orange its meaning and makes it decoration.
+ *
+ * The logo's sage deliberately has no role here. A color that surfaces in one or two places
+ * reads as an inconsistency rather than a system; give sage a job first (a real state worth
+ * naming), then a role.
  *
  * Every role is set explicitly. Omitting one silently falls back to Material's purple baseline,
  * which shows up as an out-of-place violet somewhere far from this file. Every on/container pair
- * below clears WCAG AA (4.5:1); the lowest is sage `onSecondary` at 6.8:1.
+ * below clears WCAG AA (4.5:1); the lowest is orange `onTertiary` at 5.7:1.
  */
 
 // Brand navy — #2D3E50 is Navy26 itself
@@ -29,13 +32,6 @@ private val Navy26 = Color(0xFF2D3E50)
 private val Navy40 = Color(0xFF4A5F76)
 private val Navy80 = Color(0xFFB4C6DC)
 private val Navy90 = Color(0xFFD6E4F5)
-
-// Logo sage — #92C0BD is Sage80 itself
-private val Sage10 = Color(0xFF001F1C)
-private val Sage30 = Color(0xFF1E4B47)
-private val Sage40 = Color(0xFF35635F)
-private val Sage80 = Color(0xFF92C0BD)
-private val Sage90 = Color(0xFFCDE7E3)
 
 // Logo orange — #E2732E is Orange60 itself
 private val Orange10 = Color(0xFF2A1000)
@@ -70,7 +66,11 @@ private val NeutralVar60 = Color(0xFF8E9196)
 private val NeutralVar80 = Color(0xFFC4C6CC)
 
 /**
- * Light scheme. [Navy26] fills both `primary` and `primaryContainer` on purpose: buttons and
+ * Light scheme. `secondaryContainer` is [Navy80] rather than the lighter [Navy90] Material's
+ * ramp would suggest: as the bottom-nav indicator it sits on `surfaceContainer`, and [Navy90]
+ * only reaches 1.1:1 against it, so the selected pill disappears.
+ *
+ * [Navy26] fills both `primary` and `primaryContainer` on purpose: buttons and
  * app bars are meant to read as the same brand navy, so they share one value rather than
  * drifting apart as two near-identical tones.
  *
@@ -84,10 +84,10 @@ internal val LightColors = lightColorScheme(
     primaryContainer = Navy26,
     onPrimaryContainer = Neutral100,
     inversePrimary = Navy80,
-    secondary = Sage40,
+    secondary = Navy40,
     onSecondary = Neutral100,
-    secondaryContainer = Sage90,
-    onSecondaryContainer = Sage10,
+    secondaryContainer = Navy80,
+    onSecondaryContainer = Navy20,
     tertiary = Orange60,
     onTertiary = Orange10,
     tertiaryContainer = Orange90,
@@ -120,7 +120,7 @@ internal val LightColors = lightColorScheme(
 /**
  * Dark scheme. `primaryContainer` stays a dark navy here rather than mirroring the light
  * scheme's `primary`, so app bars remain dark chrome instead of turning into a bright band.
- * Sage and orange lighten to their tone-80 variants so they stay visible against dark surfaces.
+ * Orange lightens to its tone-80 variant so it stays visible against dark surfaces.
  */
 internal val DarkColors = darkColorScheme(
     primary = Navy80,
@@ -128,10 +128,10 @@ internal val DarkColors = darkColorScheme(
     primaryContainer = Navy20,
     onPrimaryContainer = Navy90,
     inversePrimary = Navy40,
-    secondary = Sage80,
-    onSecondary = Sage10,
-    secondaryContainer = Sage30,
-    onSecondaryContainer = Sage90,
+    secondary = Navy80,
+    onSecondary = Navy20,
+    secondaryContainer = Navy40,
+    onSecondaryContainer = Navy90,
     tertiary = Orange80,
     onTertiary = Orange20,
     tertiaryContainer = Orange30,
