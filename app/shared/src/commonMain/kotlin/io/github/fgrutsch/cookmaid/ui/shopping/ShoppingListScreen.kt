@@ -43,6 +43,7 @@ import cookmaid.app.shared.generated.resources.common_error
 import cookmaid.app.shared.generated.resources.common_uncategorized
 import cookmaid.app.shared.generated.resources.ic_delete_sweep
 import cookmaid.app.shared.generated.resources.ic_more_vert
+import cookmaid.app.shared.generated.resources.nav_settings
 import cookmaid.app.shared.generated.resources.shopping_checked_count
 import cookmaid.app.shared.generated.resources.shopping_delete_checked
 import cookmaid.app.shared.generated.resources.shopping_delete_list
@@ -53,7 +54,6 @@ import cookmaid.app.shared.generated.resources.shopping_new_list
 import cookmaid.app.shared.generated.resources.shopping_rename_list
 import cookmaid.app.shared.generated.resources.shopping_title
 import io.github.fgrutsch.cookmaid.catalog.Item
-import io.github.fgrutsch.cookmaid.ui.common.SettingsIconButton
 import io.github.fgrutsch.cookmaid.ui.common.SuccessSnackbarHost
 import io.github.fgrutsch.cookmaid.shopping.ShoppingItem
 import io.github.fgrutsch.cookmaid.shopping.ShoppingList
@@ -210,7 +210,6 @@ private fun ShoppingListTopBar(
     TopAppBar(
         title = { Text(Res.string.shopping_title.resolve()) },
         colors = appTopAppBarColors(),
-        navigationIcon = { SettingsIconButton(onClick = onSettingsClick) },
         actions = {
             IconButton(onClick = onShowMenu) {
                 Icon(
@@ -223,6 +222,7 @@ private fun ShoppingListTopBar(
                 onDismissRequest = onDismissMenu,
             ) {
                 DropdownMenuItem(text = { Text(Res.string.shopping_new_list.resolve()) }, onClick = onNewList)
+                DropdownMenuItem(text = { Text(Res.string.nav_settings.resolve()) }, onClick = onSettingsClick)
                 if (selectedList != null) {
                     DropdownMenuItem(
                         text = { Text(Res.string.shopping_rename_list.resolve()) },

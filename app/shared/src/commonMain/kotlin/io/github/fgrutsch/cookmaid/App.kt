@@ -116,10 +116,7 @@ fun App(
             LocalAppLocale provides (settingsState.locale?.code),
         ) {
             key(settingsState.locale) {
-                AppTheme(
-                    isDark = settingsState.effectiveDarkMode(isSystemInDarkTheme()),
-                    hasDarkTopChrome = authState.status == AuthState.Status.Authenticated,
-                ) {
+                AppTheme(isDark = settingsState.effectiveDarkMode(isSystemInDarkTheme())) {
                     key(authState.user?.id) {
                         when (authState.status) {
                             AuthState.Status.Initializing -> {

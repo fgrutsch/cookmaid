@@ -9,18 +9,16 @@ import androidx.compose.runtime.Composable
  * Applies the app-wide Material3 theme with dynamic dark/light mode.
  *
  * @param isDark whether to use the dark color scheme.
- * @param hasDarkTopChrome whether the content draws a dark region behind the status bar — true
- *   for screens with a brand-navy top app bar, false for the plain-surface login and loading
- *   screens. Drives the status bar icon color, which the platform cannot infer on its own.
  * @param content the composable content to theme.
  */
 @Composable
 fun AppTheme(
     isDark: Boolean = false,
-    hasDarkTopChrome: Boolean = true,
     content: @Composable () -> Unit,
 ) {
-    SystemBarAppearance(lightIcons = isDark || hasDarkTopChrome)
+    // Every screen's top region is a light surface in the light scheme and a dark one in the
+    // dark scheme, so the status bar follows the theme and nothing per-screen is needed.
+    SystemBarAppearance(lightIcons = isDark)
     MaterialTheme(
         colorScheme = if (isDark) DarkColors else LightColors,
         content = content,
@@ -28,16 +26,19 @@ fun AppTheme(
 }
 
 /**
- * Colors shared by every top app bar, so app bars stay brand navy instead of blending into
- * the surface. Use this rather than `TopAppBarDefaults.topAppBarColors()` at the call site —
- * a bar that sets its own container color will drift away from the rest of the chrome.
+ * Colors shared by every top app bar. Use this rather than `TopAppBarDefaults.topAppBarColors()`
+ * at the call site — a bar that sets its own colors will drift away from the rest of the chrome.
+ *
+ * The container is a neutral surface, not brand navy: a filled colored app bar is Material 2's
+ * pattern, and Material 3 puts `surface` there. The brand shows up in the title and icons
+ * instead, which is far less navy on screen for the same amount of identity.
  *
  * @return the [TopAppBarColors] every screen's top bar should use.
  */
 @Composable
 fun appTopAppBarColors(): TopAppBarColors = TopAppBarDefaults.topAppBarColors(
-    containerColor = MaterialTheme.colorScheme.primaryContainer,
-    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-    navigationIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-    actionIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+    titleContentColor = MaterialTheme.colorScheme.primary,
+    navigationIconContentColor = MaterialTheme.colorScheme.primary,
+    actionIconContentColor = MaterialTheme.colorScheme.primary,
 )

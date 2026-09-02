@@ -28,7 +28,7 @@ import cookmaid.app.shared.generated.resources.ic_today
 import cookmaid.app.shared.generated.resources.meal_plan_go_to_current
 import cookmaid.app.shared.generated.resources.meal_plan_title
 import io.github.fgrutsch.cookmaid.mealplan.MealPlanItem
-import io.github.fgrutsch.cookmaid.ui.common.SettingsIconButton
+import io.github.fgrutsch.cookmaid.ui.common.SettingsOverflowMenu
 import io.github.fgrutsch.cookmaid.ui.common.SuccessSnackbarHost
 import io.github.fgrutsch.cookmaid.ui.common.resolve
 import io.github.fgrutsch.cookmaid.ui.theme.appTopAppBarColors
@@ -83,7 +83,6 @@ fun MealPlanScreen(
             TopAppBar(
                 title = { Text(Res.string.meal_plan_title.resolve()) },
                 colors = appTopAppBarColors(),
-                navigationIcon = { SettingsIconButton(onClick = onSettingsClick) },
                 actions = {
                     IconButton(onClick = { onEvent(MealPlanEvent.GoToCurrentWeek) }) {
                         Icon(
@@ -91,6 +90,7 @@ fun MealPlanScreen(
                             contentDescription = Res.string.meal_plan_go_to_current.resolve(),
                         )
                     }
+                    SettingsOverflowMenu(onSettingsClick = onSettingsClick)
                 },
             )
         },
