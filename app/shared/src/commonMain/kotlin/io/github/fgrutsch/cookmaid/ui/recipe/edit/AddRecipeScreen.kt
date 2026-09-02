@@ -26,6 +26,7 @@ import cookmaid.app.shared.generated.resources.common_save
 import cookmaid.app.shared.generated.resources.recipe_add_title
 import cookmaid.app.shared.generated.resources.recipe_edit_title
 import io.github.fgrutsch.cookmaid.ui.common.resolve
+import io.github.fgrutsch.cookmaid.ui.theme.appTopAppBarColors
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.rememberResourceEnvironment
@@ -73,9 +74,7 @@ fun AddRecipeScreen(
                         else Res.string.recipe_add_title.resolve(),
                     )
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                ),
+                colors = appTopAppBarColors(),
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(

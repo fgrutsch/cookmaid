@@ -40,6 +40,7 @@ import cookmaid.app.shared.generated.resources.delete_account_title
 import cookmaid.app.shared.generated.resources.delete_account_warning
 import cookmaid.app.shared.generated.resources.ic_arrow_back
 import io.github.fgrutsch.cookmaid.ui.common.resolve
+import io.github.fgrutsch.cookmaid.ui.theme.appTopAppBarColors
 import org.jetbrains.compose.resources.painterResource
 
 /**
@@ -73,10 +74,7 @@ fun DeleteAccountScreen(
         topBar = {
             TopAppBar(
                 title = { Text(Res.string.delete_account_title.resolve()) },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface,
-                ),
+                colors = appTopAppBarColors(),
                 navigationIcon = {
                     IconButton(onClick = onBack, enabled = !state.deleting) {
                         Icon(

@@ -72,6 +72,7 @@ import cookmaid.app.shared.generated.resources.recipe_card_summary
 import cookmaid.app.shared.generated.resources.recipe_list_view_details
 import io.github.fgrutsch.cookmaid.recipe.Recipe
 import io.github.fgrutsch.cookmaid.ui.common.resolve
+import io.github.fgrutsch.cookmaid.ui.theme.appTopAppBarColors
 import org.jetbrains.compose.resources.painterResource
 import kotlin.uuid.Uuid
 
@@ -117,9 +118,7 @@ internal fun RecipeListTopBar(
                 Text(Res.string.recipe_list_title.resolve())
             }
         },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
-        ),
+        colors = appTopAppBarColors(),
         actions = {
             if (searchActive) {
                 IconButton(onClick = onCloseSearch) {

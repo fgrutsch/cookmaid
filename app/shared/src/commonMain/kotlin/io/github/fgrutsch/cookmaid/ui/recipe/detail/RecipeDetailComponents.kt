@@ -68,6 +68,7 @@ import io.github.fgrutsch.cookmaid.recipe.Recipe
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
 import io.github.fgrutsch.cookmaid.ui.common.LocalAppLocale
 import io.github.fgrutsch.cookmaid.ui.common.resolve
+import io.github.fgrutsch.cookmaid.ui.theme.appTopAppBarColors
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
@@ -82,9 +83,7 @@ internal fun RecipeDetailTopBar(
 ) {
     TopAppBar(
         title = { Text(recipeName ?: Res.string.recipe_detail_title.resolve()) },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
-        ),
+        colors = appTopAppBarColors(),
         navigationIcon = {
             IconButton(onClick = onBack) {
                 Icon(painterResource(Res.drawable.ic_arrow_back), contentDescription = Res.string.common_back.resolve())

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -109,7 +110,13 @@ fun RecipeListScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onAddRecipe) {
+            FloatingActionButton(
+                onClick = onAddRecipe,
+                // Logo orange, not the navy default — the FAB is the one element meant to pop
+                // against the navy chrome.
+                containerColor = MaterialTheme.colorScheme.tertiary,
+                contentColor = MaterialTheme.colorScheme.onTertiary,
+            ) {
                 Icon(painterResource(Res.drawable.ic_add), contentDescription = addRecipeMsg)
             }
         },

@@ -52,6 +52,7 @@ import cookmaid.app.shared.generated.resources.settings_title
 import io.github.fgrutsch.cookmaid.BuildKonfig
 import io.github.fgrutsch.cookmaid.ui.auth.UserProfile
 import io.github.fgrutsch.cookmaid.ui.common.resolve
+import io.github.fgrutsch.cookmaid.ui.theme.appTopAppBarColors
 import org.jetbrains.compose.resources.painterResource
 
 /**
@@ -78,10 +79,7 @@ fun SettingsScreen(
         topBar = {
             TopAppBar(
                 title = { Text(Res.string.settings_title.resolve()) },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface,
-                ),
+                colors = appTopAppBarColors(),
             )
         },
     ) { padding ->

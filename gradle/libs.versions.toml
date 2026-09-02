@@ -10,7 +10,6 @@ androidx-lifecycle = "2.11.0"
 # Compose
 composeMultiplatform = "1.12.0"
 material3 = "1.12.0-alpha03"
-materialkolor = "4.1.1"
 navigation3 = "1.2.0-alpha02"
 
 # Kotlin
@@ -65,7 +64,6 @@ compose-material3 = { module = "org.jetbrains.compose.material3:material3", vers
 compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "composeMultiplatform" }
 compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "composeMultiplatform" }
 lifecycle-viewmodel-navigation3 = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "androidx-lifecycle" }
-materialkolor = { module = "com.materialkolor:material-kolor", version.ref = "materialkolor" }
 navigation3-ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "navigation3" }
 
 # Kotlin
