@@ -1,12 +1,9 @@
 package io.github.fgrutsch.cookmaid.ui.theme
 
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CardElevation
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.unit.dp
 
 /**
  * Applies the app-wide Material3 theme with dynamic dark/light mode.
@@ -32,29 +29,17 @@ fun AppTheme(
  * Colors shared by every top app bar. Use this rather than `TopAppBarDefaults.topAppBarColors()`
  * at the call site — a bar that sets its own colors will drift away from the rest of the chrome.
  *
- * The container is `surface`, Material 3's default — a filled colored app bar is Material 2's
- * pattern. `surfaceContainer` was no better: it lands 1.1:1 from the page, so it read as a
- * smudge rather than a band. The bar and the page are deliberately one field, and the brand
- * shows up in the title and icons instead.
+ * The container is `surfaceContainer`, which is navy-tinted rather than grey — a soft blue band
+ * that is neither the white it became on plain `surface` nor a grey smudge. A filled brand-navy
+ * bar is Material 2's pattern and far too much navy; the title and icons carry the brand
+ * instead.
  *
  * @return the [TopAppBarColors] every screen's top bar should use.
  */
 @Composable
 fun appTopAppBarColors(): TopAppBarColors = TopAppBarDefaults.topAppBarColors(
-    containerColor = MaterialTheme.colorScheme.surface,
+    containerColor = MaterialTheme.colorScheme.surfaceContainer,
     titleContentColor = MaterialTheme.colorScheme.primary,
     navigationIconContentColor = MaterialTheme.colorScheme.primary,
     actionIconContentColor = MaterialTheme.colorScheme.primary,
 )
-
-/**
- * Elevation shared by every card, so cards lift off the page by the same amount everywhere.
- *
- * Higher than Material's 1dp default because tone cannot help here: the page and a card are only
- * 1.12:1 apart, which is the most a light neutral ramp can give before the page turns dirty grey.
- * The shadow is what actually separates a card from the page, so it has to be visible.
- *
- * @return the [CardElevation] every card should use.
- */
-@Composable
-fun appCardElevation(): CardElevation = CardDefaults.elevatedCardElevation(defaultElevation = 3.dp)

@@ -42,29 +42,32 @@ private val Orange60 = Color(0xFFE2732E)
 private val Orange80 = Color(0xFFFFA766)
 private val Orange90 = Color(0xFFFFDBC8)
 
-// Neutral surfaces — barely-tinted cool grey.
-//
-// The spread across the light tones is deliberately wider than Material's own ramp, which packs
-// every light container within about 1.1:1 of the page. At that spacing the page, the app bar and
-// the cards are one indistinguishable white field. Here the page sits at tone 94 so it reads as
-// recessed ground and near-white cards can rise off it: 1.12:1 from tone, the rest from shadow.
-private val Neutral3 = Color(0xFF0A0B0C)
-private val Neutral5 = Color(0xFF0E0F11)
-private val Neutral6 = Color(0xFF121315)
+// Page surfaces — near-white and neutral, so nothing reads as a grey background.
+private val Page = Color(0xFFFAFAFB)
+private val PageDark = Color(0xFF111316)
 private val Neutral10 = Color(0xFF1A1C1D)
-private val Neutral12 = Color(0xFF1E2022)
-private val Neutral15 = Color(0xFF26282A)
-private val Neutral19 = Color(0xFF303234)
 private val Neutral20 = Color(0xFF2F3032)
-private val Neutral23 = Color(0xFF3A3C3E)
-private val Neutral82 = Color(0xFFCFCED6)
-private val Neutral87 = Color(0xFFDBDAE1)
 private val Neutral90 = Color(0xFFE2E1E7)
-private val Neutral92 = Color(0xFFE8E7ED)
-private val Neutral94 = Color(0xFFEFEEF2)
 private val Neutral95 = Color(0xFFF2F0F2)
-private val Neutral99 = Color(0xFFFCFBFD)
 private val Neutral100 = Color(0xFFFFFFFF)
+
+// Container surfaces — the same navy as the brand, at surface strength.
+//
+// Tone cannot separate a filled card from a near-white page: every candidate lands at about
+// 1.06:1, and buying more contrast means darkening the page into grey. So these carry a blue
+// cast instead — around +10 on blue-minus-red against the page's +1. Hue is perceptible where
+// that little luminance is not, which is what makes a filled card read as a card here.
+private val Tint96 = Color(0xFFF0F4FA)
+private val Tint92 = Color(0xFFE7EDF6)
+private val Tint88 = Color(0xFFDFE6F2)
+private val Tint84 = Color(0xFFD7E0EE)
+private val Tint76 = Color(0xFFCBD6E8)
+private val TintDark6 = Color(0xFF0B0D0F)
+private val TintDark7 = Color(0xFF0D0F11)
+private val TintDark12 = Color(0xFF191D23)
+private val TintDark15 = Color(0xFF1F242B)
+private val TintDark19 = Color(0xFF272D35)
+private val TintDark23 = Color(0xFF2F3640)
 
 // Neutral variant — same cool hue, a touch more chroma for outlines
 private val NeutralVar30 = Color(0xFF44474C)
@@ -99,11 +102,11 @@ internal val LightColors = lightColorScheme(
     onTertiary = Orange10,
     tertiaryContainer = Orange90,
     onTertiaryContainer = Orange20,
-    background = Neutral94,
+    background = Page,
     onBackground = Neutral10,
-    surface = Neutral94,
+    surface = Page,
     onSurface = Neutral10,
-    surfaceVariant = Neutral90,
+    surfaceVariant = Tint88,
     onSurfaceVariant = NeutralVar30,
     surfaceTint = Navy26,
     inverseSurface = Neutral20,
@@ -116,12 +119,12 @@ internal val LightColors = lightColorScheme(
     outlineVariant = NeutralVar80,
     scrim = Color(0xFF000000),
     surfaceBright = Neutral100,
-    surfaceDim = Neutral82,
+    surfaceDim = Tint76,
     surfaceContainerLowest = Neutral100,
-    surfaceContainerLow = Neutral99,
-    surfaceContainer = Neutral92,
-    surfaceContainerHigh = Neutral90,
-    surfaceContainerHighest = Neutral87,
+    surfaceContainerLow = Tint96,
+    surfaceContainer = Tint92,
+    surfaceContainerHigh = Tint88,
+    surfaceContainerHighest = Tint84,
 )
 
 /**
@@ -143,9 +146,9 @@ internal val DarkColors = darkColorScheme(
     onTertiary = Orange20,
     tertiaryContainer = Orange30,
     onTertiaryContainer = Orange90,
-    background = Neutral6,
+    background = PageDark,
     onBackground = Neutral90,
-    surface = Neutral6,
+    surface = PageDark,
     onSurface = Neutral90,
     surfaceVariant = NeutralVar30,
     onSurfaceVariant = NeutralVar80,
@@ -159,11 +162,11 @@ internal val DarkColors = darkColorScheme(
     outline = NeutralVar60,
     outlineVariant = NeutralVar30,
     scrim = Color(0xFF000000),
-    surfaceBright = Neutral23,
-    surfaceDim = Neutral5,
-    surfaceContainerLowest = Neutral3,
-    surfaceContainerLow = Neutral12,
-    surfaceContainer = Neutral15,
-    surfaceContainerHigh = Neutral19,
-    surfaceContainerHighest = Neutral23,
+    surfaceBright = TintDark23,
+    surfaceDim = TintDark7,
+    surfaceContainerLowest = TintDark6,
+    surfaceContainerLow = TintDark12,
+    surfaceContainer = TintDark15,
+    surfaceContainerHigh = TintDark19,
+    surfaceContainerHighest = TintDark23,
 )
