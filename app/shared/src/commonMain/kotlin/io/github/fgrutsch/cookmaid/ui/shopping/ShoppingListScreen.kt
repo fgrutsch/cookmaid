@@ -59,7 +59,6 @@ import io.github.fgrutsch.cookmaid.shopping.ShoppingList
 import io.github.fgrutsch.cookmaid.ui.common.SwipeItem
 import io.github.fgrutsch.cookmaid.ui.common.resolve
 import io.github.fgrutsch.cookmaid.ui.theme.appTopAppBarColors
-import io.github.fgrutsch.cookmaid.ui.theme.categoryColor
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.rememberResourceEnvironment
@@ -308,28 +307,21 @@ private fun LazyListScope.uncheckedItemsSection(
     onDeleteItem: (Uuid) -> Unit,
     onEditItem: (ShoppingItem) -> Unit,
 ) {
-    // Grouped on the category itself, not its name: the name is localised, and the colour has
-    // to key on the id to stay stable across languages.
-    val grouped = uncheckedItems
-        .groupBy { (it.item as? Item.Catalog)?.category }
-        .entries
-        .sortedBy { it.key?.name ?: uncategorizedLabel }
-    grouped.forEach { (category, categoryItems) ->
-        item(key = "header-${category?.id ?: uncategorizedLabel}") {
+    val grouped = uncheckedItems.groupBy { item ->
+        (item.item as? Item.Catalog)?.category?.name ?: uncategorizedLabel
+    }.entries.sortedBy { it.key }
+    grouped.forEach { (categoryName, categoryItems) ->
+        item(key = "header-$categoryName") {
             Text(
-                text = category?.name ?: uncategorizedLabel,
+                text = categoryName,
                 style = MaterialTheme.typography.labelLarge,
-                color = categoryColor(category),
+                color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 4.dp),
             )
         }
         items(categoryItems, key = { it.id }) { shoppingItem ->
             SwipeItem(onDelete = { onDeleteItem(shoppingItem.id) }, onEdit = { onEditItem(shoppingItem) }) {
-                ShoppingItemRow(
-                    item = shoppingItem,
-                    accent = categoryColor(category),
-                    onToggle = { onToggleChecked(shoppingItem.id) },
-                )
+                ShoppingItemRow(item = shoppingItem, onToggle = { onToggleChecked(shoppingItem.id) })
             }
         }
     }
@@ -351,13 +343,7 @@ private fun LazyListScope.checkedItemsSection(
     }
     items(checkedItems, key = { it.id }) { item ->
         SwipeItem(onDelete = { onDeleteItem(item.id) }, onEdit = { onEditItem(item) }) {
-            // Checked items stay muted rather than taking their category colour — they are
-            // already struck through, and a bright accent would fight that.
-            ShoppingItemRow(
-                item = item,
-                accent = MaterialTheme.colorScheme.outline,
-                onToggle = { onToggleChecked(item.id) },
-            )
+            ShoppingItemRow(item = item, onToggle = { onToggleChecked(item.id) })
         }
     }
 }
