@@ -420,6 +420,7 @@ private fun DayPickerWeekNavigation(
         Text(
             text = "${formatShortDate(weekStart)} - ${formatShortDate(weekEnd)}",
             style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.Medium,
         )
         IconButton(onClick = onNext) {
             Icon(

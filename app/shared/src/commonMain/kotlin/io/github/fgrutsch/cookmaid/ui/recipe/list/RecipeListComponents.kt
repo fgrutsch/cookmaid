@@ -294,6 +294,7 @@ internal fun RecipeCard(
                 Text(
                     recipe.name,
                     style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Medium,
                 )
                 // Tags, not the ingredient/step count: the counts are near-identical across
                 // recipes, so they cannot help you pick one. Tags vary, and they give the rows

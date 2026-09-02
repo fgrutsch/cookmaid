@@ -236,20 +236,6 @@ Four Gradle modules:
 - **Service worker versioning**: `service-worker.js` cache name uses
   `__APP_VERSION__` placeholder, replaced at build time. Each release
   invalidates stale caches via the `activate` handler.
-- **Bundled fonts** (`app/shared/src/commonMain/composeResources/font/outfit_*.ttf`):
-  Outfit (OFL, license in `docs/licenses/OFL-Outfit.txt`) carries the display,
-  headline and title roles in `ui/theme/Typography.kt`; body and label stay on
-  the platform default, which is hinted per platform and costs no download.
-  Upstream ships **only** a variable font, so static instances are cut per weight —
-  Compose resources map a requested `FontWeight` onto a static face reliably on
-  every target, variable axis selection does not. Regenerate with:
-  ```shell
-  curl -o Outfit-var.ttf https://raw.githubusercontent.com/google/fonts/main/ofl/outfit/Outfit%5Bwght%5D.ttf
-  uv tool run --from fonttools fonttools varLib.instancer Outfit-var.ttf wght=600 -o outfit_semibold.ttf
-  uv tool run --from fonttools fonttools varLib.instancer Outfit-var.ttf wght=700 -o outfit_bold.ttf
-  ```
-  Adding a weight means adding a static file — `FontWeight.Medium` on a title role
-  would otherwise synthesise. Set weight in the type scale, not at call sites.
 - **PWA icons** (`app/webApp/src/wasmJsMain/resources/icon-{192,512,1024}.png`):
   solid white background, no transparency, content within the inner 80%
   (maskable safe zone — Android adaptive masks crop the outer 20%).
