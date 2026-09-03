@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -45,6 +44,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -78,7 +79,7 @@ import io.github.fgrutsch.cookmaid.ui.theme.appTopAppBarColors
 import kotlin.uuid.Uuid
 import org.jetbrains.compose.resources.painterResource
 
-private const val DROPDOWN_HEIGHT = 0.6f
+private const val DROPDOWN_MAX_HEIGHT_FRACTION = 0.6f
 private val FAB_CLEARANCE = 88.dp
 
 @Suppress("LongMethod", "LongParameterList")
@@ -179,10 +180,17 @@ private fun TagFilterIconButton(
             }
         }
 
+        // A cap, not a height. fillMaxHeight(fraction) sets the height, so the menu was 60% of
+        // the window tall for two tags as well as twenty; heightIn lets it shrink to its content
+        // while still growing to 60% before it has to scroll.
+        val maxMenuHeight = with(LocalDensity.current) {
+            LocalWindowInfo.current.containerSize.height.toDp()
+        } * DROPDOWN_MAX_HEIGHT_FRACTION
+
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            modifier = Modifier.fillMaxHeight(DROPDOWN_HEIGHT),
+            modifier = Modifier.heightIn(max = maxMenuHeight),
         ) {
             if (selectedTag != null) {
                 DropdownMenuItem(
