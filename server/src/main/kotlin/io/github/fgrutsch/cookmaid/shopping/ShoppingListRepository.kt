@@ -210,9 +210,12 @@ class PostgresShoppingListRepository : ShoppingListRepository {
             .join(ItemCategoriesTable, JoinType.LEFT, CatalogItemsTable.categoryId, ItemCategoriesTable.id)
 
         // Without an explicit order Postgres hands back heap order, which shifts whenever a row is
-        // rewritten — and toggling `checked` is an UPDATE, so ticking one item silently reorders
-        // the list on the next fetch. created_at carries the insertion order; id breaks the ties
-        // `now()` creates for rows inserted in the same transaction, such as a bulk add.
+        // rewritten — and toggling `checked` is an UPDATE, so ticking one item silently reordered
+        // the list on the next fetch, visibly within a category.
+        //
+        // created_at carries the insertion order for items added one at a time. A bulk add writes
+        // its whole batch in one transaction, so those rows share a `now()` and the id tiebreak
+        // decides among them: arbitrary, but stable, which is all the grouped list needs.
         joined.selectAll()
             .where { ShoppingItemsTable.listId eq listId }
             .orderBy(ShoppingItemsTable.createdAt to SortOrder.ASC, ShoppingItemsTable.id to SortOrder.ASC)
