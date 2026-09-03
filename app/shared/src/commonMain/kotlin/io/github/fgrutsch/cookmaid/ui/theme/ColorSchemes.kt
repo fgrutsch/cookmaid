@@ -27,13 +27,15 @@ import androidx.compose.ui.graphics.Color
 
 // The logo's blue — chrome, accent text and buttons.
 //
-// #3A5A67 is the exact value, taken as the most frequent colour in the blue band of the
-// full-resolution artwork. It is the logo's *only* blue: the hexagon frame and the "COOK"
-// wordmark are the same value.
+// Measured off the hexagon border rather than eyedropped. The artwork is rendered, not a flat
+// fill, so the border spans 1269 distinct values; sampling a single pixel returns whichever
+// noise it lands on. Restricted to the border above the character, #3A5A67 is the mode at 26.4%
+// and the mean is #3B5A67 — one unit apart, so the cluster is symmetric rather than a gradient.
 //
-// Note this is not #2D3E50, the hex declared as the brand navy in the web config and favicon —
-// that value does not occur anywhere in the logo. #2D3E50 is roughly 11:1 against white where
-// the real logo blue is 7.4:1, which is why the chrome kept reading as heavy.
+// Note this is not #2D3E50, the hex declared in the web config, manifest and favicon. That value
+// appears in zero pixels and the nearest present colour is some 30 units away in RGB, well
+// outside the distribution. It is also markedly darker: 11:1 against white where this is 7.4:1,
+// which is why the chrome read as heavy when it was used.
 private val Frame36 = Color(0xFF3A5A67)
 private val FrameDark = Color(0xFF283F48)
 private val Navy14 = Color(0xFF14212E)
