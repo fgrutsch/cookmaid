@@ -231,6 +231,29 @@ class PostgresRecipeRepositoryTest : BaseTest() {
     }
 
     @Test
+    fun `ingredients preserve order`() = runTest {
+        val repo = getKoin().get<RecipeRepository>()
+        val userId = createUser()
+        val names = listOf("Flour", "Sugar", "Butter", "Salt")
+
+        val recipe = repo.create(
+            userId,
+            data(ingredients = names.map { RecipeIngredient(Item.FreeText(it), null) }),
+            SupportedLocale.EN,
+        )
+
+        // Both loaders, single and batch — an ORDER BY added to either one sorts on a created_at
+        // shared by the whole set and breaks the tie on a random uuid, which is how authored
+        // order was lost once already.
+        val found = repo.findById(recipe.id, SupportedLocale.EN)
+        assertNotNull(found)
+        assertEquals(names, found.ingredients.map { it.item.name })
+
+        val page = repo.find(userId, cursor = null, limit = 20, search = null, tag = null, locale = SupportedLocale.EN)
+        assertEquals(names, page.items.single().ingredients.map { it.item.name })
+    }
+
+    @Test
     fun `isOwner returns true for own recipe`() = runTest {
         val repo = getKoin().get<RecipeRepository>()
         val userId = createUser()

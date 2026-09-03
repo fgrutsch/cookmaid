@@ -44,9 +44,10 @@ fun AppTheme(
  * Colors shared by every top app bar. Use this rather than `TopAppBarDefaults.topAppBarColors()`
  * at the call site — a bar that sets its own colors will drift away from the rest of the chrome.
  *
- * The container is the logo's shirt teal. In this direction the bar is not a tinted strip over
- * the content but one edge of a colour block that also includes the navigation bar, with the
- * white content field sitting between them. Being light, it takes dark ink rather than white.
+ * The container is the logo's blue. In this direction the bar is not a tinted strip over the
+ * content but one edge of a colour block that also includes the navigation bar, with the white
+ * content field sitting between them. Being dark, it takes white ink — anything placed in the bar
+ * has to take its colour from `onPrimaryContainer`, not from the surface roles.
  *
  * @return the [TopAppBarColors] every screen's top bar should use.
  */

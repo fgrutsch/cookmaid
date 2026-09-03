@@ -175,14 +175,26 @@ class AddRecipeViewModel(
         }
         val s = state.value
         val description = s.description.trim().ifBlank { null }
+        // Sanitised here rather than in UpdateStep/UpdateIngredientName: those fire per keystroke
+        // against a locally buffered field, so rejecting a blank value mid-edit would leave the
+        // field showing text the state no longer holds. Blanking a row means dropping it.
+        val steps = s.steps.map(String::trim).filter { it.isNotBlank() }
+        val ingredients = s.ingredients.mapNotNull { ingredient ->
+            val item = ingredient.item
+            when {
+                item !is Item.FreeText -> ingredient
+                item.name.isBlank() -> null
+                else -> ingredient.copy(item = Item.FreeText(name = item.name.trim()))
+            }
+        }
         launch {
             if (s.isEditing) {
                 recipeRepository.update(
                     requireNotNull(editRecipeId),
                     s.name.trim(),
                     description,
-                    s.ingredients,
-                    s.steps,
+                    ingredients,
+                    steps,
                     s.selectedTags,
                     s.servings,
                 )
@@ -190,8 +202,8 @@ class AddRecipeViewModel(
                 recipeRepository.create(
                     s.name.trim(),
                     description,
-                    s.ingredients,
-                    s.steps,
+                    ingredients,
+                    steps,
                     s.selectedTags,
                     s.servings,
                 )

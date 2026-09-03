@@ -65,6 +65,8 @@ import cookmaid.app.shared.generated.resources.recipe_list_close_search
 import cookmaid.app.shared.generated.resources.recipe_list_empty
 import cookmaid.app.shared.generated.resources.recipe_list_empty_subtitle
 import cookmaid.app.shared.generated.resources.recipe_list_filter_tags
+import cookmaid.app.shared.generated.resources.recipe_list_no_results
+import cookmaid.app.shared.generated.resources.recipe_list_no_results_subtitle
 import cookmaid.app.shared.generated.resources.recipe_list_random
 import cookmaid.app.shared.generated.resources.recipe_list_reroll
 import cookmaid.app.shared.generated.resources.recipe_list_title
@@ -80,6 +82,7 @@ import kotlin.uuid.Uuid
 import org.jetbrains.compose.resources.painterResource
 
 private const val DROPDOWN_MAX_HEIGHT_FRACTION = 0.6f
+private const val PLACEHOLDER_ALPHA = 0.7f
 private val FAB_CLEARANCE = 88.dp
 
 @Suppress("LongMethod", "LongParameterList")
@@ -108,11 +111,22 @@ internal fun RecipeListTopBar(
                     modifier = Modifier.fillMaxWidth().focusRequester(searchFocusRequester),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                     keyboardActions = KeyboardActions(onSearch = { onSearchDismiss() }),
+                    // The field sits in the app bar, so its content colours have to come from
+                    // onPrimaryContainer. TextFieldDefaults derives text, placeholder and cursor
+                    // from the surface roles, which are tuned for the white page: on the bar's
+                    // blue that leaves the query at 2.2:1 and the cursor invisible against it.
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = Color.Transparent,
                         unfocusedContainerColor = Color.Transparent,
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent,
+                        focusedTextColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        cursorColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        focusedPlaceholderColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            .copy(alpha = PLACEHOLDER_ALPHA),
+                        unfocusedPlaceholderColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            .copy(alpha = PLACEHOLDER_ALPHA),
                     ),
                 )
                 LaunchedEffect(Unit) {
@@ -235,9 +249,20 @@ internal fun RecipeListContent(
         }
 
         if (state.recipes.isEmpty()) {
+            // A filtered list that came back empty is a no-results state, not an empty library —
+            // "add your first one" is untrue for someone who has fifty and mistyped a search.
+            val isFiltered = state.searchQuery.isNotBlank() || state.selectedTag != null
             EmptyState(
-                title = Res.string.recipe_list_empty.resolve(),
-                subtitle = Res.string.recipe_list_empty_subtitle.resolve(),
+                title = if (isFiltered) {
+                    Res.string.recipe_list_no_results.resolve()
+                } else {
+                    Res.string.recipe_list_empty.resolve()
+                },
+                subtitle = if (isFiltered) {
+                    Res.string.recipe_list_no_results_subtitle.resolve()
+                } else {
+                    Res.string.recipe_list_empty_subtitle.resolve()
+                },
             )
             return@Column
         }

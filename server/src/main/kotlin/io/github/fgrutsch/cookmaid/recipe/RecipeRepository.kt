@@ -324,16 +324,13 @@ class PostgresRecipeRepository : RecipeRepository {
             .join(CatalogItemsTable, JoinType.LEFT, RecipeIngredientsTable.catalogItemId, CatalogItemsTable.id)
             .join(ItemCategoriesTable, JoinType.LEFT, CatalogItemsTable.categoryId, ItemCategoriesTable.id)
 
-        // Ordered for the same reason as the shopping list: no ORDER BY means heap order, which
-        // moves under any UPDATE. Note every ingredient of a recipe is inserted in one
-        // transaction, so they share a created_at and the id tiebreak decides — stable across
-        // fetches, but not the order they were typed in. That needs a position column.
+        // sort_index, not created_at: every ingredient of a recipe is inserted in one transaction,
+        // so they all share a created_at and the tiebreak would fall to a random uuid. Nor is an
+        // unordered scan insertion order — the joins below are free to reorder rows, and in
+        // practice reverse them.
         return joined.selectAll()
             .where { RecipeIngredientsTable.recipeId eq recipeId }
-            .orderBy(
-                RecipeIngredientsTable.createdAt to SortOrder.ASC,
-                RecipeIngredientsTable.id to SortOrder.ASC,
-            )
+            .orderBy(RecipeIngredientsTable.sortIndex to SortOrder.ASC)
             .map { row ->
                 val catalogItemId = row[RecipeIngredientsTable.catalogItemId]
                 val item: Item = if (catalogItemId != null) {
@@ -363,12 +360,11 @@ class PostgresRecipeRepository : RecipeRepository {
             .join(CatalogItemsTable, JoinType.LEFT, RecipeIngredientsTable.catalogItemId, CatalogItemsTable.id)
             .join(ItemCategoriesTable, JoinType.LEFT, CatalogItemsTable.categoryId, ItemCategoriesTable.id)
 
+        // Ordered for the same reason as [loadIngredients]. groupBy preserves encounter order, so
+        // one ORDER BY covers every recipe in the page.
         return joined.selectAll()
             .where { RecipeIngredientsTable.recipeId inList recipeIds }
-            .orderBy(
-                RecipeIngredientsTable.createdAt to SortOrder.ASC,
-                RecipeIngredientsTable.id to SortOrder.ASC,
-            )
+            .orderBy(RecipeIngredientsTable.sortIndex to SortOrder.ASC)
             .groupBy { it[RecipeIngredientsTable.recipeId] }
             .mapValues { (_, rows) ->
                 rows.map { row ->
@@ -394,10 +390,11 @@ class PostgresRecipeRepository : RecipeRepository {
     }
 
     private fun insertIngredients(recipeId: Uuid, ingredients: List<RecipeIngredient>) {
-        ingredients.forEach { ingredient ->
+        ingredients.forEachIndexed { index, ingredient ->
             RecipeIngredientsTable.insert {
                 it[RecipeIngredientsTable.recipeId] = recipeId
                 it[RecipeIngredientsTable.quantity] = ingredient.quantity
+                it[RecipeIngredientsTable.sortIndex] = index
                 when (val item = ingredient.item) {
                     is Item.Catalog -> {
                         it[RecipeIngredientsTable.catalogItemId] = item.id
@@ -434,6 +431,7 @@ object RecipeIngredientsTable : Table("recipe_ingredients") {
     val catalogItemId = uuid("catalog_item_id").references(CatalogItemsTable.id).nullable()
     val freeTextName = text("free_text_name").nullable()
     val quantity = text("quantity").nullable()
+    val sortIndex = integer("sort_index")
     val createdAt = timestamp("created_at")
     val updatedAt = timestamp("updated_at")
 

@@ -96,16 +96,21 @@ fun RecipeDetailScreen(
                 )
             } ?: RecipeNotFound(padding = padding)
 
-            RecipeActionMenu(
-                expanded = fabExpanded,
-                onExpandedChange = { fabExpanded = it },
-                hasIngredients = state.recipe?.ingredients?.isNotEmpty() == true,
-                onAddToShoppingList = { fabExpanded = false; showIngredientPicker = true },
-                onAddToMealPlan = { fabExpanded = false; showDayPicker = true },
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(bottom = padding.calculateBottomPadding()),
-            )
+            // Gated on the recipe: both dialogs it opens are themselves behind `state.recipe`, so
+            // a tap while the load is still in flight would set a flag nothing consumes — and the
+            // picker would then appear on its own the moment the recipe arrived.
+            state.recipe?.let { r ->
+                RecipeActionMenu(
+                    expanded = fabExpanded,
+                    onExpandedChange = { fabExpanded = it },
+                    hasIngredients = r.ingredients.isNotEmpty(),
+                    onAddToShoppingList = { fabExpanded = false; showIngredientPicker = true },
+                    onAddToMealPlan = { fabExpanded = false; showDayPicker = true },
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(bottom = padding.calculateBottomPadding()),
+                )
+            }
         }
     }
 
