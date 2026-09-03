@@ -1,5 +1,7 @@
 package io.github.fgrutsch.cookmaid.ui.theme
 
+import androidx.compose.material3.CardColors
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MaterialTheme
@@ -54,4 +56,17 @@ fun appTopAppBarColors(): TopAppBarColors = TopAppBarDefaults.topAppBarColors(
     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
     navigationIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
     actionIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+)
+
+/**
+ * Colors for a card that holds list or detail content.
+ *
+ * Filled with `surfaceContainerLow`, which is navy-tinted: at these tones only the blue cast
+ * separates a card from the page.
+ *
+ * @return the [CardColors] every content card should use.
+ */
+@Composable
+fun appCardColors(): CardColors = CardDefaults.cardColors(
+    containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
 )

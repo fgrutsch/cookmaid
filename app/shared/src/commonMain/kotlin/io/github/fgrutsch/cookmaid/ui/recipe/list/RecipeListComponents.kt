@@ -19,7 +19,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -32,7 +31,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -74,7 +72,9 @@ import cookmaid.app.shared.generated.resources.recipe_list_view_details
 import io.github.fgrutsch.cookmaid.recipe.Recipe
 import io.github.fgrutsch.cookmaid.ui.common.EmptyState
 import io.github.fgrutsch.cookmaid.ui.common.LIST_HORIZONTAL_PADDING
+import io.github.fgrutsch.cookmaid.ui.common.LoadingIndicator
 import io.github.fgrutsch.cookmaid.ui.common.resolve
+import io.github.fgrutsch.cookmaid.ui.theme.appCardColors
 import io.github.fgrutsch.cookmaid.ui.theme.appTopAppBarColors
 import kotlin.uuid.Uuid
 import org.jetbrains.compose.resources.painterResource
@@ -229,45 +229,46 @@ internal fun RecipeListContent(
     onAddToMealPlan: (Uuid) -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
-
         if (state.isLoading && state.recipes.isEmpty()) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
-        } else if (state.recipes.isEmpty()) {
+            LoadingIndicator()
+            return@Column
+        }
+
+        if (state.recipes.isEmpty()) {
             EmptyState(
                 title = Res.string.recipe_list_empty.resolve(),
                 subtitle = Res.string.recipe_list_empty_subtitle.resolve(),
             )
-        } else {
-            LazyColumn(
-                state = listState,
-                modifier = Modifier.fillMaxSize(),
-                // Bottom clearance for the FAB, which otherwise covers the last row's menu.
-                contentPadding = PaddingValues(
-                    start = LIST_HORIZONTAL_PADDING,
-                    top = 8.dp,
-                    end = LIST_HORIZONTAL_PADDING,
-                    bottom = FAB_CLEARANCE,
-                ),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                items(state.recipes, key = { it.id }) { recipe ->
-                    RecipeCard(
-                        recipe = recipe,
-                        onClick = { onRecipeClick(recipe.id) },
-                        onAddToShoppingList = { onAddToShoppingList(recipe.id) },
-                        onAddToMealPlan = { onAddToMealPlan(recipe.id) },
-                    )
-                }
-                if (state.isLoadingMore) {
-                    item {
-                        Box(
-                            Modifier.fillMaxWidth().padding(16.dp),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            CircularProgressIndicator()
-                        }
+            return@Column
+        }
+
+        LazyColumn(
+            state = listState,
+            modifier = Modifier.fillMaxSize(),
+            // Bottom clearance for the FAB, which otherwise covers the last row's menu.
+            contentPadding = PaddingValues(
+                start = LIST_HORIZONTAL_PADDING,
+                top = 8.dp,
+                end = LIST_HORIZONTAL_PADDING,
+                bottom = FAB_CLEARANCE,
+            ),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            items(state.recipes, key = { it.id }) { recipe ->
+                RecipeCard(
+                    recipe = recipe,
+                    onClick = { onRecipeClick(recipe.id) },
+                    onAddToShoppingList = { onAddToShoppingList(recipe.id) },
+                    onAddToMealPlan = { onAddToMealPlan(recipe.id) },
+                )
+            }
+            if (state.isLoadingMore) {
+                item {
+                    Box(
+                        Modifier.fillMaxWidth().padding(16.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        CircularProgressIndicator()
                     }
                 }
             }
@@ -284,14 +285,10 @@ internal fun RecipeCard(
 ) {
     var showMenu by remember { mutableStateOf(false) }
 
-    // Filled with surfaceContainerLow, which is navy-tinted: at these tones only the blue cast
-    // separates a card from the page.
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        ),
+        colors = appCardColors(),
     ) {
         Row(
             modifier = Modifier

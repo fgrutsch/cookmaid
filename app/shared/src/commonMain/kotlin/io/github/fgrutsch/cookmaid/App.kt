@@ -1,11 +1,8 @@
 package io.github.fgrutsch.cookmaid
 
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -22,7 +19,6 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
@@ -39,6 +35,7 @@ import io.github.fgrutsch.cookmaid.ui.auth.AuthViewModel
 import io.github.fgrutsch.cookmaid.ui.auth.LoginScreen
 import io.github.fgrutsch.cookmaid.ui.auth.OidcConfig
 import io.github.fgrutsch.cookmaid.ui.auth.UserProfile
+import io.github.fgrutsch.cookmaid.ui.common.LoadingIndicator
 import io.github.fgrutsch.cookmaid.ui.common.LocalAppLocale
 import io.github.fgrutsch.cookmaid.ui.common.resolve
 import io.github.fgrutsch.cookmaid.ui.mealplan.MealPlanScreen
@@ -124,12 +121,7 @@ fun App(
                 ) {
                     key(authState.user?.id) {
                         when (authState.status) {
-                            AuthState.Status.Initializing -> {
-                                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                    CircularProgressIndicator()
-                                }
-                            }
-
+                            AuthState.Status.Initializing -> LoadingIndicator()
                             AuthState.Status.Unauthenticated -> LoginScreen(viewModel = authViewModel)
                             AuthState.Status.Authenticated -> MainContent(
                                 settingsViewModel = settingsViewModel,

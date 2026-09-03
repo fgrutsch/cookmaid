@@ -19,7 +19,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -34,7 +33,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.ToggleFloatingActionButton
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -79,6 +77,7 @@ import io.github.fgrutsch.cookmaid.recipe.Recipe
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
 import io.github.fgrutsch.cookmaid.ui.common.LocalAppLocale
 import io.github.fgrutsch.cookmaid.ui.common.resolve
+import io.github.fgrutsch.cookmaid.ui.theme.appCardColors
 import io.github.fgrutsch.cookmaid.ui.theme.appTopAppBarColors
 import org.jetbrains.compose.resources.painterResource
 
@@ -123,8 +122,9 @@ internal fun RecipeDetailTopBar(
 }
 
 /**
- * The overflow menu now holds only what manages the recipe itself. Putting it to use — adding it
- * to a list or a plan — moved to the FAB menu, within thumb reach instead of the far corner.
+ * The overflow menu holds only what manages the recipe record itself. Putting the recipe to use —
+ * adding it to a list or a plan — belongs to [RecipeActionMenu], within thumb reach rather than
+ * the far corner.
  */
 internal data class RecipeMenuActions(
     val onEdit: () -> Unit,
@@ -331,9 +331,7 @@ internal fun StepsSection(steps: List<String>) {
         )
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-            ),
+            colors = appCardColors(),
         ) {
             Column(modifier = Modifier.padding(vertical = 8.dp)) {
                 steps.forEachIndexed { index, step ->

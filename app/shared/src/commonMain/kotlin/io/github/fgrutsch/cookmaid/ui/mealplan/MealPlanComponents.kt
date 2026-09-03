@@ -17,8 +17,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -59,9 +57,11 @@ import io.github.fgrutsch.cookmaid.mealplan.MealPlanItem
 import io.github.fgrutsch.cookmaid.mealplan.WEEK_END_OFFSET
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
 import io.github.fgrutsch.cookmaid.ui.common.LIST_HORIZONTAL_PADDING
+import io.github.fgrutsch.cookmaid.ui.common.LoadingIndicator
 import io.github.fgrutsch.cookmaid.ui.common.SwipeItem
 import io.github.fgrutsch.cookmaid.ui.common.formatShortDate
 import io.github.fgrutsch.cookmaid.ui.common.resolve
+import io.github.fgrutsch.cookmaid.ui.theme.appCardColors
 import kotlin.uuid.Uuid
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.DayOfWeek
@@ -103,9 +103,7 @@ internal fun MealPlanContent(
         )
 
         if (state.isLoading && state.days.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
+            LoadingIndicator()
             return@Column
         }
 
@@ -174,13 +172,9 @@ internal fun DayCard(
     onDeleteItem: (Uuid) -> Unit,
     onAddToShoppingList: (MealPlanItem) -> Unit,
 ) {
-    // Filled with surfaceContainerLow, which is navy-tinted: at these tones only the blue cast
-    // separates a card from the page.
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        ),
+        colors = appCardColors(),
     ) {
         Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
             Row(

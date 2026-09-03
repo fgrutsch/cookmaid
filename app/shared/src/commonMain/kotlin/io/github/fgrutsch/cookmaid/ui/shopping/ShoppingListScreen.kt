@@ -13,7 +13,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -26,7 +25,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -57,6 +55,7 @@ import io.github.fgrutsch.cookmaid.shopping.ShoppingItem
 import io.github.fgrutsch.cookmaid.shopping.ShoppingList
 import io.github.fgrutsch.cookmaid.ui.common.EmptyState
 import io.github.fgrutsch.cookmaid.ui.common.LIST_HORIZONTAL_PADDING
+import io.github.fgrutsch.cookmaid.ui.common.LoadingIndicator
 import io.github.fgrutsch.cookmaid.ui.common.SuccessSnackbarHost
 import io.github.fgrutsch.cookmaid.ui.common.SwipeItem
 import io.github.fgrutsch.cookmaid.ui.common.resolve
@@ -274,25 +273,27 @@ private fun ShoppingItemList(
         modifier = Modifier.fillMaxSize(),
     ) {
         if (state.isLoading && state.items.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
-        } else if (state.items.isEmpty()) {
+            LoadingIndicator()
+            return@PullToRefreshBox
+        }
+
+        if (state.items.isEmpty()) {
             EmptyState(
                 title = Res.string.shopping_empty_title.resolve(),
                 subtitle = Res.string.shopping_empty_subtitle.resolve(),
             )
-        } else {
-            LazyColumn(modifier = Modifier.fillMaxSize()) {
-                uncheckedItemsSection(
-                    uncheckedItems = state.uncheckedItems,
-                    uncategorizedLabel = uncategorizedLabel,
-                    onToggleChecked = onToggleChecked,
-                    onDeleteItem = onDeleteItem,
-                    onEditItem = onEditItem,
-                )
-                checkedItemsSection(state.checkedItems, onToggleChecked, onDeleteItem, onEditItem, onDeleteChecked)
-            }
+            return@PullToRefreshBox
+        }
+
+        LazyColumn(modifier = Modifier.fillMaxSize()) {
+            uncheckedItemsSection(
+                uncheckedItems = state.uncheckedItems,
+                uncategorizedLabel = uncategorizedLabel,
+                onToggleChecked = onToggleChecked,
+                onDeleteItem = onDeleteItem,
+                onEditItem = onEditItem,
+            )
+            checkedItemsSection(state.checkedItems, onToggleChecked, onDeleteItem, onEditItem, onDeleteChecked)
         }
     }
 }
