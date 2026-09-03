@@ -21,7 +21,6 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -68,6 +67,8 @@ import io.github.fgrutsch.cookmaid.ui.common.SuggestionMenu
 import io.github.fgrutsch.cookmaid.ui.common.resolve
 import io.github.fgrutsch.cookmaid.ui.common.textFieldKeyboardControl
 import org.jetbrains.compose.resources.painterResource
+
+private const val STEP_MAX_LINES = 6
 
 @Composable
 internal fun AddRecipeContent(
@@ -127,6 +128,7 @@ internal fun AddRecipeContent(
             stepInput = stepInput,
             onStepInputChange = onStepInputChange,
             onAddStep = { onEvent(AddRecipeEvent.AddStep(stepInput)); onStepInputChange("") },
+            onStepChange = { index, text -> onEvent(AddRecipeEvent.UpdateStep(index, text)) },
             onRemoveStep = { onEvent(AddRecipeEvent.RemoveStep(it)) },
         )
         HorizontalDivider()
@@ -158,8 +160,9 @@ internal fun IngredientsSection(
         )
         ingredients.forEachIndexed { index, ingredient ->
             IngredientRow(
-                name = ingredient.item.name,
+                item = ingredient.item,
                 quantity = ingredient.quantity,
+                onNameChange = { onEvent(AddRecipeEvent.UpdateIngredientName(index, it)) },
                 onQuantityChange = { onEvent(AddRecipeEvent.UpdateIngredientQuantity(index, it)) },
                 onRemove = { onEvent(AddRecipeEvent.RemoveIngredient(index)) },
             )
@@ -193,6 +196,7 @@ internal fun StepsSection(
     stepInput: String,
     onStepInputChange: (String) -> Unit,
     onAddStep: () -> Unit,
+    onStepChange: (Int, String) -> Unit,
     onRemoveStep: (Int) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -203,16 +207,11 @@ internal fun StepsSection(
             color = MaterialTheme.colorScheme.primary,
         )
         steps.forEachIndexed { index, step ->
-            ListItem(
-                headlineContent = { Text("${index + 1}. $step") },
-                trailingContent = {
-                    IconButton(onClick = { onRemoveStep(index) }) {
-                        Icon(
-                            painterResource(Res.drawable.ic_close),
-                            contentDescription = Res.string.common_remove.resolve(),
-                        )
-                    }
-                },
+            StepRow(
+                number = index + 1,
+                step = step,
+                onStepChange = { onStepChange(index, it) },
+                onRemove = { onRemoveStep(index) },
             )
         }
         OutlinedTextField(
@@ -275,15 +274,13 @@ internal fun TagsSection(
 }
 
 @Composable
-internal fun IngredientRow(
-    name: String,
-    quantity: String?,
-    onQuantityChange: (String?) -> Unit,
+private fun StepRow(
+    number: Int,
+    step: String,
+    onStepChange: (String) -> Unit,
     onRemove: () -> Unit,
 ) {
-    var qtyText by remember(quantity) {
-        mutableStateOf(quantity.orEmpty())
-    }
+    var text by remember(step) { mutableStateOf(step) }
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -291,10 +288,64 @@ internal fun IngredientRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(
-            text = name,
+            text = "$number.",
             style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.weight(1f),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        OutlinedTextField(
+            value = text,
+            onValueChange = { value ->
+                text = value
+                onStepChange(value)
+            },
+            modifier = Modifier.weight(1f),
+            singleLine = false,
+            maxLines = STEP_MAX_LINES,
+        )
+        IconButton(onClick = onRemove) {
+            Icon(painterResource(Res.drawable.ic_close), contentDescription = Res.string.common_remove.resolve())
+        }
+    }
+}
+
+@Composable
+internal fun IngredientRow(
+    item: Item,
+    quantity: String?,
+    onNameChange: (String) -> Unit,
+    onQuantityChange: (String?) -> Unit,
+    onRemove: () -> Unit,
+) {
+    var qtyText by remember(quantity) {
+        mutableStateOf(quantity.orEmpty())
+    }
+    var nameText by remember(item.name) { mutableStateOf(item.name) }
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        // Only free text is editable. A catalog ingredient's name is a localised reference to a
+        // catalog row, so it is shown as text — swapping it means picking a different ingredient,
+        // which is what the add field below already does.
+        if (item is Item.FreeText) {
+            OutlinedTextField(
+                value = nameText,
+                onValueChange = { value ->
+                    nameText = value
+                    onNameChange(value)
+                },
+                singleLine = true,
+                modifier = Modifier.weight(1f),
+            )
+        } else {
+            Text(
+                text = item.name,
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.weight(1f),
+            )
+        }
         OutlinedTextField(
             value = qtyText,
             onValueChange = { value ->
