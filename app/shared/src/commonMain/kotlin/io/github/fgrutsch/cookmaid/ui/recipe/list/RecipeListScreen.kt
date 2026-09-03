@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -109,7 +110,13 @@ fun RecipeListScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onAddRecipe) {
+            FloatingActionButton(
+                onClick = onAddRecipe,
+                // Shape left to Material so this matches the recipe detail's toggle FAB, which
+                // morphs on its own schedule and takes no shape override.
+                containerColor = MaterialTheme.colorScheme.tertiary,
+                contentColor = MaterialTheme.colorScheme.onTertiary,
+            ) {
                 Icon(painterResource(Res.drawable.ic_add), contentDescription = addRecipeMsg)
             }
         },

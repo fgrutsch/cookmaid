@@ -13,7 +13,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -26,7 +25,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -53,15 +51,19 @@ import cookmaid.app.shared.generated.resources.shopping_new_list
 import cookmaid.app.shared.generated.resources.shopping_rename_list
 import cookmaid.app.shared.generated.resources.shopping_title
 import io.github.fgrutsch.cookmaid.catalog.Item
-import io.github.fgrutsch.cookmaid.ui.common.SuccessSnackbarHost
 import io.github.fgrutsch.cookmaid.shopping.ShoppingItem
 import io.github.fgrutsch.cookmaid.shopping.ShoppingList
+import io.github.fgrutsch.cookmaid.ui.common.EmptyState
+import io.github.fgrutsch.cookmaid.ui.common.LIST_HORIZONTAL_PADDING
+import io.github.fgrutsch.cookmaid.ui.common.LoadingIndicator
+import io.github.fgrutsch.cookmaid.ui.common.SuccessSnackbarHost
 import io.github.fgrutsch.cookmaid.ui.common.SwipeItem
 import io.github.fgrutsch.cookmaid.ui.common.resolve
+import io.github.fgrutsch.cookmaid.ui.theme.appTopAppBarColors
+import kotlin.uuid.Uuid
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.rememberResourceEnvironment
-import kotlin.uuid.Uuid
 
 /**
  * Shopping list screen with categorized items, search, add, check/uncheck,
@@ -200,10 +202,7 @@ private fun ShoppingListTopBar(
 ) {
     TopAppBar(
         title = { Text(Res.string.shopping_title.resolve()) },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
-            titleContentColor = MaterialTheme.colorScheme.onSurface,
-        ),
+        colors = appTopAppBarColors(),
         actions = {
             IconButton(onClick = onShowMenu) {
                 Icon(
@@ -243,7 +242,7 @@ private fun ListSelectorChips(
         modifier = Modifier
             .fillMaxWidth()
             .horizontalScroll(rememberScrollState())
-            .padding(horizontal = 12.dp, vertical = 4.dp),
+            .padding(horizontal = LIST_HORIZONTAL_PADDING, vertical = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -273,31 +272,28 @@ private fun ShoppingItemList(
         onRefresh = onRefresh,
         modifier = Modifier.fillMaxSize(),
     ) {
-        if (!state.isLoading && state.items.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center,
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(Res.string.shopping_empty_title.resolve(), style = MaterialTheme.typography.bodyLarge)
-                    Text(
-                        Res.string.shopping_empty_subtitle.resolve(),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-        } else {
-            LazyColumn(modifier = Modifier.fillMaxSize()) {
-                uncheckedItemsSection(
-                    uncheckedItems = state.uncheckedItems,
-                    uncategorizedLabel = uncategorizedLabel,
-                    onToggleChecked = onToggleChecked,
-                    onDeleteItem = onDeleteItem,
-                    onEditItem = onEditItem,
-                )
-                checkedItemsSection(state.checkedItems, onToggleChecked, onDeleteItem, onEditItem, onDeleteChecked)
-            }
+        if (state.isLoading && state.items.isEmpty()) {
+            LoadingIndicator()
+            return@PullToRefreshBox
+        }
+
+        if (state.items.isEmpty()) {
+            EmptyState(
+                title = Res.string.shopping_empty_title.resolve(),
+                subtitle = Res.string.shopping_empty_subtitle.resolve(),
+            )
+            return@PullToRefreshBox
+        }
+
+        LazyColumn(modifier = Modifier.fillMaxSize()) {
+            uncheckedItemsSection(
+                uncheckedItems = state.uncheckedItems,
+                uncategorizedLabel = uncategorizedLabel,
+                onToggleChecked = onToggleChecked,
+                onDeleteItem = onDeleteItem,
+                onEditItem = onEditItem,
+            )
+            checkedItemsSection(state.checkedItems, onToggleChecked, onDeleteItem, onEditItem, onDeleteChecked)
         }
     }
 }

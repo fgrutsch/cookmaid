@@ -5,6 +5,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBoxScope
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -78,13 +79,23 @@ internal fun ExposedDropdownMenuBoxScope.SuggestionMenu(
 ) {
     ExposedDropdownMenu(expanded = expanded, onDismissRequest = { }) {
         suggestions.forEachIndexed { index, catalogItem ->
+            val isHighlighted = index == highlighted
             DropdownMenuItem(
                 text = { Text(catalogItem.name) },
                 onClick = { onSelect(catalogItem) },
-                modifier = if (index == highlighted) {
-                    Modifier.background(MaterialTheme.colorScheme.surfaceVariant)
+                // primary, not surfaceVariant: the menu's own container is surfaceContainer, and
+                // the two sit close enough in any palette that the highlight can vanish — they
+                // were byte-identical here. primary inverts with the theme, so it stays visible
+                // against the menu in both.
+                modifier = if (isHighlighted) {
+                    Modifier.background(MaterialTheme.colorScheme.primary)
                 } else {
                     Modifier
+                },
+                colors = if (isHighlighted) {
+                    MenuDefaults.itemColors(textColor = MaterialTheme.colorScheme.onPrimary)
+                } else {
+                    MenuDefaults.itemColors()
                 },
             )
         }

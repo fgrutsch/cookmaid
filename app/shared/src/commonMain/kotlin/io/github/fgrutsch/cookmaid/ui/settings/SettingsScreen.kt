@@ -28,7 +28,6 @@ import cookmaid.app.shared.generated.resources.settings_dark_mode_light
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -52,6 +51,7 @@ import cookmaid.app.shared.generated.resources.settings_title
 import io.github.fgrutsch.cookmaid.BuildKonfig
 import io.github.fgrutsch.cookmaid.ui.auth.UserProfile
 import io.github.fgrutsch.cookmaid.ui.common.resolve
+import io.github.fgrutsch.cookmaid.ui.theme.appTopAppBarColors
 import org.jetbrains.compose.resources.painterResource
 
 /**
@@ -78,10 +78,7 @@ fun SettingsScreen(
         topBar = {
             TopAppBar(
                 title = { Text(Res.string.settings_title.resolve()) },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface,
-                ),
+                colors = appTopAppBarColors(),
             )
         },
     ) { padding ->

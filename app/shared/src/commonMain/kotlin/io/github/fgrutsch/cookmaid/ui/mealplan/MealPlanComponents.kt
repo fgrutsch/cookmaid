@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -36,12 +35,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cookmaid.app.shared.generated.resources.Res
 import cookmaid.app.shared.generated.resources.common_add_to_shopping_list
-import cookmaid.app.shared.generated.resources.ic_add
-import cookmaid.app.shared.generated.resources.ic_keyboard_arrow_left
-import cookmaid.app.shared.generated.resources.ic_keyboard_arrow_right
-import cookmaid.app.shared.generated.resources.ic_menu_book
-import cookmaid.app.shared.generated.resources.ic_more_vert
-import cookmaid.app.shared.generated.resources.ic_notes
 import cookmaid.app.shared.generated.resources.common_next_week
 import cookmaid.app.shared.generated.resources.common_options
 import cookmaid.app.shared.generated.resources.common_previous_week
@@ -52,21 +45,30 @@ import cookmaid.app.shared.generated.resources.day_sunday
 import cookmaid.app.shared.generated.resources.day_thursday
 import cookmaid.app.shared.generated.resources.day_tuesday
 import cookmaid.app.shared.generated.resources.day_wednesday
+import cookmaid.app.shared.generated.resources.ic_add
+import cookmaid.app.shared.generated.resources.ic_keyboard_arrow_left
+import cookmaid.app.shared.generated.resources.ic_keyboard_arrow_right
+import cookmaid.app.shared.generated.resources.ic_menu_book
+import cookmaid.app.shared.generated.resources.ic_more_vert
+import cookmaid.app.shared.generated.resources.ic_notes
 import cookmaid.app.shared.generated.resources.meal_plan_add_item
 import io.github.fgrutsch.cookmaid.mealplan.MealPlanDay
 import io.github.fgrutsch.cookmaid.mealplan.MealPlanItem
 import io.github.fgrutsch.cookmaid.mealplan.WEEK_END_OFFSET
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
+import io.github.fgrutsch.cookmaid.ui.common.LIST_HORIZONTAL_PADDING
+import io.github.fgrutsch.cookmaid.ui.common.LoadingIndicator
 import io.github.fgrutsch.cookmaid.ui.common.SwipeItem
 import io.github.fgrutsch.cookmaid.ui.common.formatShortDate
+import io.github.fgrutsch.cookmaid.ui.common.resolve
+import io.github.fgrutsch.cookmaid.ui.theme.appCardColors
+import kotlin.uuid.Uuid
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
-import io.github.fgrutsch.cookmaid.ui.common.resolve
 import kotlinx.datetime.plus
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
-import kotlin.uuid.Uuid
 
 internal val urlPattern = Regex("^https?://\\S+$", RegexOption.IGNORE_CASE)
 
@@ -100,9 +102,17 @@ internal fun MealPlanContent(
             onNext = onNextWeek,
         )
 
+        if (state.isLoading && state.days.isEmpty()) {
+            LoadingIndicator()
+            return@Column
+        }
+
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+            contentPadding = PaddingValues(
+                horizontal = LIST_HORIZONTAL_PADDING,
+                vertical = 8.dp,
+            ),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             items(state.days, key = { it.date.toString() }) { day ->
@@ -164,9 +174,7 @@ internal fun DayCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        ),
+        colors = appCardColors(),
     ) {
         Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
             Row(

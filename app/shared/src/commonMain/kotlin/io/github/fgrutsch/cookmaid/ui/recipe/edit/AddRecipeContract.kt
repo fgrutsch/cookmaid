@@ -26,9 +26,13 @@ sealed interface AddRecipeEvent {
     data class AddIngredient(val item: Item, val quantity: String?) : AddRecipeEvent
     data class AddIngredientByName(val name: String, val quantity: String?) : AddRecipeEvent
     data class UpdateIngredientQuantity(val index: Int, val quantity: String?) : AddRecipeEvent
+
+    /** Renames a free-text ingredient. Catalog ingredients are references and cannot be renamed. */
+    data class UpdateIngredientName(val index: Int, val name: String) : AddRecipeEvent
     data class SetServings(val value: Int?) : AddRecipeEvent
     data class RemoveIngredient(val index: Int) : AddRecipeEvent
     data class AddStep(val step: String) : AddRecipeEvent
+    data class UpdateStep(val index: Int, val step: String) : AddRecipeEvent
     data class RemoveStep(val index: Int) : AddRecipeEvent
     data class ToggleTag(val tag: String) : AddRecipeEvent
     data class CreateAndAddTag(val tag: String) : AddRecipeEvent

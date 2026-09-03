@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -16,11 +15,10 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -33,7 +31,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -45,37 +42,48 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import cookmaid.app.shared.generated.resources.Res
 import cookmaid.app.shared.generated.resources.common_add_to_meal_plan
+import cookmaid.app.shared.generated.resources.common_add_to_shopping_list
+import cookmaid.app.shared.generated.resources.common_close
+import cookmaid.app.shared.generated.resources.common_options
+import cookmaid.app.shared.generated.resources.common_search
+import cookmaid.app.shared.generated.resources.common_search_recipes
 import cookmaid.app.shared.generated.resources.ic_casino
 import cookmaid.app.shared.generated.resources.ic_close
 import cookmaid.app.shared.generated.resources.ic_filter_list
 import cookmaid.app.shared.generated.resources.ic_more_vert
 import cookmaid.app.shared.generated.resources.ic_refresh
 import cookmaid.app.shared.generated.resources.ic_search
-import cookmaid.app.shared.generated.resources.common_add_to_shopping_list
-import cookmaid.app.shared.generated.resources.common_close
-import cookmaid.app.shared.generated.resources.common_options
-import cookmaid.app.shared.generated.resources.common_search
-import cookmaid.app.shared.generated.resources.common_search_recipes
-import cookmaid.app.shared.generated.resources.recipe_list_close_search
 import cookmaid.app.shared.generated.resources.recipe_list_clear_filter
+import cookmaid.app.shared.generated.resources.recipe_list_close_search
 import cookmaid.app.shared.generated.resources.recipe_list_empty
+import cookmaid.app.shared.generated.resources.recipe_list_empty_subtitle
 import cookmaid.app.shared.generated.resources.recipe_list_filter_tags
+import cookmaid.app.shared.generated.resources.recipe_list_no_results
+import cookmaid.app.shared.generated.resources.recipe_list_no_results_subtitle
 import cookmaid.app.shared.generated.resources.recipe_list_random
 import cookmaid.app.shared.generated.resources.recipe_list_reroll
 import cookmaid.app.shared.generated.resources.recipe_list_title
-import cookmaid.app.shared.generated.resources.recipe_card_summary
 import cookmaid.app.shared.generated.resources.recipe_list_view_details
 import io.github.fgrutsch.cookmaid.recipe.Recipe
+import io.github.fgrutsch.cookmaid.ui.common.EmptyState
+import io.github.fgrutsch.cookmaid.ui.common.LIST_HORIZONTAL_PADDING
+import io.github.fgrutsch.cookmaid.ui.common.LoadingIndicator
 import io.github.fgrutsch.cookmaid.ui.common.resolve
-import org.jetbrains.compose.resources.painterResource
+import io.github.fgrutsch.cookmaid.ui.theme.appCardColors
+import io.github.fgrutsch.cookmaid.ui.theme.appTopAppBarColors
 import kotlin.uuid.Uuid
+import org.jetbrains.compose.resources.painterResource
 
-private const val DROPDOWN_HEIGHT = 0.6f
+private const val DROPDOWN_MAX_HEIGHT_FRACTION = 0.6f
+private const val PLACEHOLDER_ALPHA = 0.7f
+private val FAB_CLEARANCE = 88.dp
 
 @Suppress("LongMethod", "LongParameterList")
 @Composable
@@ -103,11 +111,22 @@ internal fun RecipeListTopBar(
                     modifier = Modifier.fillMaxWidth().focusRequester(searchFocusRequester),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                     keyboardActions = KeyboardActions(onSearch = { onSearchDismiss() }),
+                    // The field sits in the app bar, so its content colours have to come from
+                    // onPrimaryContainer. TextFieldDefaults derives text, placeholder and cursor
+                    // from the surface roles, which are tuned for the white page: on the bar's
+                    // blue that leaves the query at 2.2:1 and the cursor invisible against it.
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = Color.Transparent,
                         unfocusedContainerColor = Color.Transparent,
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent,
+                        focusedTextColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        cursorColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        focusedPlaceholderColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            .copy(alpha = PLACEHOLDER_ALPHA),
+                        unfocusedPlaceholderColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            .copy(alpha = PLACEHOLDER_ALPHA),
                     ),
                 )
                 LaunchedEffect(Unit) {
@@ -117,9 +136,7 @@ internal fun RecipeListTopBar(
                 Text(Res.string.recipe_list_title.resolve())
             }
         },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
-        ),
+        colors = appTopAppBarColors(),
         actions = {
             if (searchActive) {
                 IconButton(onClick = onCloseSearch) {
@@ -177,10 +194,17 @@ private fun TagFilterIconButton(
             }
         }
 
+        // A cap, not a height. fillMaxHeight(fraction) sets the height, so the menu was 60% of
+        // the window tall for two tags as well as twenty; heightIn lets it shrink to its content
+        // while still growing to 60% before it has to scroll.
+        val maxMenuHeight = with(LocalDensity.current) {
+            LocalWindowInfo.current.containerSize.height.toDp()
+        } * DROPDOWN_MAX_HEIGHT_FRACTION
+
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            modifier = Modifier.fillMaxHeight(DROPDOWN_HEIGHT),
+            modifier = Modifier.heightIn(max = maxMenuHeight),
         ) {
             if (selectedTag != null) {
                 DropdownMenuItem(
@@ -219,42 +243,57 @@ internal fun RecipeListContent(
     onAddToMealPlan: (Uuid) -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
-
         if (state.isLoading && state.recipes.isEmpty()) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+            LoadingIndicator()
+            return@Column
+        }
+
+        if (state.recipes.isEmpty()) {
+            // A filtered list that came back empty is a no-results state, not an empty library —
+            // "add your first one" is untrue for someone who has fifty and mistyped a search.
+            val isFiltered = state.searchQuery.isNotBlank() || state.selectedTag != null
+            EmptyState(
+                title = if (isFiltered) {
+                    Res.string.recipe_list_no_results.resolve()
+                } else {
+                    Res.string.recipe_list_empty.resolve()
+                },
+                subtitle = if (isFiltered) {
+                    Res.string.recipe_list_no_results_subtitle.resolve()
+                } else {
+                    Res.string.recipe_list_empty_subtitle.resolve()
+                },
+            )
+            return@Column
+        }
+
+        LazyColumn(
+            state = listState,
+            modifier = Modifier.fillMaxSize(),
+            // Bottom clearance for the FAB, which otherwise covers the last row's menu.
+            contentPadding = PaddingValues(
+                start = LIST_HORIZONTAL_PADDING,
+                top = 8.dp,
+                end = LIST_HORIZONTAL_PADDING,
+                bottom = FAB_CLEARANCE,
+            ),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            items(state.recipes, key = { it.id }) { recipe ->
+                RecipeCard(
+                    recipe = recipe,
+                    onClick = { onRecipeClick(recipe.id) },
+                    onAddToShoppingList = { onAddToShoppingList(recipe.id) },
+                    onAddToMealPlan = { onAddToMealPlan(recipe.id) },
+                )
             }
-        } else if (state.recipes.isEmpty()) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(Res.string.recipe_list_empty.resolve(), style = MaterialTheme.typography.bodyLarge)
-            }
-        } else {
-            LazyColumn(
-                state = listState,
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                items(state.recipes, key = { it.id }) { recipe ->
-                    RecipeCard(
-                        recipe = recipe,
-                        onClick = { onRecipeClick(recipe.id) },
-                        onAddToShoppingList = { onAddToShoppingList(recipe.id) },
-                        onAddToMealPlan = { onAddToMealPlan(recipe.id) },
-                    )
-                }
-                if (state.isLoadingMore) {
-                    item {
-                        Box(
-                            Modifier.fillMaxWidth().padding(16.dp),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            CircularProgressIndicator()
-                        }
+            if (state.isLoadingMore) {
+                item {
+                    Box(
+                        Modifier.fillMaxWidth().padding(16.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        CircularProgressIndicator()
                     }
                 }
             }
@@ -274,9 +313,7 @@ internal fun RecipeCard(
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        ),
+        colors = appCardColors(),
     ) {
         Row(
             modifier = Modifier
@@ -293,14 +330,13 @@ internal fun RecipeCard(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Medium,
                 )
-                if (recipe.ingredients.isNotEmpty()) {
+                // Tags only. The ingredient and step counts were near-identical from recipe to
+                // recipe, so they filled the line without helping anyone choose one.
+                if (recipe.tags.isNotEmpty()) {
                     Text(
-                        Res.string.recipe_card_summary.resolve(
-                            recipe.ingredients.size,
-                            recipe.steps.size,
-                        ),
+                        recipe.tags.joinToString(" · "),
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = MaterialTheme.colorScheme.primary,
                     )
                 }
             }

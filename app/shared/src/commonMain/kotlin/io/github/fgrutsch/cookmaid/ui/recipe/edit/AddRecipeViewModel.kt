@@ -36,6 +36,10 @@ class AddRecipeViewModel(
             .launchIn(viewModelScope)
     }
 
+    // A flat dispatcher: its complexity is the number of event types and nothing else, with no
+    // nested logic to untangle. Splitting it would cost the exhaustive `when` that makes adding
+    // an event a compile error rather than a silent no-op.
+    @Suppress("CyclomaticComplexMethod")
     override fun handleEvent(event: AddRecipeEvent) {
         when (event) {
             is AddRecipeEvent.Load -> load()
@@ -45,11 +49,15 @@ class AddRecipeViewModel(
             is AddRecipeEvent.AddIngredient -> addIngredient(event.item, event.quantity)
             is AddRecipeEvent.AddIngredientByName -> addIngredientByName(event.name, event.quantity)
             is AddRecipeEvent.UpdateIngredientQuantity -> updateIngredientQuantity(event.index, event.quantity)
+            is AddRecipeEvent.UpdateIngredientName -> updateIngredientName(event.index, event.name)
             is AddRecipeEvent.SetServings -> updateState { copy(servings = event.value) }
             is AddRecipeEvent.RemoveIngredient -> updateState {
                 copy(ingredients = ingredients.filterIndexed { i, _ -> i != event.index })
             }
             is AddRecipeEvent.AddStep -> addStep(event.step)
+            is AddRecipeEvent.UpdateStep -> updateState {
+                copy(steps = steps.mapIndexed { i, s -> if (i == event.index) event.step else s })
+            }
             is AddRecipeEvent.RemoveStep -> updateState {
                 copy(steps = steps.filterIndexed { i, _ -> i != event.index })
             }
@@ -122,6 +130,21 @@ class AddRecipeViewModel(
         }
     }
 
+    /**
+     * Renames the free-text ingredient at [index].
+     *
+     * Guarded to free-text items: a catalog ingredient's name is a localised reference to a
+     * catalog row, so overwriting it with typed text would silently detach the row from the
+     * catalog and lose its category.
+     */
+    private fun updateIngredientName(index: Int, name: String) {
+        updateState {
+            copy(ingredients = ingredients.mapIndexed { i, ing ->
+                if (i == index && ing.item is Item.FreeText) ing.copy(item = Item.FreeText(name)) else ing
+            })
+        }
+    }
+
     private fun addStep(step: String) {
         if (step.isBlank()) return
         updateState { copy(steps = steps + step.trim()) }
@@ -152,14 +175,26 @@ class AddRecipeViewModel(
         }
         val s = state.value
         val description = s.description.trim().ifBlank { null }
+        // Sanitised here rather than in UpdateStep/UpdateIngredientName: those fire per keystroke
+        // against a locally buffered field, so rejecting a blank value mid-edit would leave the
+        // field showing text the state no longer holds. Blanking a row means dropping it.
+        val steps = s.steps.map(String::trim).filter { it.isNotBlank() }
+        val ingredients = s.ingredients.mapNotNull { ingredient ->
+            val item = ingredient.item
+            when {
+                item !is Item.FreeText -> ingredient
+                item.name.isBlank() -> null
+                else -> ingredient.copy(item = Item.FreeText(name = item.name.trim()))
+            }
+        }
         launch {
             if (s.isEditing) {
                 recipeRepository.update(
                     requireNotNull(editRecipeId),
                     s.name.trim(),
                     description,
-                    s.ingredients,
-                    s.steps,
+                    ingredients,
+                    steps,
                     s.selectedTags,
                     s.servings,
                 )
@@ -167,8 +202,8 @@ class AddRecipeViewModel(
                 recipeRepository.create(
                     s.name.trim(),
                     description,
-                    s.ingredients,
-                    s.steps,
+                    ingredients,
+                    steps,
                     s.selectedTags,
                     s.servings,
                 )

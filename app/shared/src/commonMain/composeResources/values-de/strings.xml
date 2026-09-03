@@ -26,7 +26,7 @@
     <string name="nav_shopping">Einkaufen</string>
     <string name="nav_recipes">Rezepte</string>
     <string name="nav_meal_plan">Essensplan</string>
-    <string name="nav_settings">Einstellungen</string>
+    <string name="nav_account">Konto</string>
 
     <!-- Auth -->
     <string name="auth_app_logo">Cookmaid</string>
@@ -51,6 +51,11 @@
     <string name="recipe_list_close_search">Suche schließen</string>
     <string name="recipe_list_random">Zufälliges Rezept</string>
     <string name="recipe_list_empty">Keine Rezepte gefunden</string>
+    <string name="recipe_list_empty_subtitle">Tippe auf +, um das erste anzulegen</string>
+    <string name="recipe_list_no_results">Keine passenden Rezepte</string>
+    <string name="recipe_list_no_results_subtitle">Versuche eine andere Suche oder ein anderes Tag</string>
+    <string name="recipe_delete_confirm_title">Rezept löschen?</string>
+    <string name="recipe_delete_confirm_message">Zutaten und Schritte werden mitgelöscht. Dies kann nicht rückgängig gemacht werden.</string>
     <string name="recipe_list_filter_tags">Tags</string>
     <string name="recipe_list_clear_filter">Filter löschen</string>
     <string name="recipe_list_reroll">Neu würfeln</string>
@@ -108,7 +113,6 @@
     <string name="meal_plan_add_count">Hinzufügen (%1$d)</string>
 
     <!-- Recipe Card -->
-    <string name="recipe_card_summary">%1$d Zutaten · %2$d Schritte</string>
 
     <!-- Months (short) -->
     <string name="month_jan">Jan</string>

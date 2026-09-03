@@ -4,12 +4,14 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
@@ -56,6 +58,9 @@ fun LoginScreen(viewModel: AuthViewModel) {
     }
 
     Scaffold(
+        // Matches every other screen. Safe without a top bar because the content is centred, so
+        // nothing lands under the status bar.
+        contentWindowInsets = WindowInsets(0),
         snackbarHost = { SuccessSnackbarHost(snackbarHostState) },
     ) { padding ->
         Surface(modifier = Modifier.fillMaxSize().padding(padding)) {
@@ -83,6 +88,11 @@ fun LoginScreen(viewModel: AuthViewModel) {
                 Button(
                     onClick = { viewModel.onEvent(AuthEvent.Login) },
                     modifier = Modifier.fillMaxWidth(),
+                    // Logo orange, matching the recipe list FAB — sign-in is the one action here.
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.tertiary,
+                        contentColor = MaterialTheme.colorScheme.onTertiary,
+                    ),
                 ) {
                     Text(Res.string.auth_sign_in.resolve())
                 }
