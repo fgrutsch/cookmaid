@@ -17,16 +17,20 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FloatingActionButtonMenu
+import androidx.compose.material3.FloatingActionButtonMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.ToggleFloatingActionButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -34,35 +38,37 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.dp
 import cookmaid.app.shared.generated.resources.Res
 import cookmaid.app.shared.generated.resources.common_add_to_meal_plan
-import cookmaid.app.shared.generated.resources.ic_add
-import cookmaid.app.shared.generated.resources.ic_arrow_back
-import cookmaid.app.shared.generated.resources.ic_more_vert
-import cookmaid.app.shared.generated.resources.ic_remove
 import cookmaid.app.shared.generated.resources.common_add_to_shopping_list
 import cookmaid.app.shared.generated.resources.common_back
 import cookmaid.app.shared.generated.resources.common_delete
 import cookmaid.app.shared.generated.resources.common_edit
 import cookmaid.app.shared.generated.resources.common_options
+import cookmaid.app.shared.generated.resources.ic_add
+import cookmaid.app.shared.generated.resources.ic_arrow_back
+import cookmaid.app.shared.generated.resources.ic_calendar_month
+import cookmaid.app.shared.generated.resources.ic_close
+import cookmaid.app.shared.generated.resources.ic_more_vert
+import cookmaid.app.shared.generated.resources.ic_remove
+import cookmaid.app.shared.generated.resources.ic_shopping_cart
 import cookmaid.app.shared.generated.resources.recipe_detail_decrease_servings
 import cookmaid.app.shared.generated.resources.recipe_detail_description
 import cookmaid.app.shared.generated.resources.recipe_detail_increase_servings
 import cookmaid.app.shared.generated.resources.recipe_detail_ingredients
 import cookmaid.app.shared.generated.resources.recipe_detail_not_found
-
-import cookmaid.app.shared.generated.resources.recipe_edit_servings_label
 import cookmaid.app.shared.generated.resources.recipe_detail_steps
 import cookmaid.app.shared.generated.resources.recipe_detail_tags
 import cookmaid.app.shared.generated.resources.recipe_detail_title
+import cookmaid.app.shared.generated.resources.recipe_edit_servings_label
 import io.github.fgrutsch.cookmaid.common.SupportedLocale
 import io.github.fgrutsch.cookmaid.recipe.Recipe
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
@@ -71,11 +77,12 @@ import io.github.fgrutsch.cookmaid.ui.common.resolve
 import io.github.fgrutsch.cookmaid.ui.theme.appTopAppBarColors
 import org.jetbrains.compose.resources.painterResource
 
+private val FAB_CLEARANCE = 96.dp
+
 @Composable
 internal fun RecipeDetailTopBar(
     recipeName: String?,
     showMenu: Boolean,
-    hasIngredients: Boolean,
     onBack: () -> Unit,
     onShowMenu: () -> Unit,
     onDismissMenu: () -> Unit,
@@ -105,26 +112,18 @@ internal fun RecipeDetailTopBar(
                     text = { Text(Res.string.common_delete.resolve()) },
                     onClick = actions.onDelete,
                 )
-                if (hasIngredients) {
-                    DropdownMenuItem(
-                        text = { Text(Res.string.common_add_to_shopping_list.resolve()) },
-                        onClick = actions.onAddToShoppingList,
-                    )
-                }
-                DropdownMenuItem(
-                    text = { Text(Res.string.common_add_to_meal_plan.resolve()) },
-                    onClick = actions.onAddToMealPlan,
-                )
             }
         },
     )
 }
 
+/**
+ * The overflow menu now holds only what manages the recipe itself. Putting it to use — adding it
+ * to a list or a plan — moved to the FAB menu, within thumb reach instead of the far corner.
+ */
 internal data class RecipeMenuActions(
     val onEdit: () -> Unit,
     val onDelete: () -> Unit,
-    val onAddToShoppingList: () -> Unit,
-    val onAddToMealPlan: () -> Unit,
 )
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -142,7 +141,8 @@ internal fun RecipeContent(
             .fillMaxSize()
             .padding(padding)
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            // Bottom clearance so the FAB menu does not sit on the last section.
+            .padding(start = 16.dp, top = 12.dp, end = 16.dp, bottom = FAB_CLEARANCE),
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
         val description = recipe.description
@@ -366,5 +366,67 @@ internal fun RecipeNotFound(padding: PaddingValues) {
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(Res.string.recipe_detail_not_found.resolve())
+    }
+}
+
+/**
+ * The recipe's forward actions, as an expanding FAB menu.
+ *
+ * These used to live in the overflow menu. Tap count is unchanged — two either way — but the
+ * target sits in the thumb zone rather than the opposite corner, and the actions are visible
+ * rather than hidden behind a kebab that also holds delete.
+ *
+ * @param expanded whether the menu is open.
+ * @param onExpandedChange called when the toggle is tapped.
+ * @param hasIngredients whether to offer the shopping list action; a recipe without ingredients
+ *   has nothing to add.
+ * @param onAddToShoppingList called when the shopping list action is chosen.
+ * @param onAddToMealPlan called when the meal plan action is chosen.
+ * @param modifier placement within the screen; the menu brings its own edge padding.
+ */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+internal fun RecipeActionMenu(
+    expanded: Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    hasIngredients: Boolean,
+    onAddToShoppingList: () -> Unit,
+    onAddToMealPlan: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    // Hoisted: the container colour lambda is driven by the expand animation and is not a
+    // composable scope, so MaterialTheme cannot be read inside it.
+    val containerColor = MaterialTheme.colorScheme.tertiary
+    val contentColor = MaterialTheme.colorScheme.onTertiary
+
+    FloatingActionButtonMenu(
+        modifier = modifier,
+        expanded = expanded,
+        button = {
+            ToggleFloatingActionButton(
+                checked = expanded,
+                onCheckedChange = onExpandedChange,
+                containerColor = { containerColor },
+            ) {
+                Icon(
+                    painterResource(if (expanded) Res.drawable.ic_close else Res.drawable.ic_add),
+                    contentDescription = Res.string.common_options.resolve(),
+                    tint = contentColor,
+                )
+            }
+        },
+    ) {
+        if (hasIngredients) {
+            FloatingActionButtonMenuItem(
+                onClick = onAddToShoppingList,
+                icon = { Icon(painterResource(Res.drawable.ic_shopping_cart), contentDescription = null) },
+                text = { Text(Res.string.common_add_to_shopping_list.resolve()) },
+            )
+        }
+        FloatingActionButtonMenuItem(
+            onClick = onAddToMealPlan,
+            icon = { Icon(painterResource(Res.drawable.ic_calendar_month), contentDescription = null) },
+            text = { Text(Res.string.common_add_to_meal_plan.resolve()) },
+        )
     }
 }
