@@ -32,10 +32,13 @@ import androidx.compose.ui.graphics.Color
 // noise it lands on. Restricted to the border above the character, #3A5A67 is the mode at 26.4%
 // and the mean is #3B5A67 — one unit apart, so the cluster is symmetric rather than a gradient.
 //
-// Note this is not #2D3E50, the hex declared in the web config, manifest and favicon. That value
-// appears in zero pixels and the nearest present colour is some 30 units away in RGB, well
-// outside the distribution. It is also markedly darker: 11:1 against white where this is 7.4:1,
-// which is why the chrome read as heavy when it was used.
+// The web config, manifest and favicon carry this same value, and must keep doing so — they
+// tint the browser and PWA chrome that frames the app.
+//
+// They previously declared #2D3E50, which is not in the artwork at all: zero pixels, with the
+// nearest present colour some 30 units away in RGB, so outside the distribution rather than
+// inside its noise. It is also markedly darker, 11:1 against white where this is 7.4:1, which is
+// why the chrome read as heavy while it was in use.
 private val Frame36 = Color(0xFF3A5A67)
 private val FrameDark = Color(0xFF283F48)
 private val Navy14 = Color(0xFF14212E)

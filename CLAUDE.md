@@ -244,7 +244,9 @@ Four Gradle modules:
   `docs/images/cookmaid_icon.png` (keep this source as PNG):
   `magick docs/images/cookmaid_icon.png -resize 410x410 -background white -gravity center -extent 512x512 icon-512.png`
   (inner resize = `0.8 * canvas`). `favicon.svg` is an inline `<text>` monogram
-  on `#2D3E50`. `apple-touch-icon.png` is 180×180, edge-to-edge, no alpha —
+  on the brand blue `#3A5A67`, which must stay in step with `primary` in
+  `ColorSchemes.kt` — as must `theme-color` in `index.html` and `theme_color`
+  in `manifest.json`, since those tint the browser and PWA chrome around the app. `apple-touch-icon.png` is 180×180, edge-to-edge, no alpha —
   iOS does not adaptive-mask, and transparent apple-touch icons get filled
   black. iOS reads the manifest (15.4+) for standalone mode, name, and
   `display` — no `apple-mobile-web-app-*` meta tags needed.
