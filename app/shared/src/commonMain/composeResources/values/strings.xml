@@ -51,6 +51,9 @@
     <string name="recipe_list_close_search">Close search</string>
     <string name="recipe_list_random">Random recipe</string>
     <string name="recipe_list_empty">No recipes found</string>
+    <string name="recipe_list_empty_subtitle">Tap + to add your first one</string>
+    <string name="recipe_delete_confirm_title">Delete recipe?</string>
+    <string name="recipe_delete_confirm_message">Its ingredients and steps go with it. This cannot be undone.</string>
     <string name="recipe_list_filter_tags">Tags</string>
     <string name="recipe_list_clear_filter">Clear filter</string>
     <string name="recipe_list_reroll">Re-roll</string>

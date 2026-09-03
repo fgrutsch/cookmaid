@@ -48,6 +48,7 @@ fun RecipeDetailScreen(
     var showIngredientPicker by remember { mutableStateOf(false) }
     var showDayPicker by remember { mutableStateOf(false) }
     var fabExpanded by remember { mutableStateOf(false) }
+    var showDeleteConfirm by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     val env = rememberResourceEnvironment()
     LaunchedEffect(Unit) {
@@ -77,7 +78,7 @@ fun RecipeDetailScreen(
                 onDismissMenu = { showMenu = false },
                 actions = RecipeMenuActions(
                     onEdit = { showMenu = false; onEdit() },
-                    onDelete = { showMenu = false; onEvent(RecipeDetailEvent.Delete) },
+                    onDelete = { showMenu = false; showDeleteConfirm = true },
                 ),
             )
         },
@@ -106,6 +107,16 @@ fun RecipeDetailScreen(
                     .padding(bottom = padding.calculateBottomPadding()),
             )
         }
+    }
+
+    if (showDeleteConfirm) {
+        DeleteRecipeDialog(
+            onConfirm = {
+                showDeleteConfirm = false
+                onEvent(RecipeDetailEvent.Delete)
+            },
+            onDismiss = { showDeleteConfirm = false },
+        )
     }
 
     if (showIngredientPicker) {

@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -57,6 +58,9 @@ fun LoginScreen(viewModel: AuthViewModel) {
     }
 
     Scaffold(
+        // Matches every other screen. Safe without a top bar because the content is centred, so
+        // nothing lands under the status bar.
+        contentWindowInsets = WindowInsets(0),
         snackbarHost = { SuccessSnackbarHost(snackbarHostState) },
     ) { padding ->
         Surface(modifier = Modifier.fillMaxSize().padding(padding)) {

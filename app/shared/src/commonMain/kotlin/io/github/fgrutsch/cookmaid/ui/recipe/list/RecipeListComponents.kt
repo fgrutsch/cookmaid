@@ -16,9 +16,11 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
-import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -26,8 +28,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -50,30 +50,33 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import cookmaid.app.shared.generated.resources.Res
 import cookmaid.app.shared.generated.resources.common_add_to_meal_plan
+import cookmaid.app.shared.generated.resources.common_add_to_shopping_list
+import cookmaid.app.shared.generated.resources.common_close
+import cookmaid.app.shared.generated.resources.common_options
+import cookmaid.app.shared.generated.resources.common_search
+import cookmaid.app.shared.generated.resources.common_search_recipes
 import cookmaid.app.shared.generated.resources.ic_casino
 import cookmaid.app.shared.generated.resources.ic_close
 import cookmaid.app.shared.generated.resources.ic_filter_list
 import cookmaid.app.shared.generated.resources.ic_more_vert
 import cookmaid.app.shared.generated.resources.ic_refresh
 import cookmaid.app.shared.generated.resources.ic_search
-import cookmaid.app.shared.generated.resources.common_add_to_shopping_list
-import cookmaid.app.shared.generated.resources.common_close
-import cookmaid.app.shared.generated.resources.common_options
-import cookmaid.app.shared.generated.resources.common_search
-import cookmaid.app.shared.generated.resources.common_search_recipes
-import cookmaid.app.shared.generated.resources.recipe_list_close_search
 import cookmaid.app.shared.generated.resources.recipe_list_clear_filter
+import cookmaid.app.shared.generated.resources.recipe_list_close_search
 import cookmaid.app.shared.generated.resources.recipe_list_empty
+import cookmaid.app.shared.generated.resources.recipe_list_empty_subtitle
 import cookmaid.app.shared.generated.resources.recipe_list_filter_tags
 import cookmaid.app.shared.generated.resources.recipe_list_random
 import cookmaid.app.shared.generated.resources.recipe_list_reroll
 import cookmaid.app.shared.generated.resources.recipe_list_title
 import cookmaid.app.shared.generated.resources.recipe_list_view_details
 import io.github.fgrutsch.cookmaid.recipe.Recipe
+import io.github.fgrutsch.cookmaid.ui.common.EmptyState
+import io.github.fgrutsch.cookmaid.ui.common.LIST_HORIZONTAL_PADDING
 import io.github.fgrutsch.cookmaid.ui.common.resolve
 import io.github.fgrutsch.cookmaid.ui.theme.appTopAppBarColors
-import org.jetbrains.compose.resources.painterResource
 import kotlin.uuid.Uuid
+import org.jetbrains.compose.resources.painterResource
 
 private const val DROPDOWN_HEIGHT = 0.6f
 private val FAB_CLEARANCE = 88.dp
@@ -224,19 +227,21 @@ internal fun RecipeListContent(
                 CircularProgressIndicator()
             }
         } else if (state.recipes.isEmpty()) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(Res.string.recipe_list_empty.resolve(), style = MaterialTheme.typography.bodyLarge)
-            }
+            EmptyState(
+                title = Res.string.recipe_list_empty.resolve(),
+                subtitle = Res.string.recipe_list_empty_subtitle.resolve(),
+            )
         } else {
             LazyColumn(
                 state = listState,
                 modifier = Modifier.fillMaxSize(),
                 // Bottom clearance for the FAB, which otherwise covers the last row's menu.
-                contentPadding = PaddingValues(start = 12.dp, top = 8.dp, end = 12.dp, bottom = FAB_CLEARANCE),
+                contentPadding = PaddingValues(
+                    start = LIST_HORIZONTAL_PADDING,
+                    top = 8.dp,
+                    end = LIST_HORIZONTAL_PADDING,
+                    bottom = FAB_CLEARANCE,
+                ),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 items(state.recipes, key = { it.id }) { recipe ->

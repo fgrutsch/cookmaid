@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -30,6 +31,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.ToggleFloatingActionButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -50,6 +52,7 @@ import cookmaid.app.shared.generated.resources.Res
 import cookmaid.app.shared.generated.resources.common_add_to_meal_plan
 import cookmaid.app.shared.generated.resources.common_add_to_shopping_list
 import cookmaid.app.shared.generated.resources.common_back
+import cookmaid.app.shared.generated.resources.common_cancel
 import cookmaid.app.shared.generated.resources.common_delete
 import cookmaid.app.shared.generated.resources.common_edit
 import cookmaid.app.shared.generated.resources.common_options
@@ -60,6 +63,8 @@ import cookmaid.app.shared.generated.resources.ic_close
 import cookmaid.app.shared.generated.resources.ic_more_vert
 import cookmaid.app.shared.generated.resources.ic_remove
 import cookmaid.app.shared.generated.resources.ic_shopping_cart
+import cookmaid.app.shared.generated.resources.recipe_delete_confirm_message
+import cookmaid.app.shared.generated.resources.recipe_delete_confirm_title
 import cookmaid.app.shared.generated.resources.recipe_detail_decrease_servings
 import cookmaid.app.shared.generated.resources.recipe_detail_description
 import cookmaid.app.shared.generated.resources.recipe_detail_increase_servings
@@ -429,4 +434,32 @@ internal fun RecipeActionMenu(
             text = { Text(Res.string.common_add_to_meal_plan.resolve()) },
         )
     }
+}
+
+/**
+ * Confirms deleting a recipe.
+ *
+ * Deleting takes the recipe's ingredients and steps with it and cannot be undone, so it is the
+ * most destructive per-item action in the app — it was firing straight from the overflow menu on
+ * a single tap.
+ *
+ * @param onConfirm called when the user confirms the deletion.
+ * @param onDismiss called when the dialog is dismissed.
+ */
+@Composable
+internal fun DeleteRecipeDialog(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(Res.string.recipe_delete_confirm_title.resolve()) },
+        text = { Text(Res.string.recipe_delete_confirm_message.resolve()) },
+        confirmButton = {
+            TextButton(onClick = onConfirm) { Text(Res.string.common_delete.resolve()) }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(Res.string.common_cancel.resolve()) }
+        },
+    )
 }
