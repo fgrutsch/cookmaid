@@ -219,7 +219,12 @@ internal fun StepsSection(
             value = stepInput,
             onValueChange = onStepInputChange,
             label = { Text(Res.string.recipe_edit_add_step.resolve()) },
-            modifier = Modifier.fillMaxWidth(),
+            // keyboardActions is the IME action, which only a soft keyboard's Done key raises —
+            // a hardware Enter never reaches it, and the field is not singleLine, so Enter typed
+            // a newline instead of adding the step. Same handling as the ingredient fields.
+            modifier = Modifier
+                .fillMaxWidth()
+                .textFieldKeyboardControl(onCommit = onAddStep),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { onAddStep() }),
             trailingIcon = {
