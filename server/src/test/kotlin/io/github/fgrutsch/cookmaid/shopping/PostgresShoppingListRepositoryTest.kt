@@ -151,6 +151,25 @@ class PostgresShoppingListRepositoryTest : BaseTest() {
     }
 
     @Test
+    fun `addItems keeps the order it was sent in`() = runTest {
+        val repo = getKoin().get<ShoppingListRepository>()
+        val userId = createUser()
+        val list = repo.createList(userId, "Groceries")
+        val names = listOf("Milk", "Bread", "Apples", "Flour", "Eggs", "Rice", "Salt", "Sugar")
+
+        repo.addItems(
+            list.id,
+            names.map { CreateShoppingItemRequest(catalogItemId = null, freeTextName = it, quantity = null) },
+            SupportedLocale.EN,
+        )
+
+        // The whole batch is inserted in one transaction. With created_at defaulting to now()
+        // they would all share a timestamp and the id tiebreak — a random uuid — would decide.
+        val found = repo.findItemsByListId(list.id, SupportedLocale.EN)
+        assertEquals(names, found.map { it.item.name })
+    }
+
+    @Test
     fun `updateItem updates quantity and checked`() = runTest {
         val repo = getKoin().get<ShoppingListRepository>()
         val userId = createUser()
