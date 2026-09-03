@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
@@ -112,10 +113,12 @@ fun RecipeListScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onAddRecipe,
-                // Logo orange, not the navy default — the FAB is the one element meant to pop
-                // against the navy chrome.
+                // Logo orange against the navy chrome, fully round rather than the default
+                // squircle. MaterialShapes would be the expressive choice here, but it hands back
+                // a RoundedPolygon and the multiplatform artifact exposes no Shape conversion.
                 containerColor = MaterialTheme.colorScheme.tertiary,
                 contentColor = MaterialTheme.colorScheme.onTertiary,
+                shape = CircleShape,
             ) {
                 Icon(painterResource(Res.drawable.ic_add), contentDescription = addRecipeMsg)
             }

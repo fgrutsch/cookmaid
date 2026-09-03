@@ -108,7 +108,6 @@
     <string name="meal_plan_add_count">Hinzufügen (%1$d)</string>
 
     <!-- Recipe Card -->
-    <string name="recipe_card_summary">%1$d Zutaten · %2$d Schritte</string>
 
     <!-- Months (short) -->
     <string name="month_jan">Jan</string>

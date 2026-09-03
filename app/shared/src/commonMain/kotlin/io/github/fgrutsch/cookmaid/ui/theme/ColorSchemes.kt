@@ -5,168 +5,157 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
 
 /**
- * Hand-authored color schemes built from two of the logo's colors: navy `#2D3E50` (hexagon
- * frame, wordmark) and orange `#E2732E` (hexagon frame, "MAID").
+ * Hand-authored colour schemes — the expressive direction.
  *
- * These replace seed-generated palettes because Material's generator reads only the hue off a
- * seed and caps chroma itself, so no literal brand hex can reach the UI — and a single seed
- * cannot express two brand colors at once.
+ * Colour comes from blocking, not from tinting. The content field is plain white and the chrome
+ * is the logo's blue at full strength, top and bottom, so it does the job a brand colour is for
+ * instead of registering as a 1.06:1 wash.
  *
- * Two colors, two jobs, so the user can learn the rule without being taught it:
- * - navy — structure. Top app bars, buttons, accent icons, the bottom-nav indicator. Furniture.
- * - orange — action, via `tertiary`. At most one orange element per screen (the recipe list FAB,
- *   the sign-in button). A second one costs orange its meaning and makes it decoration.
+ * Two brand values, sampled from the full-resolution artwork: blue `#3A5A67` from the hexagon
+ * frame and wordmark, and orange `#E2732E` from the frame's lower half. The blue supplies
+ * `primary` and — desaturated, as Material intends — `secondary`. Orange is `tertiary`, the one
+ * role Material reserves for a contrasting accent, and it stays the only warm colour in the app
+ * so that orange means exactly one thing: this is the action.
  *
- * The logo's sage deliberately has no role here. A color that surfaces in one or two places
- * reads as an inconsistency rather than a system; give sage a job first (a real state worth
- * naming), then a role.
+ * `secondaryContainer` is the same pale blue in both schemes on purpose — it is the navigation
+ * indicator, and it sits on the blue chrome rather than on the page, so it does not need to
+ * follow the page between light and dark.
  *
  * Every role is set explicitly. Omitting one silently falls back to Material's purple baseline,
- * which shows up as an out-of-place violet somewhere far from this file. Every on/container pair
- * below clears WCAG AA (4.5:1); the lowest is orange `onTertiary` at 5.7:1.
+ * which shows up as an out-of-place violet somewhere far from this file.
  */
 
-// Brand navy — #2D3E50 is Navy26 itself
-private val Navy20 = Color(0xFF1B2A38)
-private val Navy26 = Color(0xFF2D3E50)
-private val Navy40 = Color(0xFF4A5F76)
-private val Navy75 = Color(0xFFA6BCD6)
-private val Navy80 = Color(0xFFB4C6DC)
-private val Navy90 = Color(0xFFD6E4F5)
+// The logo's blue — chrome, accent text and buttons.
+//
+// #3A5A67 is the exact value, taken as the most frequent colour in the blue band of the
+// full-resolution artwork. It is the logo's *only* blue: the hexagon frame and the "COOK"
+// wordmark are the same value.
+//
+// Note this is not #2D3E50, the hex declared as the brand navy in the web config and favicon —
+// that value does not occur anywhere in the logo. #2D3E50 is roughly 11:1 against white where
+// the real logo blue is 7.4:1, which is why the chrome kept reading as heavy.
+private val Frame36 = Color(0xFF3A5A67)
+private val FrameDark = Color(0xFF283F48)
+private val Navy14 = Color(0xFF14212E)
+private val Navy45 = Color(0xFF5C6C7A)
+private val Navy55 = Color(0xFF6B7A88)
+private val Navy70 = Color(0xFFA9B8C6)
+private val Navy75 = Color(0xFFA8C0D8)
+private val Navy85 = Color(0xFFC7D2DD)
 
-// Logo orange — #E2732E is Orange60 itself
+// Logo orange — the action colour.
 private val Orange10 = Color(0xFF2A1000)
 private val Orange20 = Color(0xFF4E1B00)
 private val Orange30 = Color(0xFF7A3200)
 private val Orange60 = Color(0xFFE2732E)
-private val Orange80 = Color(0xFFFFA766)
+private val Orange75 = Color(0xFFFF9A55)
 private val Orange90 = Color(0xFFFFDBC8)
 
-// Page surfaces — near-white and neutral, so nothing reads as a grey background.
-private val Page = Color(0xFFFAFAFB)
-private val PageDark = Color(0xFF111316)
-private val Neutral10 = Color(0xFF1A1C1D)
-private val Neutral20 = Color(0xFF2F3032)
-private val Neutral90 = Color(0xFFE2E1E7)
-private val Neutral95 = Color(0xFFF2F0F2)
-private val Neutral100 = Color(0xFFFFFFFF)
+// Secondary — the logo blue's hue held, chroma dropped. Material's `secondary` is a
+// desaturated relative of `primary`, not an independent colour, and `secondaryContainer` is the
+// navigation indicator. Gold used to sit there: it read as a second accent competing with the
+// orange, only 14 degrees away from it in hue at the same saturation. One warm accent is enough,
+// and Material reserves that job for `tertiary`.
+private val Blue35 = Color(0xFF456070)
+private val Blue85 = Color(0xFFCFDCE2)
 
-// Container surfaces — the same navy as the brand, at surface strength.
-//
-// Tone cannot separate a filled card from a near-white page: every candidate lands at about
-// 1.06:1, and buying more contrast means darkening the page into grey. So these carry a blue
-// cast instead — around +10 on blue-minus-red against the page's +1. Hue is perceptible where
-// that little luminance is not, which is what makes a filled card read as a card here.
-private val Tint96 = Color(0xFFF0F4FA)
-private val Tint92 = Color(0xFFE7EDF6)
-private val Tint88 = Color(0xFFDFE6F2)
-private val Tint84 = Color(0xFFD7E0EE)
-private val Tint76 = Color(0xFFCBD6E8)
-private val TintDark6 = Color(0xFF0B0D0F)
-private val TintDark7 = Color(0xFF0D0F11)
-private val TintDark12 = Color(0xFF191D23)
-private val TintDark15 = Color(0xFF1F242B)
-private val TintDark19 = Color(0xFF272D35)
-private val TintDark23 = Color(0xFF2F3640)
-
-// Neutral variant — same cool hue, a touch more chroma for outlines
-private val NeutralVar30 = Color(0xFF44474C)
-private val NeutralVar50 = Color(0xFF74777C)
-private val NeutralVar60 = Color(0xFF8E9196)
-private val NeutralVar80 = Color(0xFFC4C6CC)
+// Content field — pure white in light, so a tinted well reads without darkening the page.
+private val Ground = Color(0xFFFFFFFF)
+private val Well = Color(0xFFEEF2F7)
+private val WellDeep = Color(0xFFE4EBF3)
+private val WellDeeper = Color(0xFFD9E3EC)
+private val WellVariant = Color(0xFFDCE5EF)
+private val GroundDark = Color(0xFF0E141A)
+private val GroundDarkest = Color(0xFF080C10)
+private val WellDark = Color(0xFF1A2530)
+private val WellDarkDeep = Color(0xFF243140)
+private val WellDarkDeeper = Color(0xFF2E3C4C)
+private val InkDark = Color(0xFFDCE5EE)
+private val InkDarkMuted = Color(0xFF9BAAB8)
 
 /**
- * Light scheme. `secondaryContainer` is [Navy75] rather than the lighter [Navy90] Material's
- * ramp would suggest: as the bottom-nav indicator it sits on `surfaceContainer`, where [Navy90]
- * reaches only 1.1:1 and the selected pill disappears. [Navy75] holds 1.6:1.
- *
- * [Navy26] fills both `primary` and `primaryContainer` on purpose: buttons and
- * app bars are meant to read as the same brand navy, so they share one value rather than
- * drifting apart as two near-identical tones.
- *
- * `tertiary` is the saturated logo orange with a dark `onTertiary`, rather than the dark accent
- * tone Material would normally put there. It exists to be filled (the FAB), not to be read as
- * text on a light surface — orange on paper only reaches 3:1, so keep it off small text.
+ * Light scheme. `primary` and `primaryContainer` are the same value: the app bar and the
+ * navigation bar are one block, a button is that block at small scale, and the same blue reads
+ * as accent text on white at 7.4:1.
  */
 internal val LightColors = lightColorScheme(
-    primary = Navy26,
-    onPrimary = Neutral100,
-    primaryContainer = Navy26,
-    onPrimaryContainer = Neutral100,
-    inversePrimary = Navy80,
-    secondary = Navy40,
-    onSecondary = Neutral100,
-    secondaryContainer = Navy75,
-    onSecondaryContainer = Navy20,
+    primary = Frame36,
+    onPrimary = Ground,
+    primaryContainer = Frame36,
+    onPrimaryContainer = Ground,
+    inversePrimary = Navy75,
+    secondary = Blue35,
+    onSecondary = Ground,
+    secondaryContainer = Blue85,
+    onSecondaryContainer = Navy14,
     tertiary = Orange60,
     onTertiary = Orange10,
     tertiaryContainer = Orange90,
     onTertiaryContainer = Orange20,
-    background = Page,
-    onBackground = Neutral10,
-    surface = Page,
-    onSurface = Neutral10,
-    surfaceVariant = Tint88,
-    onSurfaceVariant = NeutralVar30,
-    surfaceTint = Navy26,
-    inverseSurface = Neutral20,
-    inverseOnSurface = Neutral95,
+    background = Ground,
+    onBackground = Navy14,
+    surface = Ground,
+    onSurface = Navy14,
+    surfaceVariant = WellVariant,
+    onSurfaceVariant = Navy45,
+    surfaceTint = Frame36,
+    inverseSurface = FrameDark,
+    inverseOnSurface = Well,
     error = Color(0xFFBA1A1A),
-    onError = Neutral100,
+    onError = Ground,
     errorContainer = Color(0xFFFFDAD6),
     onErrorContainer = Color(0xFF410002),
-    outline = NeutralVar50,
-    outlineVariant = NeutralVar80,
+    outline = Navy55,
+    outlineVariant = Navy85,
     scrim = Color(0xFF000000),
-    surfaceBright = Neutral100,
-    surfaceDim = Tint76,
-    surfaceContainerLowest = Neutral100,
-    surfaceContainerLow = Tint96,
-    surfaceContainer = Tint92,
-    surfaceContainerHigh = Tint88,
-    surfaceContainerHighest = Tint84,
+    surfaceBright = Ground,
+    surfaceDim = WellDeeper,
+    surfaceContainerLowest = Ground,
+    surfaceContainerLow = Well,
+    surfaceContainer = WellDeep,
+    surfaceContainerHigh = WellDeeper,
+    surfaceContainerHighest = WellDeeper,
 )
 
 /**
- * Dark scheme. `primaryContainer` stays a dark navy here rather than mirroring the light
- * scheme's `primary`, so app bars remain dark chrome instead of turning into a bright band.
- * Orange lightens to its tone-80 variant so it stays visible against dark surfaces.
+ * Dark scheme. The chrome darkens to [FrameDark] — the logo blue's hue and saturation held, its
+ * lightness taken down far enough to sit on a near-black field without glowing off it.
  */
 internal val DarkColors = darkColorScheme(
-    primary = Navy80,
-    onPrimary = Navy20,
-    primaryContainer = Navy20,
-    onPrimaryContainer = Navy90,
-    inversePrimary = Navy40,
-    secondary = Navy80,
-    onSecondary = Navy20,
-    secondaryContainer = Navy40,
-    onSecondaryContainer = Navy90,
-    tertiary = Orange80,
+    primary = Navy75,
+    onPrimary = Navy14,
+    primaryContainer = FrameDark,
+    onPrimaryContainer = Ground,
+    inversePrimary = Frame36,
+    secondary = Blue85,
+    onSecondary = Navy14,
+    secondaryContainer = Blue85,
+    onSecondaryContainer = Navy14,
+    tertiary = Orange75,
     onTertiary = Orange20,
     tertiaryContainer = Orange30,
     onTertiaryContainer = Orange90,
-    background = PageDark,
-    onBackground = Neutral90,
-    surface = PageDark,
-    onSurface = Neutral90,
-    surfaceVariant = NeutralVar30,
-    onSurfaceVariant = NeutralVar80,
-    surfaceTint = Navy80,
-    inverseSurface = Neutral90,
-    inverseOnSurface = Neutral20,
+    background = GroundDark,
+    onBackground = InkDark,
+    surface = GroundDark,
+    onSurface = InkDark,
+    surfaceVariant = WellDarkDeeper,
+    onSurfaceVariant = InkDarkMuted,
+    surfaceTint = Navy75,
+    inverseSurface = InkDark,
+    inverseOnSurface = FrameDark,
     error = Color(0xFFFFB4AB),
     onError = Color(0xFF690005),
     errorContainer = Color(0xFF93000A),
     onErrorContainer = Color(0xFFFFDAD6),
-    outline = NeutralVar60,
-    outlineVariant = NeutralVar30,
+    outline = Navy70,
+    outlineVariant = WellDarkDeeper,
     scrim = Color(0xFF000000),
-    surfaceBright = TintDark23,
-    surfaceDim = TintDark7,
-    surfaceContainerLowest = TintDark6,
-    surfaceContainerLow = TintDark12,
-    surfaceContainer = TintDark15,
-    surfaceContainerHigh = TintDark19,
-    surfaceContainerHighest = TintDark23,
+    surfaceBright = WellDarkDeeper,
+    surfaceDim = GroundDark,
+    surfaceContainerLowest = GroundDarkest,
+    surfaceContainerLow = WellDark,
+    surfaceContainer = WellDarkDeep,
+    surfaceContainerHigh = WellDarkDeeper,
+    surfaceContainerHighest = WellDarkDeeper,
 )

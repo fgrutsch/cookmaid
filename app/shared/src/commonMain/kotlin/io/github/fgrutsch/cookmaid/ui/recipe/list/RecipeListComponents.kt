@@ -68,7 +68,6 @@ import cookmaid.app.shared.generated.resources.recipe_list_filter_tags
 import cookmaid.app.shared.generated.resources.recipe_list_random
 import cookmaid.app.shared.generated.resources.recipe_list_reroll
 import cookmaid.app.shared.generated.resources.recipe_list_title
-import cookmaid.app.shared.generated.resources.recipe_card_summary
 import cookmaid.app.shared.generated.resources.recipe_list_view_details
 import io.github.fgrutsch.cookmaid.recipe.Recipe
 import io.github.fgrutsch.cookmaid.ui.common.resolve
@@ -296,23 +295,13 @@ internal fun RecipeCard(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Medium,
                 )
-                // Tags, not the ingredient/step count: the counts are near-identical across
-                // recipes, so they cannot help you pick one. Tags vary, and they give the rows
-                // different heights. Untagged recipes keep the counts rather than nothing.
+                // Tags only. The ingredient and step counts were near-identical from recipe to
+                // recipe, so they filled the line without helping anyone choose one.
                 if (recipe.tags.isNotEmpty()) {
                     Text(
                         recipe.tags.joinToString(" · "),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.primary,
-                    )
-                } else if (recipe.ingredients.isNotEmpty()) {
-                    Text(
-                        Res.string.recipe_card_summary.resolve(
-                            recipe.ingredients.size,
-                            recipe.steps.size,
-                        ),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }

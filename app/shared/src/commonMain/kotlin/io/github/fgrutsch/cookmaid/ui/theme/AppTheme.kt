@@ -1,6 +1,9 @@
 package io.github.fgrutsch.cookmaid.ui.theme
 
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -9,18 +12,28 @@ import androidx.compose.runtime.Composable
  * Applies the app-wide Material3 theme with dynamic dark/light mode.
  *
  * @param isDark whether to use the dark color scheme.
+ * @param hasDarkTopChrome whether the content draws a dark region behind the status bar — true
+ *   for screens with a top app bar, false for the plain-white login and loading screens. The
+ *   platform cannot infer this, and getting it wrong makes the status bar icons invisible.
  * @param content the composable content to theme.
  */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun AppTheme(
     isDark: Boolean = false,
+    hasDarkTopChrome: Boolean = true,
     content: @Composable () -> Unit,
 ) {
-    // Every screen's top region is a light surface in the light scheme and a dark one in the
-    // dark scheme, so the status bar follows the theme and nothing per-screen is needed.
-    SystemBarAppearance(lightIcons = isDark)
-    MaterialTheme(
+    // The app bar is the logo blue in both schemes, so any screen with one needs light status bar
+    // icons whatever the theme. The login and loading screens have no bar and sit on the white
+    // page, where light icons would vanish.
+    SystemBarAppearance(lightIcons = isDark || hasDarkTopChrome)
+    // Expressive rather than MaterialTheme: the springier motion scheme reaches every default
+    // component, so checking off a shopping item — the app's most repeated interaction — gets
+    // some character without touching the call site.
+    MaterialExpressiveTheme(
         colorScheme = if (isDark) DarkColors else LightColors,
+        motionScheme = MotionScheme.expressive(),
         content = content,
     )
 }
@@ -29,17 +42,16 @@ fun AppTheme(
  * Colors shared by every top app bar. Use this rather than `TopAppBarDefaults.topAppBarColors()`
  * at the call site — a bar that sets its own colors will drift away from the rest of the chrome.
  *
- * The container is `surfaceContainer`, which is navy-tinted rather than grey — a soft blue band
- * that is neither the white it became on plain `surface` nor a grey smudge. A filled brand-navy
- * bar is Material 2's pattern and far too much navy; the title and icons carry the brand
- * instead.
+ * The container is the logo's shirt teal. In this direction the bar is not a tinted strip over
+ * the content but one edge of a colour block that also includes the navigation bar, with the
+ * white content field sitting between them. Being light, it takes dark ink rather than white.
  *
  * @return the [TopAppBarColors] every screen's top bar should use.
  */
 @Composable
 fun appTopAppBarColors(): TopAppBarColors = TopAppBarDefaults.topAppBarColors(
-    containerColor = MaterialTheme.colorScheme.surfaceContainer,
-    titleContentColor = MaterialTheme.colorScheme.primary,
-    navigationIconContentColor = MaterialTheme.colorScheme.primary,
-    actionIconContentColor = MaterialTheme.colorScheme.primary,
+    containerColor = MaterialTheme.colorScheme.primaryContainer,
+    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+    navigationIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+    actionIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
 )

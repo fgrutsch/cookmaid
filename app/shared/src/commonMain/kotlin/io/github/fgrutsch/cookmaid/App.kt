@@ -7,8 +7,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -116,7 +118,10 @@ fun App(
             LocalAppLocale provides (settingsState.locale?.code),
         ) {
             key(settingsState.locale) {
-                AppTheme(isDark = settingsState.effectiveDarkMode(isSystemInDarkTheme())) {
+                AppTheme(
+                    isDark = settingsState.effectiveDarkMode(isSystemInDarkTheme()),
+                    hasDarkTopChrome = authState.status == AuthState.Status.Authenticated,
+                ) {
                     key(authState.user?.id) {
                         when (authState.status) {
                             AuthState.Status.Initializing -> {
@@ -188,12 +193,17 @@ private fun MainContent(
     }
 }
 
+private const val UNSELECTED_TAB_ALPHA = 0.75f
+
 @Composable
 private fun BottomNavigationBar(
     selectedTab: TopLevelRoute,
     onTabSelected: (TopLevelRoute) -> Unit,
 ) {
-    NavigationBar {
+    // The lower edge of the same navy block as the app bar, so the white content field sits
+    // between two pieces of chrome rather than fading into a near-white bar.
+    val onBlock = MaterialTheme.colorScheme.onPrimaryContainer
+    NavigationBar(containerColor = MaterialTheme.colorScheme.primaryContainer) {
         TopLevelRoute.entries.forEach { tab ->
             NavigationBarItem(
                 selected = selectedTab == tab,
@@ -202,6 +212,13 @@ private fun BottomNavigationBar(
                     Icon(painterResource(tab.icon), contentDescription = tab.labelRes.resolve())
                 },
                 label = { Text(tab.labelRes.resolve()) },
+                colors = NavigationBarItemDefaults.colors(
+                    indicatorColor = MaterialTheme.colorScheme.secondaryContainer,
+                    selectedIconColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    selectedTextColor = onBlock,
+                    unselectedIconColor = onBlock.copy(alpha = UNSELECTED_TAB_ALPHA),
+                    unselectedTextColor = onBlock.copy(alpha = UNSELECTED_TAB_ALPHA),
+                ),
             )
         }
     }
