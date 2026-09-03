@@ -124,6 +124,33 @@ class PostgresShoppingListRepositoryTest : BaseTest() {
     }
 
     @Test
+    fun `findItemsByListId keeps its order when an item is updated`() = runTest {
+        val repo = getKoin().get<ShoppingListRepository>()
+        val userId = createUser()
+        val list = repo.createList(userId, "Groceries")
+        val names = listOf("Milk", "Bread", "Apples", "Flour", "Eggs")
+        names.forEach { name ->
+            repo.addItem(
+                list.id,
+                catalogItemId = null,
+                freeTextName = name,
+                quantity = null,
+                locale = SupportedLocale.EN,
+            )
+        }
+
+        val before = repo.findItemsByListId(list.id, SupportedLocale.EN)
+        assertEquals(names, before.map { it.item.name })
+
+        // Ticking an item rewrites its row. Without an explicit ORDER BY that moves it in the
+        // heap, and the next read comes back in a different order.
+        repo.updateItem(before[2].id, quantity = null, checked = true)
+
+        val after = repo.findItemsByListId(list.id, SupportedLocale.EN)
+        assertEquals(names, after.map { it.item.name })
+    }
+
+    @Test
     fun `updateItem updates quantity and checked`() = runTest {
         val repo = getKoin().get<ShoppingListRepository>()
         val userId = createUser()

@@ -324,8 +324,16 @@ class PostgresRecipeRepository : RecipeRepository {
             .join(CatalogItemsTable, JoinType.LEFT, RecipeIngredientsTable.catalogItemId, CatalogItemsTable.id)
             .join(ItemCategoriesTable, JoinType.LEFT, CatalogItemsTable.categoryId, ItemCategoriesTable.id)
 
+        // Ordered for the same reason as the shopping list: no ORDER BY means heap order, which
+        // moves under any UPDATE. Note every ingredient of a recipe is inserted in one
+        // transaction, so they share a created_at and the id tiebreak decides — stable across
+        // fetches, but not the order they were typed in. That needs a position column.
         return joined.selectAll()
             .where { RecipeIngredientsTable.recipeId eq recipeId }
+            .orderBy(
+                RecipeIngredientsTable.createdAt to SortOrder.ASC,
+                RecipeIngredientsTable.id to SortOrder.ASC,
+            )
             .map { row ->
                 val catalogItemId = row[RecipeIngredientsTable.catalogItemId]
                 val item: Item = if (catalogItemId != null) {
@@ -357,6 +365,10 @@ class PostgresRecipeRepository : RecipeRepository {
 
         return joined.selectAll()
             .where { RecipeIngredientsTable.recipeId inList recipeIds }
+            .orderBy(
+                RecipeIngredientsTable.createdAt to SortOrder.ASC,
+                RecipeIngredientsTable.id to SortOrder.ASC,
+            )
             .groupBy { it[RecipeIngredientsTable.recipeId] }
             .mapValues { (_, rows) ->
                 rows.map { row ->

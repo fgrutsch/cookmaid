@@ -209,8 +209,13 @@ class PostgresShoppingListRepository : ShoppingListRepository {
             .join(CatalogItemsTable, JoinType.LEFT, ShoppingItemsTable.catalogItemId, CatalogItemsTable.id)
             .join(ItemCategoriesTable, JoinType.LEFT, CatalogItemsTable.categoryId, ItemCategoriesTable.id)
 
+        // Without an explicit order Postgres hands back heap order, which shifts whenever a row is
+        // rewritten — and toggling `checked` is an UPDATE, so ticking one item silently reorders
+        // the list on the next fetch. created_at carries the insertion order; id breaks the ties
+        // `now()` creates for rows inserted in the same transaction, such as a bulk add.
         joined.selectAll()
             .where { ShoppingItemsTable.listId eq listId }
+            .orderBy(ShoppingItemsTable.createdAt to SortOrder.ASC, ShoppingItemsTable.id to SortOrder.ASC)
             .map { row ->
                 val catalogItemId = row[ShoppingItemsTable.catalogItemId]
                 val item: Item = if (catalogItemId != null) {
