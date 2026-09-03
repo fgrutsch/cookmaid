@@ -14,7 +14,11 @@ TRUNCATE meal_plan_items, recipe_ingredients, shopping_items, shopping_lists, re
 -- Shopping Lists
 -- ============================================================
 
+-- The default list is normally created once, during user provisioning, and never again — so the
+-- TRUNCATE above removes it for good and every `is_default = TRUE` lookup below would come back
+-- NULL. Recreate it here rather than leaving the script dependent on a row it just deleted.
 INSERT INTO shopping_lists (id, user_id, name, is_default) VALUES
+    ('00000000-0000-0000-1000-000000000000', :user_id, 'Shopping List', TRUE),
     ('00000000-0000-0000-1000-000000000001', :user_id, 'Weekly Groceries', FALSE);
 
 INSERT INTO shopping_items (list_id, catalog_item_id, free_text_name, quantity, checked) VALUES
