@@ -18,7 +18,7 @@ The Android app is on
   <img src="docs/images/recipe_list.png" alt="Recipe list" height="360"/>
   <img src="docs/images/recipe_detail.png" alt="Recipe detail" height="360"/>
   <img src="docs/images/mealplan.png" alt="Meal plan" height="360"/>
-  <img src="docs/images/settings.png" alt="Meal plan" height="360"/>
+  <img src="docs/images/account.png" alt="Account" height="360"/>
 </p>
 
 See the [FAQ & Feature Guide](docs/faq.md) for usage tips and common workflows.
