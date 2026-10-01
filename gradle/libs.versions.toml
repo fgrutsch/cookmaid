@@ -31,7 +31,7 @@ hikari = "7.1.0"
 postgresql = "42.7.13"
 
 # Auth
-oidc = "0.16.5"
+oidc = "0.18.3"
 
 # Testing
 junit5 = "6.1.3"
