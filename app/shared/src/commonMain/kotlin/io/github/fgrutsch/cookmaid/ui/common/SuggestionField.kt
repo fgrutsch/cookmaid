@@ -3,6 +3,7 @@ package io.github.fgrutsch.cookmaid.ui.common
 import androidx.compose.foundation.background
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenu
 import androidx.compose.material3.ExposedDropdownMenuBoxScope
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults

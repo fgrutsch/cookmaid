@@ -8,8 +8,8 @@ androidx-activity = "1.13.0"
 androidx-lifecycle = "2.11.0"
 
 # Compose
-composeMultiplatform = "1.12.2"
-material3 = "1.12.0-alpha03"
+composeMultiplatform = "1.13.0-beta01"
+material3 = "1.13.0-beta01"
 navigation3 = "1.2.0-alpha02"
 
 # Kotlin
