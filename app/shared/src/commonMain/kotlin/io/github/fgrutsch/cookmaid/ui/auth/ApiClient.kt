@@ -13,7 +13,6 @@ import org.publicvalue.multiplatform.oidc.OpenIdConnectClient
 import org.publicvalue.multiplatform.oidc.ktor.oidcBearer
 import org.publicvalue.multiplatform.oidc.tokenstore.TokenRefreshHandler
 import org.publicvalue.multiplatform.oidc.tokenstore.TokenStore
-import org.publicvalue.multiplatform.oidc.tokenstore.removeTokens
 
 class ApiClient(
     baseUrl: ApiBaseUrl,
