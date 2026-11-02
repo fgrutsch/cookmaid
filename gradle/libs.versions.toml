@@ -2,6 +2,7 @@
 # Android
 agp = "9.3.2"
 android-compileSdk = "37"
+android-compileSdkMinor = "1"
 android-minSdk = "28"
 android-targetSdk = "36"
 androidx-activity = "1.13.0"
