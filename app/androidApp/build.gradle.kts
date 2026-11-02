@@ -15,9 +15,11 @@ val keystoreProps = rootProject.file("keystore.properties").takeIf { it.exists()
 
 android {
     namespace = "io.github.fgrutsch.cookmaid"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
-    // Compose 1.13 AARs require compiling against API 37.1
-    compileSdkMinor = 1
+    compileSdk {
+        version = release(libs.versions.android.compileSdk.get().toInt()) {
+            minorApiLevel = libs.versions.android.compileSdkMinor.get().toInt()
+        }
+    }
 
     buildFeatures {
         buildConfig = true
