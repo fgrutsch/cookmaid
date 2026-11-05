@@ -133,3 +133,18 @@ and `oidc.jwks-url` default to the local Logto instance;
 ./gradlew :core:allTests
 ./gradlew :app:shared:allTests
 ```
+
+### Android prod builds
+
+The `prod` flavor reads its deployment values from a gitignored `prod.properties` in the repo root.
+The release workflow writes it from the `ANDROID_PROD_PROPERTIES` repository variable; prod release
+builds fail if a required key is missing.
+
+```properties
+baseUrl=https://cookmaid.example.com
+oidc.discoveryUri=https://sso.example.com/oidc/.well-known/openid-configuration
+oidc.clientId=<native-app-client-id>
+oidc.scope=openid profile email offline_access
+oidc.accountUri=https://sso.example.com/account/security
+oidc.resource=https://cookmaid.example.com/api
+```

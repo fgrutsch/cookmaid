@@ -47,6 +47,10 @@ jobs:
           keyAlias=${{ secrets.KEY_ALIAS }}
           keyPassword=${{ secrets.KEY_PASSWORD }}
           EOF
+      - name: Create prod.properties
+        env:
+          ANDROID_PROD_PROPERTIES: ${{ vars.ANDROID_PROD_PROPERTIES }}
+        run: printf '%s\n' "$ANDROID_PROD_PROPERTIES" > prod.properties
       - name: Build APK and AAB
         run: ./gradlew :app:androidApp:assembleProdRelease :app:androidApp:bundleProdRelease
       - name: Upload to release
