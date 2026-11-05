@@ -107,8 +107,9 @@ tasks.matching { it.name.startsWith("installDev") }.configureEach {
 }
 
 // A prod release without prod.properties would ship an app that cannot reach the server or log in.
-val missingProdProps = listOf("baseUrl", "oidc.discoveryUri", "oidc.clientId", "oidc.scope", "oidc.accountUri")
-    .filter { prodProp(it).isBlank() }
+val missingProdProps = listOf(
+    "baseUrl", "oidc.discoveryUri", "oidc.clientId", "oidc.scope", "oidc.accountUri", "oidc.resource",
+).filter { prodProp(it).isBlank() }
 tasks.matching { it.name == "preProdReleaseBuild" }.configureEach {
     val missing = missingProdProps
     doFirst {
