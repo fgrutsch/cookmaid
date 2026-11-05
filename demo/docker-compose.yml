@@ -13,7 +13,7 @@ services:
       OIDC_AUDIENCE: http://localhost:8081/api
       OIDC_DISCOVERY_URI: http://localhost:3001/oidc/.well-known/openid-configuration
       OIDC_CLIENT_ID: cookmaid-demo
-      OIDC_SCOPE: "openid profile email"
+      OIDC_SCOPE: "openid profile email offline_access"
       OIDC_ACCOUNT_URI: http://localhost:3001/account/security
       OIDC_RESOURCE: http://localhost:8081/api
     depends_on:
