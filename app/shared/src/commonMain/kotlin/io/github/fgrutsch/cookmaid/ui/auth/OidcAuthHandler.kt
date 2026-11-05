@@ -25,18 +25,14 @@ class OidcAuthHandler(
         oidcClient.discover()
         val flow = authFlowFactory.createAuthFlow(oidcClient)
         val resource = oidcConfig.resource
-        val tokens = if (resource != null) {
-            flow.getAccessToken(
-                configureAuthUrl = {
-                    parameters.append("resource", resource)
-                },
-                configureTokenExchange = {
-                    appendResourceToFormBody(resource)
-                }
-            )
-        } else {
-            flow.getAccessToken()
-        }
+        val tokens = flow.getAccessToken(
+            configureAuthUrl = {
+                appendLoginParameters(oidcConfig.scope, resource)
+            },
+            configureTokenExchange = {
+                if (resource != null) appendResourceToFormBody(resource)
+            }
+        )
         tokenStore.saveTokens(tokens)
 
         val user = userClient.getOrCreateUser()
