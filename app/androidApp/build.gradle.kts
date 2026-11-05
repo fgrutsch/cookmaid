@@ -49,7 +49,7 @@ android {
             dimension = "environment"
             buildConfigField("String", "BASE_URL", """"http://localhost:8081"""")
             buildConfigField("String", "OIDC_DISCOVERY_URI", """"${localProps.getProperty("oidc.discoveryUri")}"""")
-            buildConfigField("String", "OIDC_CLIENT_ID", """"${localProps.getProperty("oidc.clientId")}"""")
+            buildConfigField("String", "OIDC_CLIENT_ID", """"${localProps.getProperty("oidc.androidClientId")}"""")
             buildConfigField("String", "OIDC_SCOPE", """"${localProps.getProperty("oidc.scope")}"""")
             buildConfigField("String", "OIDC_ACCOUNT_URI", """"${localProps.getProperty("oidc.accountUri")}"""")
             buildConfigField("String", "OIDC_RESOURCE", """"${localProps.getProperty("oidc.resource") ?: ""}"""")
@@ -62,8 +62,9 @@ android {
                 "OIDC_DISCOVERY_URI",
                 """"https://sso.fgrutsch.dev/oidc/.well-known/openid-configuration""""
             )
-            buildConfigField("String", "OIDC_CLIENT_ID", """"n12rjceuk6vgy676z9e3y"""")
-            buildConfigField("String", "OIDC_SCOPE", """"openid profile email"""")
+            // TODO: replace with the client ID of the prod Logto Native app before merging.
+            buildConfigField("String", "OIDC_CLIENT_ID", """"REPLACE_WITH_PROD_NATIVE_CLIENT_ID"""")
+            buildConfigField("String", "OIDC_SCOPE", """"openid profile email offline_access"""")
             buildConfigField("String", "OIDC_ACCOUNT_URI", """"https://sso.fgrutsch.dev/account/security"""")
             buildConfigField("String", "OIDC_RESOURCE", """"https://cookmaid.fgrutsch.dev/api"""")
         }
