@@ -10,6 +10,9 @@ import org.junit.jupiter.params.provider.ValueSource
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.measureTime
 
 class JsonLdRecipeExtractorTest {
 
@@ -140,5 +143,15 @@ class JsonLdRecipeExtractorTest {
     @Test
     fun `ingredient line without amount keeps full text`() {
         assertEquals(RecipeIngredient(Item.FreeText("Salz und Pfeffer")), parseIngredient("Salz und Pfeffer"))
+    }
+
+    @Test
+    fun `hostile digit-run ingredient lines parse quickly`() {
+        val lines = List(4_000) { "\"${"1".repeat(500)}\"" }.joinToString(",")
+        val elapsed = measureTime {
+            JsonLdRecipeExtractor.extract(page("""{"@type":"Recipe","name":"X","recipeIngredient":[$lines]}"""))
+        }
+
+        assertTrue(elapsed < 2.seconds, "took $elapsed")
     }
 }

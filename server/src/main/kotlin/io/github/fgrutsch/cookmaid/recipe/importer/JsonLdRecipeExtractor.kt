@@ -19,6 +19,7 @@ import org.jsoup.nodes.Document
  */
 object JsonLdRecipeExtractor {
 
+    private const val MAX_INGREDIENTS = 100
     private val yieldNumber = Regex("""\d+""")
 
     /**
@@ -49,7 +50,7 @@ object JsonLdRecipeExtractor {
         return RecipeRequest(
             name = name,
             description = text(recipe["description"]),
-            ingredients = strings(recipe["recipeIngredient"]).map(::parseIngredient),
+            ingredients = strings(recipe["recipeIngredient"]).take(MAX_INGREDIENTS).map(::parseIngredient),
             steps = instructions(recipe["recipeInstructions"]),
             servings = servings(recipe["recipeYield"]),
         )

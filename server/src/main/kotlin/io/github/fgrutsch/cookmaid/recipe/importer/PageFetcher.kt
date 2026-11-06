@@ -42,7 +42,8 @@ class PageFetcher(private val isAllowed: (InetAddress) -> Boolean = ::isPublicAd
         private const val TIMEOUT_MILLIS = 10_000L
         private val REDIRECT_STATUSES = 300..399
         private val ALLOWED_SCHEMES = setOf("http", "https")
-        private val IPV4_LITERAL = Regex("""\d{1,3}(\.\d{1,3}){3}""")
+        // Same rule OkHttp uses to skip Dns: any all-digit/dot host (incl. decimal forms like 2130706433).
+        private val IPV4_LITERAL = Regex("""[\d.]+""")
     }
 
     private val logger = KotlinLogging.logger {}
@@ -93,7 +94,7 @@ class PageFetcher(private val isAllowed: (InetAddress) -> Boolean = ::isPublicAd
         val host = uri.host?.removePrefix("[")?.removeSuffix("]")
         val scheme = uri.scheme?.lowercase()
         val blocked = host.isNullOrBlank() || scheme !in ALLOWED_SCHEMES ||
-            (isIpLiteral(host) && !isAllowed(InetAddress.getByName(host)))
+            (isIpLiteral(host) && runCatching { !isAllowed(InetAddress.getByName(host)) }.getOrDefault(true))
         if (blocked) throw RecipeImportException("URL not allowed")
         return uri
     }

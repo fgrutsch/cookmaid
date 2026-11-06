@@ -10,6 +10,7 @@ import io.ktor.server.netty.Netty
 import io.ktor.server.response.header
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondText
+import io.ktor.server.routing.RoutingContext
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 import kotlinx.coroutines.runBlocking
@@ -35,6 +36,7 @@ class PageFetcherTest {
             get("/loop") { redirect("/loop") }
             get("/to-private") { redirect("http://10.0.0.1/") }
             get("/to-private-literal") { redirect("http://169.254.169.254/latest/meta-data") }
+            get("/to-decimal-literal") { redirect("http://2852039166/latest/meta-data") }
             get("/big") { call.respondText("x".repeat(2 * 1024 * 1024 + 1)) }
             get("/missing") { call.respond(HttpStatusCode.NotFound) }
         }
@@ -42,9 +44,11 @@ class PageFetcherTest {
 
     private val port = runBlocking { server.engine.resolvedConnectors().first().port }
 
+    private val urlNotAllowed = "URL not allowed"
+
     private val loopbackAllowed = PageFetcher(isAllowed = { it.isLoopbackAddress })
 
-    private suspend fun io.ktor.server.routing.RoutingContext.redirect(location: String) {
+    private suspend fun RoutingContext.redirect(location: String) {
         call.response.header(HttpHeaders.Location, location)
         call.respond(HttpStatusCode.Found)
     }
@@ -77,9 +81,14 @@ class PageFetcherTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = ["http://127.0.0.1:PORT/ok", "http://[::1]:PORT/ok", "http://169.254.169.254/"])
+    @ValueSource(
+        strings = [
+            "http://127.0.0.1:PORT/ok", "http://[::1]:PORT/ok", "http://169.254.169.254/", "http://2130706433:PORT/ok",
+        ],
+    )
     fun `ip literal hosts are blocked`(url: String) = runTest {
-        assertFailsWith<RecipeImportException> { PageFetcher().fetch(url.replace("PORT", port.toString())) }
+        val error = assertFailsWith<RecipeImportException> { PageFetcher().fetch(url.replace("PORT", port.toString())) }
+        assertEquals(urlNotAllowed, error.message)
     }
 
     @ParameterizedTest
@@ -99,9 +108,15 @@ class PageFetcherTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = ["/to-private", "/to-private-literal"])
+    @ValueSource(strings = ["/to-private-literal", "/to-decimal-literal"])
     fun `redirect to a private address is blocked`(path: String) = runTest {
-        assertFailsWith<RecipeImportException> { loopbackAllowed.fetch("http://127.0.0.1:$port$path") }
+        val error = assertFailsWith<RecipeImportException> { loopbackAllowed.fetch("http://127.0.0.1:$port$path") }
+        assertEquals(urlNotAllowed, error.message)
+    }
+
+    @Test
+    fun `redirect to a private hostname is blocked`() = runTest {
+        assertFailsWith<RecipeImportException> { loopbackAllowed.fetch("http://127.0.0.1:$port/to-private") }
     }
 
     @Test

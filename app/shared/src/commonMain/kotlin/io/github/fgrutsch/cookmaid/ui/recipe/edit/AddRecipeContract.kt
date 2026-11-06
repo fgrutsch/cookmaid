@@ -41,7 +41,9 @@ sealed interface AddRecipeEvent {
     data object Save : AddRecipeEvent
     data class SetImportDialogVisible(val visible: Boolean) : AddRecipeEvent
 
-    /** Replaces the form's content with the recipe found at [url]; tags are kept. */
+    /**
+     * Replaces the form's content with the recipe found at [url]; tags are kept.
+     */
     data class ImportFromUrl(val url: String) : AddRecipeEvent
 }
 
