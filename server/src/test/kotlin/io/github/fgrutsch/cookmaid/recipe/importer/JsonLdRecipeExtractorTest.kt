@@ -1,0 +1,144 @@
+package io.github.fgrutsch.cookmaid.recipe.importer
+
+import io.github.fgrutsch.cookmaid.catalog.Item
+import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
+import org.jsoup.Jsoup
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
+import org.junit.jupiter.params.provider.ValueSource
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+
+class JsonLdRecipeExtractorTest {
+
+    private fun page(vararg jsonLd: String) = Jsoup.parse(
+        "<html><head>" + jsonLd.joinToString("") { "<script type=\"application/ld+json\">$it</script>" } +
+            "</head><body></body></html>",
+    )
+
+    @Test
+    fun `top-level recipe fills every field`() {
+        val recipe = JsonLdRecipeExtractor.extract(
+            page(
+                """
+                {"@context":"https://schema.org","@type":"Recipe","name":"Pancakes","description":"Fluffy",
+                 "recipeYield":"4","recipeIngredient":["200 g Mehl","2 Eier"],
+                 "recipeInstructions":[{"@type":"HowToStep","text":"Mix"},{"@type":"HowToStep","text":"Fry"}]}
+                """,
+            ),
+        )
+
+        assertNotNull(recipe)
+        assertEquals("Pancakes", recipe.name)
+        assertEquals("Fluffy", recipe.description)
+        assertEquals(4, recipe.servings)
+        assertEquals(
+            listOf(RecipeIngredient(Item.FreeText("Mehl"), "200 g"), RecipeIngredient(Item.FreeText("Eier"), "2")),
+            recipe.ingredients,
+        )
+        assertEquals(listOf("Mix", "Fry"), recipe.steps)
+    }
+
+    @Test
+    fun `recipe inside graph is found`() {
+        val recipe = JsonLdRecipeExtractor.extract(
+            page(
+                """
+                {"@graph":[{"@type":"WebPage","name":"Page"},{"@type":"Organization","name":"Org"},
+                 {"@type":"Recipe","name":"Soup","recipeInstructions":"Boil"}]}
+                """,
+            ),
+        )
+
+        assertEquals("Soup", recipe?.name)
+    }
+
+    @Test
+    fun `recipe under mainEntity with array type is found`() {
+        val recipe = JsonLdRecipeExtractor.extract(
+            page("""{"@type":"WebPage","mainEntity":{"@type":["Recipe","NewsArticle"],"name":"Stew"}}"""),
+        )
+
+        assertEquals("Stew", recipe?.name)
+    }
+
+    @Test
+    fun `instructions as sections and strings become a flat step list`() {
+        val recipe = JsonLdRecipeExtractor.extract(
+            page(
+                """
+                {"@type":"Recipe","name":"Cake","recipeInstructions":[
+                  {"@type":"HowToSection","name":"Dough","itemListElement":[
+                    {"@type":"HowToStep","text":"Knead"},{"@type":"HowToStep","text":"Rest"}]},
+                  "Bake"]}
+                """,
+            ),
+        )
+
+        assertEquals(listOf("Knead", "Rest", "Bake"), recipe?.steps)
+    }
+
+    @Test
+    fun `instructions as one text block are split into lines`() {
+        val recipe = JsonLdRecipeExtractor.extract(
+            page("""{"@type":"Recipe","name":"Tea","recipeInstructions":"Boil water\nSteep\n\nServe"}"""),
+        )
+
+        assertEquals(listOf("Boil water", "Steep", "Serve"), recipe?.steps)
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = ["4", "\"4\"", "\"4 servings\"", "[\"4\",\"4 portions\"]"])
+    fun `recipeYield shapes give servings`(yield: String) {
+        val recipe = JsonLdRecipeExtractor.extract(page("""{"@type":"Recipe","name":"X","recipeYield":$yield}"""))
+
+        assertEquals(4, recipe?.servings)
+    }
+
+    @Test
+    fun `malformed block is skipped`() {
+        val recipe = JsonLdRecipeExtractor.extract(page("{not json", """{"@type":"Recipe","name":"Salad"}"""))
+
+        assertEquals("Salad", recipe?.name)
+    }
+
+    @Test
+    fun `entities and tags are decoded to plain text`() {
+        val recipe = JsonLdRecipeExtractor.extract(
+            page("""{"@type":"Recipe","name":"Mac &amp; Cheese","description":"<p>Very <b>good</b></p>"}"""),
+        )
+
+        assertEquals("Mac & Cheese", recipe?.name)
+        assertEquals("Very good", recipe?.description)
+    }
+
+    @Test
+    fun `page without recipe returns null`() {
+        assertNull(JsonLdRecipeExtractor.extract(page("""{"@type":"WebPage","name":"Blog"}""")))
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        delimiter = '|',
+        value = [
+            "200 g Butter|Butter|200 g",
+            "200g Butter|Butter|200g",
+            "1/2 TL Salz|Salz|1/2 TL",
+            "½ cup sugar|sugar|½ cup",
+            "1 ½ cups milk|milk|1 ½ cups",
+            "2-3 Zehen Knoblauch|Knoblauch|2-3 Zehen",
+            "1,5 l Wasser|Wasser|1,5 l",
+            "2 Eier|Eier|2",
+        ],
+    )
+    fun `ingredient lines split into quantity and name`(line: String, name: String, quantity: String) {
+        assertEquals(RecipeIngredient(Item.FreeText(name), quantity), parseIngredient(line))
+    }
+
+    @Test
+    fun `ingredient line without amount keeps full text`() {
+        assertEquals(RecipeIngredient(Item.FreeText("Salz und Pfeffer")), parseIngredient("Salz und Pfeffer"))
+    }
+}
