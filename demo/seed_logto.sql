@@ -16,6 +16,21 @@ VALUES (
     now()
 ) ON CONFLICT DO NOTHING;
 
+-- Demo Android application (Native, public client)
+INSERT INTO applications (tenant_id, id, name, secret, description, type, is_third_party, oidc_client_metadata, custom_client_metadata, created_at)
+VALUES (
+    'default',
+    'cookmaid-demo-native',
+    'Cookmaid Demo Android',
+    '#internal:demo-native-placeholder-secret',
+    'Demo Android application',
+    'Native',
+    false,
+    '{"grantTypes": ["authorization_code", "refresh_token"], "redirectUris": ["cookmaid://callback"], "rotateRefreshToken": true, "postLogoutRedirectUris": ["cookmaid://callback"], "backchannelLogoutSessionRequired": false}',
+    '{"idTokenTtl": 3600, "allowTokenExchange": false, "rotateRefreshToken": true, "refreshTokenTtlInDays": 30}',
+    now()
+) ON CONFLICT DO NOTHING;
+
 -- API resource
 INSERT INTO resources (tenant_id, id, name, indicator, is_default, access_token_ttl)
 VALUES (
@@ -38,13 +53,12 @@ VALUES (
     now()
 ) ON CONFLICT DO NOTHING;
 
--- Grant the scope to the demo application
+-- Grant the scope to the demo applications
 INSERT INTO application_user_consent_resource_scopes (tenant_id, application_id, scope_id)
-VALUES (
-    'default',
-    'cookmaid-demo',
-    'cookmaid-api-all-demo'
-) ON CONFLICT DO NOTHING;
+VALUES
+    ('default', 'cookmaid-demo', 'cookmaid-api-all-demo'),
+    ('default', 'cookmaid-demo-native', 'cookmaid-api-all-demo')
+ON CONFLICT DO NOTHING;
 
 -- Demo user for the Cookmaid app
 -- Credentials: testuser / CookmaidTest2026!

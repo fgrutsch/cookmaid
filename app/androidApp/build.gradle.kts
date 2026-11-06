@@ -13,6 +13,13 @@ val localProps = Properties().apply {
 val keystoreProps = rootProject.file("keystore.properties").takeIf { it.exists() }
     ?.let { file -> Properties().apply { file.reader().use { load(it) } } }
 
+// Deployment-specific prod values stay out of this open-source repo; release CI writes the file.
+val prodProps = rootProject.file("prod.properties").takeIf { it.exists() }
+    ?.let { file -> Properties().apply { file.reader().use { load(it) } } }
+
+// Empty when prod.properties is absent, so CI debug builds still configure; prod release builds fail below.
+fun prodProp(key: String): String = prodProps?.getProperty(key).orEmpty()
+
 android {
     namespace = "io.github.fgrutsch.cookmaid"
     compileSdk {
@@ -49,23 +56,19 @@ android {
             dimension = "environment"
             buildConfigField("String", "BASE_URL", """"http://localhost:8081"""")
             buildConfigField("String", "OIDC_DISCOVERY_URI", """"${localProps.getProperty("oidc.discoveryUri")}"""")
-            buildConfigField("String", "OIDC_CLIENT_ID", """"${localProps.getProperty("oidc.clientId")}"""")
+            buildConfigField("String", "OIDC_CLIENT_ID", """"${localProps.getProperty("oidc.nativeClientId")}"""")
             buildConfigField("String", "OIDC_SCOPE", """"${localProps.getProperty("oidc.scope")}"""")
             buildConfigField("String", "OIDC_ACCOUNT_URI", """"${localProps.getProperty("oidc.accountUri")}"""")
             buildConfigField("String", "OIDC_RESOURCE", """"${localProps.getProperty("oidc.resource") ?: ""}"""")
         }
         create("prod") {
             dimension = "environment"
-            buildConfigField("String", "BASE_URL", """"https://cookmaid.fgrutsch.dev"""")
-            buildConfigField(
-                "String",
-                "OIDC_DISCOVERY_URI",
-                """"https://sso.fgrutsch.dev/oidc/.well-known/openid-configuration""""
-            )
-            buildConfigField("String", "OIDC_CLIENT_ID", """"n12rjceuk6vgy676z9e3y"""")
-            buildConfigField("String", "OIDC_SCOPE", """"openid profile email"""")
-            buildConfigField("String", "OIDC_ACCOUNT_URI", """"https://sso.fgrutsch.dev/account/security"""")
-            buildConfigField("String", "OIDC_RESOURCE", """"https://cookmaid.fgrutsch.dev/api"""")
+            buildConfigField("String", "BASE_URL", """"${prodProp("baseUrl")}"""")
+            buildConfigField("String", "OIDC_DISCOVERY_URI", """"${prodProp("oidc.discoveryUri")}"""")
+            buildConfigField("String", "OIDC_CLIENT_ID", """"${prodProp("oidc.clientId")}"""")
+            buildConfigField("String", "OIDC_SCOPE", """"${prodProp("oidc.scope")}"""")
+            buildConfigField("String", "OIDC_ACCOUNT_URI", """"${prodProp("oidc.accountUri")}"""")
+            buildConfigField("String", "OIDC_RESOURCE", """"${prodProp("oidc.resource")}"""")
         }
     }
     packaging {
@@ -101,6 +104,17 @@ tasks.register<Exec>("adbReverse") {
 
 tasks.matching { it.name.startsWith("installDev") }.configureEach {
     finalizedBy("adbReverse")
+}
+
+// A prod release without prod.properties would ship an app that cannot reach the server or log in.
+val missingProdProps = listOf(
+    "baseUrl", "oidc.discoveryUri", "oidc.clientId", "oidc.scope", "oidc.accountUri", "oidc.resource",
+).filter { prodProp(it).isBlank() }
+tasks.matching { it.name == "preProdReleaseBuild" }.configureEach {
+    val missing = missingProdProps
+    doFirst {
+        check(missing.isEmpty()) { "prod.properties is missing: ${missing.joinToString()} — see README" }
+    }
 }
 
 dependencies {

@@ -7,6 +7,7 @@ xcuserdata
 local.properties
 *.jks
 keystore.properties
+prod.properties
 .idea
 .DS_Store
 captures

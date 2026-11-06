@@ -7,14 +7,31 @@
 INSERT INTO applications (tenant_id, id, name, secret, description, type, is_third_party, oidc_client_metadata, custom_client_metadata, created_at)
 VALUES (
     'default',
-    'cookmaid-dev',
-    'Cookmaid Dev',
+    'cookmaid-dev-web',
+    'Cookmaid Dev Web',
     '#internal:dev-placeholder-secret',
     'Local development application',
     'SPA',
     false,
-    '{"grantTypes": ["authorization_code", "refresh_token"], "redirectUris": ["http://localhost:8080/callback", "cookmaid://callback"], "rotateRefreshToken": true, "postLogoutRedirectUris": ["http://localhost:8080/callback", "cookmaid://callback"], "alwaysIssueRefreshToken": true, "backchannelLogoutSessionRequired": false}',
+    '{"grantTypes": ["authorization_code", "refresh_token"], "redirectUris": ["http://localhost:8080/callback"], "rotateRefreshToken": true, "postLogoutRedirectUris": ["http://localhost:8080/callback"], "alwaysIssueRefreshToken": true, "backchannelLogoutSessionRequired": false}',
     '{"idTokenTtl": 3600, "allowTokenExchange": false, "corsAllowedOrigins": ["http://localhost:8080"], "rotateRefreshToken": true, "refreshTokenTtlInDays": 30, "alwaysIssueRefreshToken": true}',
+    now()
+) ON CONFLICT DO NOTHING;
+
+-- Dev Android application (Native, public client).
+-- Native clients get a fresh refresh-token lifetime on every rotation, so the app stays
+-- logged in as long as it is used (SPA tokens are capped at the original login + TTL).
+INSERT INTO applications (tenant_id, id, name, secret, description, type, is_third_party, oidc_client_metadata, custom_client_metadata, created_at)
+VALUES (
+    'default',
+    'cookmaid-dev-native',
+    'Cookmaid Dev Android',
+    '#internal:dev-native-placeholder-secret',
+    'Local development Android application',
+    'Native',
+    false,
+    '{"grantTypes": ["authorization_code", "refresh_token"], "redirectUris": ["cookmaid://callback"], "rotateRefreshToken": true, "postLogoutRedirectUris": ["cookmaid://callback"], "backchannelLogoutSessionRequired": false}',
+    '{"idTokenTtl": 3600, "allowTokenExchange": false, "rotateRefreshToken": true, "refreshTokenTtlInDays": 30}',
     now()
 ) ON CONFLICT DO NOTHING;
 
@@ -40,13 +57,12 @@ VALUES (
     now()
 ) ON CONFLICT DO NOTHING;
 
--- Grant the scope to the dev application
+-- Grant the scope to the dev applications
 INSERT INTO application_user_consent_resource_scopes (tenant_id, application_id, scope_id)
-VALUES (
-    'default',
-    'cookmaid-dev',
-    'cookmaid-api-all-dev'
-) ON CONFLICT DO NOTHING;
+VALUES
+    ('default', 'cookmaid-dev-web', 'cookmaid-api-all-dev'),
+    ('default', 'cookmaid-dev-native', 'cookmaid-api-all-dev')
+ON CONFLICT DO NOTHING;
 
 -- Test user for the Cookmaid app
 -- Credentials: testuser / CookmaidTest2026!

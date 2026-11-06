@@ -95,12 +95,15 @@ Dev OIDC settings live in `local.properties` (NOT checked into VCS). Add the fol
 sdk.dir=<path-to-android-sdk>
 
 oidc.discoveryUri=http://localhost:3001/oidc/.well-known/openid-configuration
-oidc.clientId=cookmaid-dev
-oidc.scope=openid profile email
+oidc.webClientId=cookmaid-dev-web
+oidc.nativeClientId=cookmaid-dev-native
+oidc.scope=openid profile email offline_access
 oidc.accountUri=http://localhost:3001/account/security
 oidc.resource=http://localhost:8081/api
 oidc.audience=http://localhost:8081/api
 ```
+
+`oidc.webClientId` is the web (SPA) app, `oidc.nativeClientId` the native (Android) app.
 
 The server reads its OIDC config from `application.yaml`. `oidc.issuer`
 and `oidc.jwks-url` default to the local Logto instance;
@@ -129,4 +132,19 @@ and `oidc.jwks-url` default to the local Logto instance;
 ./gradlew :server:test
 ./gradlew :core:allTests
 ./gradlew :app:shared:allTests
+```
+
+### Android prod builds
+
+The `prod` flavor reads its deployment values from a gitignored `prod.properties` in the repo root.
+The release workflow writes it from the `ANDROID_PROD_PROPERTIES` repository variable; prod release
+builds fail if a required key is missing.
+
+```properties
+baseUrl=https://cookmaid.example.com
+oidc.discoveryUri=https://sso.example.com/oidc/.well-known/openid-configuration
+oidc.clientId=<native-app-client-id>
+oidc.scope=openid profile email offline_access
+oidc.accountUri=https://sso.example.com/account/security
+oidc.resource=https://cookmaid.example.com/api
 ```
