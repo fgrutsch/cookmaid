@@ -28,8 +28,10 @@ import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
+import org.jsoup.nodes.Node
 import org.jsoup.nodes.TextNode
 import org.jsoup.select.NodeTraversor
+import org.jsoup.select.NodeVisitor
 
 /**
  * [RecipeExtractor] that reads a recipe from the page text with an LLM over the OpenAI chat-completions
@@ -114,16 +116,27 @@ class LlmRecipeExtractor(
         body.select("script, style, noscript, template, svg, iframe, nav, header, footer, aside, form").remove()
         val text = StringBuilder()
         NodeTraversor.traverse(
-            { node, _ ->
-                when {
-                    node is TextNode -> text.append(node.text())
-                    node is Element && (node.isBlock || node.normalName() == "br") -> text.append('\n')
+            object : NodeVisitor {
+                override fun head(node: Node, depth: Int) {
+                    when {
+                        node is TextNode -> text.append(node.text())
+                        node.isCell() -> text.append(' ')
+                        node is Element && (node.isBlock || node.normalName() == "br") -> text.append('\n')
+                    }
+                }
+
+                // Also break after a block: text following a closed block ("<h3>Zutaten</h3>200 g Mehl")
+                // would otherwise be glued onto its last line.
+                override fun tail(node: Node, depth: Int) {
+                    if (node is Element && node.isBlock && !node.isCell()) text.append('\n')
                 }
             },
             body,
         )
         return (listOf(document.title()) + text.lines()).map { it.trim() }.filter { it.isNotEmpty() }
     }
+
+    private fun Node.isCell() = this is Element && (normalName() == "td" || normalName() == "th")
 
     private suspend fun complete(pageText: String): JsonObject {
         val response = client.post("${config.baseUrl.trimEnd('/')}/chat/completions") {

@@ -103,6 +103,24 @@ class LlmRecipeExtractorTest {
     }
 
     @Test
+    fun `text after a closed block and table rows each form one line`() = runTest {
+        var sent = ""
+        extractor { request ->
+            sent = (request.body as TextContent).text
+            ok(completion(noRecipe))
+        }.extract(
+            doc(
+                "<div><h3>Zutaten</h3>200 g Mehl<br>100 g Zucker</div>" +
+                    "<table><tr><td>1 EL</td><td>Öl</td></tr></table>",
+            ),
+        )
+
+        val page = Json.parseToJsonElement(sent).jsonObject.getValue("messages").jsonArray[1]
+            .jsonObject.getValue("content").jsonPrimitive.content
+        assertEquals("<page>\n[0] Zutaten\n[1] 200 g Mehl\n[2] 100 g Zucker\n[3] 1 EL Öl\n</page>", page)
+    }
+
+    @Test
     fun `blank api key sends no authorization header`() = runTest {
         var captured: HttpRequestData? = null
         val engine = MockEngine { request ->
