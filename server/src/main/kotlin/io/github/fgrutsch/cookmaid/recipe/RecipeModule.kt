@@ -5,6 +5,7 @@ import io.github.fgrutsch.cookmaid.common.ktor.int
 import io.github.fgrutsch.cookmaid.common.ktor.locale
 import io.github.fgrutsch.cookmaid.common.ktor.userId
 import io.github.fgrutsch.cookmaid.common.ktor.uuid
+import io.github.fgrutsch.cookmaid.recipe.importer.HttpPageFetcher
 import io.github.fgrutsch.cookmaid.recipe.importer.LlmConfig
 import io.github.fgrutsch.cookmaid.recipe.importer.LlmRecipeExtractor
 import io.github.fgrutsch.cookmaid.recipe.importer.PageFetcher
@@ -22,10 +23,8 @@ import kotlin.uuid.Uuid
 val recipeModule = module {
     singleOf(::PostgresRecipeRepository) bind RecipeRepository::class
     singleOf(::RecipeService)
-    single {
-        val llm = LlmConfig.from(get())?.let { config -> LlmRecipeExtractor(config) }
-        RecipeImportService(PageFetcher()::fetch, llm)
-    }
+    single<PageFetcher> { HttpPageFetcher() }
+    single { RecipeImportService(get(), LlmConfig.from(get())?.let { config -> LlmRecipeExtractor(config) }) }
 }
 
 private fun Route.recipeImportRoute() {

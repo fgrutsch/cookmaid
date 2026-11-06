@@ -6,7 +6,7 @@ import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
 import io.github.fgrutsch.cookmaid.recipe.RecipeRequest
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.HttpClientEngine
-import io.ktor.client.engine.okhttp.OkHttp
+import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.post
@@ -57,7 +57,7 @@ data class LlmConfig(val baseUrl: String, val apiKey: String, val model: String)
  * The page text is untrusted; the model gets no tools and must answer in a strict
  * JSON schema. Callers still validate the result.
  */
-class LlmRecipeExtractor(private val config: LlmConfig, engine: HttpClientEngine = OkHttp.create()) {
+class LlmRecipeExtractor(private val config: LlmConfig, engine: HttpClientEngine = CIO.create()) {
 
     companion object {
         private const val TIMEOUT_MILLIS = 60_000L

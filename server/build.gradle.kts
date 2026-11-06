@@ -48,7 +48,7 @@ dependencies {
     runtimeOnly(libs.logback)
     implementation(libs.kotlin.logging)
     implementation(libs.bundles.ktor.server)
-    implementation(libs.ktor.clientOkhttp)
+    implementation(libs.ktor.clientCio)
     implementation(libs.jsoup)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.koin.ktor)

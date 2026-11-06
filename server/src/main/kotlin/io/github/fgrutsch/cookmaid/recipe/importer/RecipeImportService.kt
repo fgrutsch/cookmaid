@@ -6,20 +6,20 @@ import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
 import io.github.fgrutsch.cookmaid.recipe.RecipeRequest
 import io.github.fgrutsch.cookmaid.user.UserId
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.ktor.http.Url
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
-import java.net.URI
 
 /**
  * Turns a recipe URL into a draft [RecipeRequest] for the user to review. Nothing
  * is saved. schema.org data on the page is used first; the optional [llm] is only
  * asked when the page has none. Every result is length-capped before it leaves.
  *
- * @param fetchPage downloads a user-supplied URL (see [PageFetcher.fetch]).
+ * @param pageFetcher downloads the user-supplied URL.
  * @param llm the LLM fallback, or null when no LLM is configured.
  */
 class RecipeImportService(
-    private val fetchPage: suspend (String) -> String,
+    private val pageFetcher: PageFetcher,
     private val llm: LlmRecipeExtractor?,
 ) {
 
@@ -42,10 +42,10 @@ class RecipeImportService(
      * @throws RecipeImportException if the page cannot be fetched or holds no usable recipe.
      */
     suspend fun import(userId: UserId, url: String): RecipeRequest {
-        val document = Jsoup.parse(fetchPage(url), url)
+        val document = Jsoup.parse(pageFetcher.fetch(url), url)
         val fromJsonLd = JsonLdRecipeExtractor.extract(document)?.let(::sanitize)
         val draft = fromJsonLd ?: llm?.extract(pageText(document))?.let(::sanitize)
-        val host = URI(url.trim()).host
+        val host = Url(url.trim()).host
         if (draft == null) {
             logger.debug { "No recipe found for user ${userId.value} on $host" }
             throw RecipeImportException("No recipe found")
