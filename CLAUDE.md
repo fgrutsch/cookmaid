@@ -298,11 +298,7 @@ Gradle `buildDockerImage` task's own `dependsOn` handles prerequisites).
 1. `docker` — pushes the multi-platform image to GHCR. Requires
    `driver: docker-container` on `setup-buildx-action` — the default
    `docker` driver does not support `--push` with multi-platform manifests.
-2. `android` — builds the signed prod APK/AAB. Deployment values (base URL,
-   OIDC client ID, …) come from the gitignored `prod.properties`, written from
-   the `ANDROID_PROD_PROPERTIES` repository variable — never hardcode them in
-   `app/androidApp/build.gradle.kts` (public repo). `preProdReleaseBuild` fails
-   when required keys are missing.
+2. `android` — builds the signed prod APK/AAB.
 3. `publish-release` (`needs: [docker, android]`) — promotes the draft GitHub release
    to published via `gh release edit --draft=false --latest`. Prerequisite:
    a draft release for the tag must exist before the tag is pushed.
