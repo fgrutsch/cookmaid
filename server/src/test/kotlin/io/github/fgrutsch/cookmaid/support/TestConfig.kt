@@ -16,17 +16,12 @@ val testConfigEntries: List<Pair<String, String>> = listOf(
     "llm.base-url" to "",
     "llm.api-key" to "",
     "llm.model" to "",
-    "recipe-import.fetch.timeout-millis" to testRecipeImportConfig.fetchTimeoutMillis.toString(),
-    "recipe-import.fetch.max-bytes" to testRecipeImportConfig.fetchMaxBytes.toString(),
-    "recipe-import.fetch.max-redirects" to testRecipeImportConfig.fetchMaxRedirects.toString(),
-    "recipe-import.llm.timeout-millis" to testRecipeImportConfig.llmTimeoutMillis.toString(),
-    "recipe-import.llm.max-page-chars" to testRecipeImportConfig.llmMaxPageChars.toString(),
-    "recipe-import.limits.max-name-length" to testRecipeImportConfig.maxNameLength.toString(),
-    "recipe-import.limits.max-description-length" to testRecipeImportConfig.maxDescriptionLength.toString(),
-    "recipe-import.limits.max-line-length" to testRecipeImportConfig.maxLineLength.toString(),
-    "recipe-import.limits.max-items" to testRecipeImportConfig.maxItems.toString(),
-    "recipe-import.limits.max-servings" to testRecipeImportConfig.maxServings.toString(),
-    "recipe-import.ingredient-units" to testRecipeImportConfig.ingredientUnits.joinToString(","),
+    "recipe.import.fetch.timeout-millis" to testRecipeImportConfig.fetchTimeoutMillis.toString(),
+    "recipe.import.fetch.max-bytes" to testRecipeImportConfig.fetchMaxBytes.toString(),
+    "recipe.import.llm.timeout-millis" to testRecipeImportConfig.llmTimeoutMillis.toString(),
+    "recipe.import.llm.max-page-chars" to testRecipeImportConfig.llmMaxPageChars.toString(),
+    "recipe.import.max-items" to testRecipeImportConfig.maxItems.toString(),
+    "recipe.import.ingredient-units" to testRecipeImportConfig.ingredientUnits.joinToString(","),
 )
 
 val testConfig: ApplicationConfig = MapApplicationConfig(*testConfigEntries.toTypedArray())

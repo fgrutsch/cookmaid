@@ -27,23 +27,18 @@ llm:
   api-key: ${LLM_API_KEY:}
   model: ${LLM_MODEL:}
 
-# Recipe import from a URL. The limits guard the server against oversized or hostile pages.
-recipe-import:
-  fetch:
-    timeout-millis: ${RECIPE_IMPORT_FETCH_TIMEOUT_MILLIS:10000}
-    max-bytes: ${RECIPE_IMPORT_FETCH_MAX_BYTES:2097152}
-    max-redirects: ${RECIPE_IMPORT_FETCH_MAX_REDIRECTS:5}
-  llm:
-    timeout-millis: ${RECIPE_IMPORT_LLM_TIMEOUT_MILLIS:60000}
-    max-page-chars: ${RECIPE_IMPORT_LLM_MAX_PAGE_CHARS:60000}
-  limits:
-    max-name-length: ${RECIPE_IMPORT_MAX_NAME_LENGTH:200}
-    max-description-length: ${RECIPE_IMPORT_MAX_DESCRIPTION_LENGTH:2000}
-    max-line-length: ${RECIPE_IMPORT_MAX_LINE_LENGTH:500}
+# Recipe import from a URL. The limits protect the server from slow or oversized pages and bound LLM cost.
+recipe:
+  import:
+    fetch:
+      timeout-millis: ${RECIPE_IMPORT_FETCH_TIMEOUT_MILLIS:10000}
+      max-bytes: ${RECIPE_IMPORT_FETCH_MAX_BYTES:2097152}
+    llm:
+      timeout-millis: ${RECIPE_IMPORT_LLM_TIMEOUT_MILLIS:60000}
+      max-page-chars: ${RECIPE_IMPORT_LLM_MAX_PAGE_CHARS:60000}
     max-items: ${RECIPE_IMPORT_MAX_ITEMS:100}
-    max-servings: ${RECIPE_IMPORT_MAX_SERVINGS:100}
-  # Comma-separated words recognised as units after an amount ("200 g Mehl"), case-insensitive.
-  ingredient-units: ${RECIPE_IMPORT_INGREDIENT_UNITS:g,kg,mg,ml,cl,dl,l,el,tl,msp,prise,prisen,pck,päckchen,packung,dose,dosen,becher,bund,stück,stk,zehe,zehen,zweig,zweige,blatt,scheibe,scheiben,tasse,tassen,esslöffel,teelöffel,schuss,tbsp,tsp,tablespoon,tablespoons,teaspoon,teaspoons,cup,cups,oz,lb,lbs,pinch,clove,cloves,can,cans,slice,slices}
+    # Comma-separated words recognised as units after an amount ("200 g Mehl"), case-insensitive.
+    ingredient-units: ${RECIPE_IMPORT_INGREDIENT_UNITS:g,kg,mg,ml,cl,dl,l,el,tl,msp,prise,prisen,pck,päckchen,packung,dose,dosen,becher,bund,stück,stk,zehe,zehen,zweig,zweige,blatt,scheibe,scheiben,tasse,tassen,esslöffel,teelöffel,schuss,tbsp,tsp,tablespoon,tablespoons,teaspoon,teaspoons,cup,cups,oz,lb,lbs,pinch,clove,cloves,can,cans,slice,slices}
 
 csp:
   # Space-separated extra connect-src origins (IdP, CDN, …). Origins only, no path.

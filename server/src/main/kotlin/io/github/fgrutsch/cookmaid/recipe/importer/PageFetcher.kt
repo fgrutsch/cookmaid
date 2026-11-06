@@ -40,7 +40,7 @@ fun interface PageFetcher {
  * including each redirect hop, is checked before it is sent. Bodies are capped in size
  * and requests in time.
  *
- * @param config the size, time and redirect limits.
+ * @param config the size and time limits.
  * @param isAllowed decides whether a resolved address may be contacted.
  * @param ioDispatcher runs the blocking DNS lookup.
  */
@@ -60,7 +60,6 @@ class HttpPageFetcher(
         expectSuccess = false
         install(UserAgent) { agent = "Mozilla/5.0 (compatible; Cookmaid recipe import)" }
         install(HttpTimeout) { requestTimeoutMillis = config.fetchTimeoutMillis }
-        install(HttpSend) { maxSendCount = config.fetchMaxRedirects + 1 }
         // Some sites (e.g. lecker.de) send gzip even when it was not requested.
         install(ContentEncoding) {
             gzip()

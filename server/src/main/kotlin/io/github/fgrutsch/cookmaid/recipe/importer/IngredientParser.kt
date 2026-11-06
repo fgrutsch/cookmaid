@@ -8,7 +8,7 @@ import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
  * (`"200 g"`) and a name (`"Butter"`). The unit vocabulary comes from [config].
  * Lines without a leading amount keep the whole text as the name and no quantity.
  */
-class IngredientParser(private val config: RecipeImportConfig) {
+class IngredientParser(config: RecipeImportConfig) {
 
     companion object {
         // Possessive digit runs: a digit run can't be re-split between two NUMBER groups (catastrophic backtracking).
@@ -26,7 +26,7 @@ class IngredientParser(private val config: RecipeImportConfig) {
      * @return the line as an ingredient with quantity, or with the whole text as name.
      */
     fun parse(text: String): RecipeIngredient {
-        val line = text.trim().take(config.maxLineLength)
+        val line = text.trim()
         val match = ingredient.find(line)
         return if (match == null) {
             RecipeIngredient(Item.FreeText(line))

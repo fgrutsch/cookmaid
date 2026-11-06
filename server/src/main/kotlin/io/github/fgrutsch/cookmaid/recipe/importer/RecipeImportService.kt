@@ -12,11 +12,11 @@ import org.jsoup.Jsoup
 /**
  * Turns a recipe URL into a draft [RecipeRequest] for the user to review. Nothing
  * is saved. Extractors are tried by ascending priority and the first usable result wins.
- * Every result is length-capped before it leaves.
+ * Blank values are dropped and lists capped before the draft leaves.
  *
  * @param pageFetcher downloads the user-supplied URL.
  * @param extractors all available recipe extractors, in any order.
- * @param config the length and count limits applied to every result.
+ * @param config the list cap applied to every result.
  */
 class RecipeImportService(
     private val pageFetcher: PageFetcher,
@@ -55,20 +55,19 @@ class RecipeImportService(
             }
         }.take(config.maxItems)
         val steps = recipe.steps.mapNotNull { line(it) }.take(config.maxItems)
-        val name = line(recipe.name, config.maxNameLength)
+        val name = line(recipe.name)
         return if (name == null || (ingredients.isEmpty() && steps.isEmpty())) {
             null
         } else {
             RecipeRequest(
                 name = name,
-                description = line(recipe.description, config.maxDescriptionLength),
+                description = line(recipe.description),
                 ingredients = ingredients,
                 steps = steps,
-                servings = recipe.servings?.takeIf { it in 1..config.maxServings },
+                servings = recipe.servings?.takeIf { it > 0 },
             )
         }
     }
 
-    private fun line(value: String?, max: Int = config.maxLineLength): String? =
-        value?.trim()?.take(max)?.takeIf { it.isNotBlank() }
+    private fun line(value: String?): String? = value?.trim()?.takeIf { it.isNotBlank() }
 }

@@ -148,8 +148,8 @@ Four Gradle modules:
 - **Recipe import** (`recipe/importer/`): `POST /api/recipes/import` returns a draft
   `RecipeRequest`, never saves. Every Koin-bound `RecipeExtractor` runs by ascending `priority`
   (schema.org JSON-LD 0, Microdata 10, LLM 100); the first usable result wins, so a new extractor
-  only needs a binding. Limits, timeouts and the ingredient unit list live under `recipe-import` in
-  `application.yaml` (each overridable via `RECIPE_IMPORT_*` env vars), read by `RecipeImportConfig`;
+  only needs a binding. Timeouts, size/count limits and the ingredient unit list live under
+  `recipe.import` in `application.yaml` (each overridable via `RECIPE_IMPORT_*` env vars), read by `RecipeImportConfig`;
   `support/TestRecipeImport.kt` mirrors those defaults and `RecipeImportConfigTest` keeps them in sync. The LLM uses the generic OpenAI chat-completions contract (no provider-specific code);
   `LlmConfig` is a `common/llm` Koin single, and consumers check `enabled` because the LLM is optional. User-supplied URLs
   must only be fetched through `PageFetcher` (public-address guard incl. IP literals and

@@ -101,22 +101,17 @@ class RecipeImportServiceTest {
     }
 
     @Test
-    fun `oversized results are capped`() = runTest {
+    fun `ingredient list is capped`() = runTest {
         val ingredients = (1..150).joinToString(",") { "\"Zutat $it\"" }
-        val longStep = "a".repeat(1_000)
         val page = """
             <script type="application/ld+json">
-            {"@type":"Recipe","name":"${"n".repeat(300)}","recipeYield":"500",
-             "recipeIngredient":[$ingredients],"recipeInstructions":["$longStep"]}
+            {"@type":"Recipe","name":"Soup","recipeIngredient":[$ingredients],"recipeInstructions":"Cook"}
             </script>
         """.trimIndent()
 
         val draft = service(page, llm = null).import(userId, url)
 
-        assertEquals(200, draft.name.length)
         assertEquals(100, draft.ingredients.size)
-        assertEquals(500, draft.steps.single().length)
-        assertNull(draft.servings)
         assertEquals(Item.FreeText("Zutat 1"), draft.ingredients.first().item)
     }
 
@@ -139,18 +134,12 @@ class RecipeImportServiceTest {
     }
 
     @Test
-    fun `description is capped and out-of-range servings dropped`() = runTest {
+    fun `zero servings are dropped`() = runTest {
         val page = """
-            <script type="application/ld+json">
-            {"@type":"Recipe","name":"Soup","description":"${"d".repeat(3_000)}","recipeYield":"0",
-             "recipeInstructions":"Cook"}
-            </script>
+            <script type="application/ld+json">{"@type":"Recipe","name":"Soup","recipeYield":"0","recipeInstructions":"Cook"}</script>
         """.trimIndent()
 
-        val draft = service(page, llm = null).import(userId, url)
-
-        assertEquals(2_000, draft.description?.length)
-        assertNull(draft.servings)
+        assertNull(service(page, llm = null).import(userId, url).servings)
     }
 
     private class FakeExtractor(
