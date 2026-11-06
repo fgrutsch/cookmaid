@@ -96,14 +96,14 @@ sdk.dir=<path-to-android-sdk>
 
 oidc.discoveryUri=http://localhost:3001/oidc/.well-known/openid-configuration
 oidc.webClientId=cookmaid-dev-web
-oidc.androidClientId=cookmaid-dev-native
+oidc.nativeClientId=cookmaid-dev-native
 oidc.scope=openid profile email offline_access
 oidc.accountUri=http://localhost:3001/account/security
 oidc.resource=http://localhost:8081/api
 oidc.audience=http://localhost:8081/api
 ```
 
-`oidc.webClientId` is the web (SPA) app, `oidc.androidClientId` the Android (Native) app.
+`oidc.webClientId` is the web (SPA) app, `oidc.nativeClientId` the native (Android) app.
 
 The server reads its OIDC config from `application.yaml`. `oidc.issuer`
 and `oidc.jwks-url` default to the local Logto instance;

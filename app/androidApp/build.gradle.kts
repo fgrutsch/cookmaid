@@ -56,7 +56,7 @@ android {
             dimension = "environment"
             buildConfigField("String", "BASE_URL", """"http://localhost:8081"""")
             buildConfigField("String", "OIDC_DISCOVERY_URI", """"${localProps.getProperty("oidc.discoveryUri")}"""")
-            buildConfigField("String", "OIDC_CLIENT_ID", """"${localProps.getProperty("oidc.androidClientId")}"""")
+            buildConfigField("String", "OIDC_CLIENT_ID", """"${localProps.getProperty("oidc.nativeClientId")}"""")
             buildConfigField("String", "OIDC_SCOPE", """"${localProps.getProperty("oidc.scope")}"""")
             buildConfigField("String", "OIDC_ACCOUNT_URI", """"${localProps.getProperty("oidc.accountUri")}"""")
             buildConfigField("String", "OIDC_RESOURCE", """"${localProps.getProperty("oidc.resource") ?: ""}"""")
