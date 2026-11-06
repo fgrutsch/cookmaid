@@ -7,8 +7,8 @@
 INSERT INTO applications (tenant_id, id, name, secret, description, type, is_third_party, oidc_client_metadata, custom_client_metadata, created_at)
 VALUES (
     'default',
-    'cookmaid-dev',
-    'Cookmaid Dev',
+    'cookmaid-dev-web',
+    'Cookmaid Dev Web',
     '#internal:dev-placeholder-secret',
     'Local development application',
     'SPA',
@@ -60,7 +60,7 @@ VALUES (
 -- Grant the scope to the dev applications
 INSERT INTO application_user_consent_resource_scopes (tenant_id, application_id, scope_id)
 VALUES
-    ('default', 'cookmaid-dev', 'cookmaid-api-all-dev'),
+    ('default', 'cookmaid-dev-web', 'cookmaid-api-all-dev'),
     ('default', 'cookmaid-dev-native', 'cookmaid-api-all-dev')
 ON CONFLICT DO NOTHING;
 
