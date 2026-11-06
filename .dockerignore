@@ -2,7 +2,10 @@
 .github
 .gradle
 .idea
+.mergify.yml
+.mise.toml
 *.iml
-local.properties
+*.properties
+*.jks
 sandbox
 docs
