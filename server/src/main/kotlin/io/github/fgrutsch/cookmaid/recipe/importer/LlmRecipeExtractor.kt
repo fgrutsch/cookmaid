@@ -2,6 +2,7 @@ package io.github.fgrutsch.cookmaid.recipe.importer
 
 import io.github.fgrutsch.cookmaid.catalog.Item
 import io.github.fgrutsch.cookmaid.common.ktor.RecipeImportException
+import io.github.fgrutsch.cookmaid.common.llm.LlmConfig
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
 import io.github.fgrutsch.cookmaid.recipe.RecipeRequest
 import io.ktor.client.HttpClient
@@ -15,7 +16,6 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
-import io.ktor.server.config.ApplicationConfig
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -28,36 +28,18 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
+import org.jsoup.nodes.Document
 
 /**
- * Connection settings for any OpenAI-compatible chat-completions provider.
- *
- * @property baseUrl API base, e.g. `https://api.openai.com/v1`; `/chat/completions` is appended.
- * @property apiKey bearer token; blank for keyless local providers.
- * @property model provider model id.
- */
-data class LlmConfig(val baseUrl: String, val apiKey: String, val model: String) {
-    companion object {
-        /**
-         * @return the configured LLM, or null when `llm.base-url` or `llm.model` is blank —
-         *   the LLM fallback is optional.
-         */
-        fun from(config: ApplicationConfig): LlmConfig? {
-            fun value(key: String) = config.propertyOrNull(key)?.getString()?.trim().orEmpty()
-            val baseUrl = value("llm.base-url")
-            val model = value("llm.model")
-            return if (baseUrl.isBlank() || model.isBlank()) null else LlmConfig(baseUrl, value("llm.api-key"), model)
-        }
-    }
-}
-
-/**
- * Extracts a recipe from page text with an LLM over the OpenAI chat-completions
+ * [RecipeExtractor] that reads a recipe from the page text with an LLM over the OpenAI chat-completions
  * contract. No provider-specific code: base URL, key and model come from [config].
  * The page text is untrusted; the model gets no tools and must answer in a strict
  * JSON schema. Callers still validate the result.
  */
-class LlmRecipeExtractor(private val config: LlmConfig, engine: HttpClientEngine = CIO.create()) {
+class LlmRecipeExtractor(
+    private val config: LlmConfig,
+    engine: HttpClientEngine = CIO.create(),
+) : RecipeExtractor {
 
     companion object {
         private const val TIMEOUT_MILLIS = 60_000L
@@ -104,7 +86,8 @@ class LlmRecipeExtractor(private val config: LlmConfig, engine: HttpClientEngine
      *   other than the expected JSON.
      */
     @Suppress("TooGenericExceptionCaught")
-    suspend fun extract(pageText: String): RecipeRequest? = try {
+    override suspend fun extract(document: Document): RecipeRequest? = try {
+        val pageText = listOf(document.title(), document.body().text()).filter { it.isNotBlank() }.joinToString("\n")
         val content = complete(pageText.take(MAX_PAGE_CHARS))
         json.decodeFromJsonElement(LlmRecipe.serializer(), content).toRequest()
     } catch (e: CancellationException) {

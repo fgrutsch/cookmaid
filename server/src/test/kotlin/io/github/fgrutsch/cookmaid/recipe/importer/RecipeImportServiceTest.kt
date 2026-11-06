@@ -2,6 +2,8 @@ package io.github.fgrutsch.cookmaid.recipe.importer
 
 import io.github.fgrutsch.cookmaid.catalog.Item
 import io.github.fgrutsch.cookmaid.common.ktor.RecipeImportException
+import io.github.fgrutsch.cookmaid.common.llm.LlmConfig
+import io.github.fgrutsch.cookmaid.recipe.RecipeRequest
 import io.github.fgrutsch.cookmaid.user.UserId
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
@@ -42,7 +44,10 @@ class RecipeImportServiceTest {
     """.trimIndent()
     private val plainPage = "<html><head><title>Pasta</title></head><body>Some recipe text</body></html>"
 
-    private fun service(page: String, llm: LlmRecipeExtractor? = this.llm) = RecipeImportService({ page }, llm)
+    private fun service(page: String, llm: LlmRecipeExtractor? = this.llm) = RecipeImportService(
+        { page },
+        listOfNotNull(JsonLdRecipeExtractor, llm),
+    )
 
     @Test
     fun `json-ld page never calls the llm`() = runTest {
@@ -140,8 +145,21 @@ class RecipeImportServiceTest {
     }
 
     @Test
+    fun `first extractor with a usable result wins`() = runTest {
+        val calls = mutableListOf<String>()
+        val none = RecipeExtractor { calls += "none"; null }
+        val first = RecipeExtractor { calls += "first"; RecipeRequest(name = "First", steps = listOf("a")) }
+        val second = RecipeExtractor { calls += "second"; RecipeRequest(name = "Second", steps = listOf("b")) }
+
+        val draft = RecipeImportService({ plainPage }, listOf(none, first, second)).import(userId, url)
+
+        assertEquals("First", draft.name)
+        assertEquals(listOf("none", "first"), calls)
+    }
+
+    @Test
     fun `fetch failure propagates`() = runTest {
-        val service = RecipeImportService({ throw RecipeImportException("Fetching page failed") }, llm)
+        val service = RecipeImportService({ throw RecipeImportException("Fetching page failed") }, listOf(llm))
 
         assertFailsWith<RecipeImportException> { service.import(userId, url) }
     }

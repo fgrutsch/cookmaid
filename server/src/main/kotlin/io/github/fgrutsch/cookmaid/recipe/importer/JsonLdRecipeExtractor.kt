@@ -11,13 +11,13 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 
 /**
- * Reads a schema.org `Recipe` from a page's JSON-LD blocks — the structured data
+ * [RecipeExtractor] that reads a schema.org `Recipe` from a page's JSON-LD blocks — the structured data
  * most recipe sites embed for search engines. Handles `@graph` wrappers,
  * `mainEntity`, array `@type`, and the common `recipeInstructions` /
  * `recipeYield` shapes. Ingredients come back as free text split by
  * [parseIngredient]; values are not length-checked here.
  */
-object JsonLdRecipeExtractor {
+object JsonLdRecipeExtractor : RecipeExtractor {
 
     private const val MAX_INGREDIENTS = 100
     private val yieldNumber = Regex("""\d+""")
@@ -25,7 +25,7 @@ object JsonLdRecipeExtractor {
     /**
      * @return the first recipe found in [document], or null when the page has none.
      */
-    fun extract(document: Document): RecipeRequest? =
+    override suspend fun extract(document: Document): RecipeRequest? =
         document.select("script[type^=application/ld+json]").asSequence()
             .mapNotNull { runCatching { Json.parseToJsonElement(it.data()) }.getOrNull() }
             .mapNotNull { findRecipe(it) }

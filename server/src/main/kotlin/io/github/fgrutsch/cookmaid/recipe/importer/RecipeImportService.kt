@@ -8,19 +8,18 @@ import io.github.fgrutsch.cookmaid.user.UserId
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.Url
 import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
 
 /**
  * Turns a recipe URL into a draft [RecipeRequest] for the user to review. Nothing
- * is saved. schema.org data on the page is used first; the optional [llm] is only
- * asked when the page has none. Every result is length-capped before it leaves.
+ * is saved. [extractors] are tried in order and the first usable result wins.
+ * Every result is length-capped before it leaves.
  *
  * @param pageFetcher downloads the user-supplied URL.
- * @param llm the LLM fallback, or null when no LLM is configured.
+ * @param extractors recipe extractors in priority order.
  */
 class RecipeImportService(
     private val pageFetcher: PageFetcher,
-    private val llm: LlmRecipeExtractor?,
+    private val extractors: List<RecipeExtractor>,
 ) {
 
     companion object {
@@ -43,19 +42,16 @@ class RecipeImportService(
      */
     suspend fun import(userId: UserId, url: String): RecipeRequest {
         val document = Jsoup.parse(pageFetcher.fetch(url), url)
-        val fromJsonLd = JsonLdRecipeExtractor.extract(document)?.let(::sanitize)
-        val draft = fromJsonLd ?: llm?.extract(pageText(document))?.let(::sanitize)
         val host = Url(url.trim()).host
-        if (draft == null) {
+        val (extractor, draft) = extractors.firstNotNullOfOrNull { extractor ->
+            extractor.extract(document)?.let(::sanitize)?.let { extractor to it }
+        } ?: run {
             logger.debug { "No recipe found for user ${userId.value} on $host" }
             throw RecipeImportException("No recipe found")
         }
-        val source = if (fromJsonLd != null) "json-ld" else "llm"
-        logger.info { "Imported recipe for user ${userId.value} from $host via $source" }
+        logger.info { "Imported recipe for user ${userId.value} from $host via ${extractor::class.simpleName}" }
         return draft
     }
-
-    private fun pageText(document: Document): String = "${document.title()}\n${document.body().text()}"
 
     private fun sanitize(recipe: RecipeRequest): RecipeRequest? {
         val ingredients = recipe.ingredients.mapNotNull { ingredient ->

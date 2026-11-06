@@ -2,6 +2,7 @@ package io.github.fgrutsch.cookmaid.recipe.importer
 
 import io.github.fgrutsch.cookmaid.catalog.Item
 import io.github.fgrutsch.cookmaid.common.ktor.RecipeImportException
+import io.github.fgrutsch.cookmaid.common.llm.LlmConfig
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.MockRequestHandleScope
@@ -12,13 +13,13 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.TextContent
 import io.ktor.http.headersOf
-import io.ktor.server.config.MapApplicationConfig
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import org.jsoup.Jsoup
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -33,6 +34,8 @@ class LlmRecipeExtractorTest {
     private val noRecipe = """
         {"found":false,"name":null,"description":null,"servings":null,"ingredients":[],"steps":[]}
     """.trimIndent()
+
+    private fun doc(text: String) = Jsoup.parse("<html><body>$text</body></html>")
 
     private fun completion(content: String) =
         """{"choices":[{"message":{"role":"assistant","content":${JsonPrimitive(content)}}}]}"""
@@ -49,7 +52,7 @@ class LlmRecipeExtractorTest {
         extractor { request ->
             captured = request
             ok(completion(noRecipe))
-        }.extract("Some page")
+        }.extract(doc("Some page"))
 
         val request = assertNotNull(captured)
         assertEquals("https://llm.example/v1/chat/completions", request.url.toString())
@@ -67,7 +70,7 @@ class LlmRecipeExtractorTest {
         LlmRecipeExtractor(config.copy(apiKey = ""), MockEngine { request ->
             captured = request
             ok(completion("""{"found":false,"ingredients":[],"steps":[]}"""))
-        }).extract("page")
+        }).extract(doc("page"))
 
         assertNull(captured?.headers?.get(HttpHeaders.Authorization))
     }
@@ -84,7 +87,7 @@ class LlmRecipeExtractorTest {
                     """,
                 ),
             )
-        }.extract("page")
+        }.extract(doc("page"))
 
         assertNotNull(recipe)
         assertEquals("Pasta", recipe.name)
@@ -101,27 +104,27 @@ class LlmRecipeExtractorTest {
         val recipe = extractor {
             val recipe = """{"found":true,"name":"Soup","ingredients":[],"steps":["Cook"]}"""
             ok("""{"choices":[{"message":{"content":$recipe}}]}""")
-        }.extract("page")
+        }.extract(doc("page"))
 
         assertEquals("Soup", recipe?.name)
     }
 
     @Test
     fun `no recipe answer returns null`() = runTest {
-        assertNull(extractor { ok(completion("""{"found":false,"ingredients":[],"steps":[]}""")) }.extract("page"))
+        assertNull(extractor { ok(completion("""{"found":false,"ingredients":[],"steps":[]}""")) }.extract(doc("page")))
     }
 
     @Test
     fun `non-success status fails`() = runTest {
         assertFailsWith<RecipeImportException> {
-            extractor { respond("quota exceeded", HttpStatusCode.TooManyRequests) }.extract("page")
+            extractor { respond("quota exceeded", HttpStatusCode.TooManyRequests) }.extract(doc("page"))
         }
     }
 
     @Test
     fun `non-json content fails`() = runTest {
         assertFailsWith<RecipeImportException> {
-            extractor { ok(completion("Sorry, I cannot help with that.")) }.extract("page")
+            extractor { ok(completion("Sorry, I cannot help with that.")) }.extract(doc("page"))
         }
     }
 
@@ -131,19 +134,8 @@ class LlmRecipeExtractorTest {
         extractor { request ->
             sent = (request.body as TextContent).text
             ok(completion("""{"found":false,"ingredients":[],"steps":[]}"""))
-        }.extract("x".repeat(100_000))
+        }.extract(doc("x".repeat(100_000)))
 
         assertTrue(sent.length < 70_000)
-    }
-
-    @Test
-    fun `config requires base url and model`() {
-        assertNull(LlmConfig.from(MapApplicationConfig("llm.base-url" to "", "llm.model" to "m")))
-        assertNull(LlmConfig.from(MapApplicationConfig("llm.base-url" to "https://x", "llm.model" to " ")))
-        assertNull(LlmConfig.from(MapApplicationConfig()))
-        assertEquals(
-            LlmConfig("https://x", "", "m"),
-            LlmConfig.from(MapApplicationConfig("llm.base-url" to "https://x", "llm.model" to "m")),
-        )
     }
 }
