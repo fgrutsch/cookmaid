@@ -32,7 +32,7 @@ val recipeModule = module {
     single<PageFetcher> { HttpPageFetcher(get()) }
     singleOf(::JsonLdRecipeExtractor) bind RecipeExtractor::class
     singleOf(::MicrodataRecipeExtractor) bind RecipeExtractor::class
-    single { LlmRecipeExtractor(get(), get()) } bind RecipeExtractor::class
+    single { LlmRecipeExtractor(get(), get(), get()) } bind RecipeExtractor::class
     single { RecipeImportService(get(), getAll(), get()) }
 }
 

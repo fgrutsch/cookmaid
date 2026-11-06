@@ -1,5 +1,6 @@
 package io.github.fgrutsch.cookmaid.recipe.importer
 
+import io.github.fgrutsch.cookmaid.support.testIngredientParser
 import io.github.fgrutsch.cookmaid.support.testJsonLdExtractor
 import io.github.fgrutsch.cookmaid.support.testRecipeImportConfig
 import io.github.fgrutsch.cookmaid.catalog.Item
@@ -30,7 +31,7 @@ class RecipeImportServiceTest {
     private val llmEngine = MockEngine {
         llmCalls++
         val content = """
-            {"found":true,"name":"LLM Pasta","ingredients":[{"name":"Nudeln","quantity":"250 g"}],"steps":["Kochen"]}
+            {"found":true,"name":"LLM Pasta","ingredients":["250 g Nudeln"],"steps":["Kochen"]}
         """.trimIndent()
         respond(
             """{"choices":[{"message":{"content":${JsonPrimitive(content)}}}]}""",
@@ -41,6 +42,7 @@ class RecipeImportServiceTest {
     private val llm = LlmRecipeExtractor(
         LlmConfig("https://llm.example/v1", "", "m"),
         testRecipeImportConfig,
+        testIngredientParser,
         llmEngine,
     )
 
@@ -120,6 +122,7 @@ class RecipeImportServiceTest {
         val blankLlm = LlmRecipeExtractor(
             LlmConfig("https://llm.example/v1", "", "m"),
             testRecipeImportConfig,
+            testIngredientParser,
             MockEngine {
                 val content = """{"found":true,"name":"  ","ingredients":[],"steps":["Cook"]}"""
                 respond(

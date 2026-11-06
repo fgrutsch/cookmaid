@@ -167,6 +167,7 @@ class JsonLdRecipeExtractorTest {
             "1 and 1/2 cups mashed bananas|mashed bananas|1 and 1/2 cups",
             "8 ounces sharp cheddar|sharp cheddar|8 ounces",
             "2 sticks butter|butter|2 sticks",
+            "1-2 KL Zimt|Zimt|1-2 KL",
             "ca. 750 g festkochende Kartoffeln|festkochende Kartoffeln|ca. 750 g",
             "je 1/2 TL Pfefferkörner|Pfefferkörner|je 1/2 TL",
             "2 cups (250g) all-purpose flour|all-purpose flour|2 cups (250g)",

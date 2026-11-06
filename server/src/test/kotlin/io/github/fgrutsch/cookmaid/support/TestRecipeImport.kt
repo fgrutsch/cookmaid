@@ -14,7 +14,8 @@ val testRecipeImportConfig = RecipeImportConfig(
     ingredientUnits = listOf(
         "g", "gr", "gramm", "gram", "grams", "kg", "kilogramm", "kilogram", "kilograms", "dag", "mg", "ml",
         "milliliter", "milliliters", "millilitre", "millilitres", "cl", "dl", "l", "liter", "liters", "litre",
-        "litres", "el", "esslöffel", "tl", "teelöffel", "msp", "messerspitze", "messerspitzen", "prise", "prisen",
+        "litres", "el", "esslöffel", "tl", "teelöffel", "kl", "kaffeelöffel", "msp", "messerspitze",
+        "messerspitzen", "prise", "prisen",
         "pck", "päckchen", "packung", "packungen", "dose", "dosen", "becher", "bund", "stück", "stk", "st",
         "stange", "stangen", "stg", "stiel", "stiele", "zehe", "zehen", "zweig", "zweige", "blatt", "blätter",
         "scheibe", "scheiben", "tasse", "tassen", "glas", "gläser", "flasche", "flaschen", "tube", "tuben",

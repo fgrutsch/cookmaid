@@ -1,5 +1,6 @@
 package io.github.fgrutsch.cookmaid.recipe.importer
 
+import io.github.fgrutsch.cookmaid.support.testIngredientParser
 import io.github.fgrutsch.cookmaid.support.testRecipeImportConfig
 import io.github.fgrutsch.cookmaid.catalog.Item
 import io.github.fgrutsch.cookmaid.common.ktor.RecipeImportException
@@ -43,7 +44,7 @@ class LlmRecipeExtractorTest {
         """{"choices":[{"message":{"role":"assistant","content":${JsonPrimitive(content)}}}]}"""
 
     private fun extractor(handler: suspend MockRequestHandleScope.(HttpRequestData) -> HttpResponseData) =
-        LlmRecipeExtractor(config, testRecipeImportConfig, MockEngine(handler))
+        LlmRecipeExtractor(config, testRecipeImportConfig, testIngredientParser, MockEngine(handler))
 
     private fun MockRequestHandleScope.ok(body: String) =
         respond(body, HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, "application/json"))
@@ -73,19 +74,44 @@ class LlmRecipeExtractorTest {
             called = true
             ok("{}")
         }
-        val extractor = LlmRecipeExtractor(LlmConfig("", "", ""), testRecipeImportConfig, engine)
+        val extractor = LlmRecipeExtractor(LlmConfig("", "", ""), testRecipeImportConfig, testIngredientParser, engine)
 
         assertNull(extractor.extract(doc("page")))
         assertFalse(called)
     }
 
     @Test
+    fun `page text keeps one line per list item and drops navigation`() = runTest {
+        var sent = ""
+        extractor { request ->
+            sent = (request.body as TextContent).text
+            ok(completion(noRecipe))
+        }.extract(
+            Jsoup.parse(
+                """
+                <html><head><title>Schmarrn</title><script>var x = 1;</script></head><body>
+                <nav>Hauptseite Zufällige Seite</nav>
+                <ul><li>etwas Zitronenschale</li><li>1,5 g Salz</li></ul>
+                </body></html>
+                """.trimIndent(),
+            ),
+        )
+
+        val page = Json.parseToJsonElement(sent).jsonObject.getValue("messages").jsonArray[1]
+            .jsonObject.getValue("content").jsonPrimitive.content
+        assertEquals("<page>\nSchmarrn\netwas Zitronenschale\n1,5 g Salz\n</page>", page)
+    }
+
+    @Test
     fun `blank api key sends no authorization header`() = runTest {
         var captured: HttpRequestData? = null
-        LlmRecipeExtractor(config.copy(apiKey = ""), testRecipeImportConfig, MockEngine { request ->
+        val engine = MockEngine { request ->
             captured = request
             ok(completion("""{"found":false,"ingredients":[],"steps":[]}"""))
-        }).extract(doc("page"))
+        }
+        val keyless = config.copy(apiKey = "")
+        val extractor = LlmRecipeExtractor(keyless, testRecipeImportConfig, testIngredientParser, engine)
+        extractor.extract(doc("page"))
 
         assertNull(captured?.headers?.get(HttpHeaders.Authorization))
     }
@@ -97,7 +123,7 @@ class LlmRecipeExtractorTest {
                 completion(
                     """
                     {"found":true,"name":"Pasta","description":"Quick","servings":2,
-                     "ingredients":[{"name":"Spaghetti","quantity":"250 g"},{"name":"Salz","quantity":null}],
+                     "ingredients":["250 g Spaghetti","Salz"],
                      "steps":["Boil","Serve"]}
                     """,
                 ),
