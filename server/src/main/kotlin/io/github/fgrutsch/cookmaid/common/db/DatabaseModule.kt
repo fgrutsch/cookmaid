@@ -1,4 +1,4 @@
-package io.github.fgrutsch.cookmaid.db
+package io.github.fgrutsch.cookmaid.common.db
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
