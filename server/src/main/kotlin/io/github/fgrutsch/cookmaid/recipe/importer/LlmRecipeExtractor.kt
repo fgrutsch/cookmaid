@@ -34,7 +34,8 @@ import org.jsoup.nodes.Document
  * [RecipeExtractor] that reads a recipe from the page text with an LLM over the OpenAI chat-completions
  * contract. No provider-specific code: base URL, key and model come from [config].
  * The page text is untrusted; the model gets no tools and must answer in a strict
- * JSON schema. Callers still validate the result.
+ * JSON schema. Callers still validate the result. Own client, not [PageFetcher]: the operator's
+ * base URL may be a LAN host (e.g. Ollama) the public-address guard would block.
  */
 class LlmRecipeExtractor(
     private val config: LlmConfig,

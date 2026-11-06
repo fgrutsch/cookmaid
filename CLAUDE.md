@@ -145,19 +145,6 @@ Four Gradle modules:
   parsing in `RouteExtensions` (`uuid()`, `localDate()`) throws
   `IllegalArgumentException` — mapped to 400. `Parameters.getOrFail` throws
   `MissingRequestParameterException` — also 400.
-- **Recipe import** (`recipe/importer/`): `POST /api/recipes/import` returns a draft
-  `RecipeRequest`, never saves. Every Koin-bound `RecipeExtractor` runs by ascending `priority`
-  (schema.org JSON-LD 0, Microdata 10, LLM 100); the first usable result wins, so a new extractor
-  only needs a binding. Timeouts, size/count limits and the ingredient unit list live under
-  `recipe.import` in `application.yaml` (each overridable via `RECIPE_IMPORT_*` env vars), read
-  by `RecipeImportConfig`; `support/TestRecipeImport.kt` mirrors those defaults and
-  `RecipeImportConfigTest` keeps them in sync.
-  The LLM uses the generic OpenAI chat-completions contract (no provider-specific code);
-  `LlmConfig` is a `common/llm` Koin single, and consumers check `enabled` because the LLM is
-  optional.
-  User-supplied URLs must only be fetched through `PageFetcher` (public-address guard incl. IP literals and
-  redirect hops) — never `Jsoup.connect` or another client. The LLM client is separate
-  and unguarded because its operator-configured base URL may be a LAN host.
 - **Static file serving**: `staticFiles("/", File(webDir))` serves the
   WasmJS web app. Must be registered **before** the `/api` route.
   Ktor config key is `web.dir` (populated from `WEB_DIR` env var, defaults to
@@ -304,9 +291,6 @@ Build locally:
 Required env vars at runtime: `DATABASE_URL`, `DATABASE_USER`, `DATABASE_PASSWORD`,
 `OIDC_ISSUER`, `OIDC_JWKS_URL`, `OIDC_AUDIENCE`, `OIDC_DISCOVERY_URI`, `OIDC_CLIENT_ID`,
 `OIDC_SCOPE`, `OIDC_ACCOUNT_URI`, `OIDC_RESOURCE`.
-
-Optional: `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL` — any OpenAI-compatible
-chat-completions provider used as recipe-import fallback. Unset = no LLM.
 
 CI: `ci.yml` builds the Docker image on every push/PR (no `needs:` gate —
 Gradle `buildDockerImage` task's own `dependsOn` handles prerequisites).

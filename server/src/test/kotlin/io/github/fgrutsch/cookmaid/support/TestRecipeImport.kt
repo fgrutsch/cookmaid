@@ -4,7 +4,7 @@ import io.github.fgrutsch.cookmaid.recipe.importer.IngredientParser
 import io.github.fgrutsch.cookmaid.recipe.importer.JsonLdRecipeExtractor
 import io.github.fgrutsch.cookmaid.recipe.importer.RecipeImportConfig
 
-// Mirrors the recipe.import defaults in application.yaml.
+// Mirrors recipe.import defaults in application.yaml; RecipeImportConfigTest fails on drift.
 val testRecipeImportConfig = RecipeImportConfig(
     fetchTimeoutMillis = 10_000,
     fetchMaxBytes = 2L * 1024 * 1024,

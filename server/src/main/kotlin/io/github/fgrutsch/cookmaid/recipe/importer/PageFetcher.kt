@@ -24,7 +24,8 @@ import java.net.Inet6Address
 import java.net.InetAddress
 
 /**
- * Downloads a user-supplied recipe page.
+ * Downloads a user-supplied recipe page. Only path for user URLs: never `Jsoup.connect` or a
+ * separate client, they skip the public-address guard.
  */
 fun interface PageFetcher {
     /**

@@ -62,6 +62,10 @@ Examples:
   The Workers Free plan includes 10,000 neurons/day and fails (rather than bills)
   beyond that.
 
+Import timeouts, size limits and the ingredient unit list sit under `recipe.import` in
+`server/src/main/resources/application.yaml`; each value is overridable via its
+`RECIPE_IMPORT_*` env var.
+
 
 ## Tech Stack
 
