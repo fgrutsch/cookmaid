@@ -22,6 +22,9 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FloatingActionButtonMenu
+import androidx.compose.material3.FloatingActionButtonMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -30,6 +33,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.ToggleFloatingActionButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -54,12 +58,18 @@ import cookmaid.app.shared.generated.resources.common_close
 import cookmaid.app.shared.generated.resources.common_options
 import cookmaid.app.shared.generated.resources.common_search
 import cookmaid.app.shared.generated.resources.common_search_recipes
+import cookmaid.app.shared.generated.resources.ic_add
 import cookmaid.app.shared.generated.resources.ic_casino
 import cookmaid.app.shared.generated.resources.ic_close
+import cookmaid.app.shared.generated.resources.ic_edit
 import cookmaid.app.shared.generated.resources.ic_filter_list
+import cookmaid.app.shared.generated.resources.ic_link
 import cookmaid.app.shared.generated.resources.ic_more_vert
 import cookmaid.app.shared.generated.resources.ic_refresh
 import cookmaid.app.shared.generated.resources.ic_search
+import cookmaid.app.shared.generated.resources.recipe_list_add
+import cookmaid.app.shared.generated.resources.recipe_import_title
+import cookmaid.app.shared.generated.resources.recipe_add_title
 import cookmaid.app.shared.generated.resources.recipe_list_clear_filter
 import cookmaid.app.shared.generated.resources.recipe_list_close_search
 import cookmaid.app.shared.generated.resources.recipe_list_empty
@@ -425,4 +435,56 @@ internal fun RandomRecipeDialog(
             TextButton(onClick = onDismiss) { Text(Res.string.common_close.resolve()) }
         },
     )
+}
+
+/**
+ * Add menu on the recipe list: create a recipe by hand or import one from a URL. Same toggle
+ * FAB as the recipe detail's action menu, so both screens share one pattern.
+ *
+ * @param expanded whether the menu is open.
+ * @param onExpandedChange called when the toggle is tapped.
+ * @param onAddRecipe called when "add recipe" is chosen.
+ * @param onImportRecipe called when "import from URL" is chosen.
+ * @param modifier placement within the screen; the menu brings its own edge padding.
+ */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+internal fun RecipeAddMenu(
+    expanded: Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    onAddRecipe: () -> Unit,
+    onImportRecipe: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    // Hoisted: the container colour lambda is not a composable scope.
+    val containerColor = MaterialTheme.colorScheme.tertiary
+    val contentColor = MaterialTheme.colorScheme.onTertiary
+    FloatingActionButtonMenu(
+        modifier = modifier,
+        expanded = expanded,
+        button = {
+            ToggleFloatingActionButton(
+                checked = expanded,
+                onCheckedChange = onExpandedChange,
+                containerColor = { containerColor },
+            ) {
+                Icon(
+                    painterResource(if (expanded) Res.drawable.ic_close else Res.drawable.ic_add),
+                    contentDescription = Res.string.recipe_list_add.resolve(),
+                    tint = contentColor,
+                )
+            }
+        },
+    ) {
+        FloatingActionButtonMenuItem(
+            onClick = onImportRecipe,
+            icon = { Icon(painterResource(Res.drawable.ic_link), contentDescription = null) },
+            text = { Text(Res.string.recipe_import_title.resolve()) },
+        )
+        FloatingActionButtonMenuItem(
+            onClick = onAddRecipe,
+            icon = { Icon(painterResource(Res.drawable.ic_edit), contentDescription = null) },
+            text = { Text(Res.string.recipe_add_title.resolve()) },
+        )
+    }
 }

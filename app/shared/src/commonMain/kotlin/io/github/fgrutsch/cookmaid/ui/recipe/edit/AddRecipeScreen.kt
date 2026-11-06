@@ -104,6 +104,14 @@ fun AddRecipeScreen(
         )
     }
 
+    if (state.importDialogVisible) {
+        ImportUrlDialog(
+            isImporting = state.isImporting,
+            onDismiss = { onEvent(AddRecipeEvent.SetImportDialogVisible(false)) },
+            onImport = { onEvent(AddRecipeEvent.ImportFromUrl(it)) },
+        )
+    }
+
     if (showNewTagDialog) {
         NewTagDialog(
             onDismiss = { showNewTagDialog = false },

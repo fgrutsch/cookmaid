@@ -1,12 +1,10 @@
 package io.github.fgrutsch.cookmaid.ui.recipe.list
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -18,19 +16,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import cookmaid.app.shared.generated.resources.Res
 import cookmaid.app.shared.generated.resources.common_added_to_meal_plan
 import cookmaid.app.shared.generated.resources.common_error
-import cookmaid.app.shared.generated.resources.ic_add
 import cookmaid.app.shared.generated.resources.common_added_to_shopping_list
-import cookmaid.app.shared.generated.resources.recipe_list_add
 import io.github.fgrutsch.cookmaid.ui.common.SuccessSnackbarHost
 import io.github.fgrutsch.cookmaid.ui.common.resolve
 import org.jetbrains.compose.resources.getString
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.rememberResourceEnvironment
 import io.github.fgrutsch.cookmaid.ui.mealplan.DayPickerDialog
 import io.github.fgrutsch.cookmaid.ui.mealplan.DayPickerViewModel
@@ -45,7 +41,8 @@ private const val PAGINATION_THRESHOLD = 5
  *
  * @param viewModel the recipe list view model.
  * @param onRecipeClick called when a recipe is tapped.
- * @param onAddRecipe called when the add FAB is tapped.
+ * @param onAddRecipe called when adding a recipe by hand is chosen.
+ * @param onImportRecipe called when importing a recipe from a URL is chosen.
  */
 @Composable
 @Suppress("LongMethod")
@@ -53,6 +50,7 @@ fun RecipeListScreen(
     viewModel: RecipeListViewModel,
     onRecipeClick: (Uuid) -> Unit,
     onAddRecipe: () -> Unit,
+    onImportRecipe: () -> Unit,
 ) {
     val state by viewModel.state.collectAsState()
     val onEvent = viewModel::onEvent
@@ -64,7 +62,7 @@ fun RecipeListScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val env = rememberResourceEnvironment()
 
-    val addRecipeMsg = Res.string.recipe_list_add.resolve()
+    var addMenuExpanded by remember { mutableStateOf(false) }
 
     val listState = rememberLazyListState()
     val shouldLoadMore by remember {
@@ -109,29 +107,29 @@ fun RecipeListScreen(
                 onRandomRecipe = { onEvent(RecipeListEvent.RollRandomRecipe) },
             )
         },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = onAddRecipe,
-                // Shape left to Material so this matches the recipe detail's toggle FAB, which
-                // morphs on its own schedule and takes no shape override.
-                containerColor = MaterialTheme.colorScheme.tertiary,
-                contentColor = MaterialTheme.colorScheme.onTertiary,
-            ) {
-                Icon(painterResource(Res.drawable.ic_add), contentDescription = addRecipeMsg)
-            }
-        },
     ) { padding ->
-        PullToRefreshBox(
-            isRefreshing = state.isRefreshing,
-            onRefresh = { onEvent(RecipeListEvent.Refresh) },
-            modifier = Modifier.fillMaxSize().padding(padding),
-        ) {
-            RecipeListContent(
-                state = state,
-                listState = listState,
-                onRecipeClick = onRecipeClick,
-                onAddToShoppingList = { ingredientPickerRecipeId = it },
-                onAddToMealPlan = { dayPickerRecipeId = it },
+        // Menu outside Scaffold's FAB slot, as on the recipe detail: the slot adds its own 16dp on
+        // top of the menu's internal edge padding.
+        Box(modifier = Modifier.fillMaxSize()) {
+            PullToRefreshBox(
+                isRefreshing = state.isRefreshing,
+                onRefresh = { onEvent(RecipeListEvent.Refresh) },
+                modifier = Modifier.fillMaxSize().padding(padding),
+            ) {
+                RecipeListContent(
+                    state = state,
+                    listState = listState,
+                    onRecipeClick = onRecipeClick,
+                    onAddToShoppingList = { ingredientPickerRecipeId = it },
+                    onAddToMealPlan = { dayPickerRecipeId = it },
+                )
+            }
+            RecipeAddMenu(
+                expanded = addMenuExpanded,
+                onExpandedChange = { addMenuExpanded = it },
+                onAddRecipe = { addMenuExpanded = false; onAddRecipe() },
+                onImportRecipe = { addMenuExpanded = false; onImportRecipe() },
+                modifier = Modifier.align(Alignment.BottomEnd).padding(bottom = padding.calculateBottomPadding()),
             )
         }
     }

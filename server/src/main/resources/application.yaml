@@ -20,6 +20,26 @@ oidc:
 web:
   dir: ${WEB_DIR:web}
 
+# Optional OpenAI-compatible LLM used when an imported page has no schema.org recipe data.
+# Leave base-url or model empty to disable the fallback.
+llm:
+  base-url: ${LLM_BASE_URL:}
+  api-key: ${LLM_API_KEY:}
+  model: ${LLM_MODEL:}
+
+# Recipe import from a URL. The limits protect the server from slow or oversized pages and bound LLM cost.
+recipe:
+  import:
+    fetch:
+      timeout-millis: ${RECIPE_IMPORT_FETCH_TIMEOUT_MILLIS:10000}
+      max-bytes: ${RECIPE_IMPORT_FETCH_MAX_BYTES:2097152}
+    llm:
+      timeout-millis: ${RECIPE_IMPORT_LLM_TIMEOUT_MILLIS:60000}
+      max-page-chars: ${RECIPE_IMPORT_LLM_MAX_PAGE_CHARS:60000}
+    max-items: ${RECIPE_IMPORT_MAX_ITEMS:100}
+    # Comma-separated words recognised as units after an amount ("200 g Mehl"), case-insensitive.
+    ingredient-units: ${RECIPE_IMPORT_INGREDIENT_UNITS:g,gr,gramm,gram,grams,kg,kilogramm,kilogram,kilograms,dag,mg,ml,milliliter,milliliters,millilitre,millilitres,cl,dl,l,liter,liters,litre,litres,el,esslöffel,tl,teelöffel,kl,kaffeelöffel,msp,messerspitze,messerspitzen,prise,prisen,pck,päckchen,packung,packungen,dose,dosen,becher,bund,stück,stk,st,stange,stangen,stg,stiel,stiele,zehe,zehen,zweig,zweige,blatt,blätter,scheibe,scheiben,tasse,tassen,glas,gläser,flasche,flaschen,tube,tuben,würfel,beutel,tropfen,handvoll,knolle,knollen,kugel,kugeln,schuss,spritzer,tbsp,tsp,tablespoon,tablespoons,teaspoon,teaspoons,cup,cups,oz,ounce,ounces,lb,lbs,pound,pounds,pint,pints,quart,quarts,pinch,pinches,dash,dashes,clove,cloves,can,cans,slice,slices,stick,sticks,sheet,sheets,bunch,bunches,handful,handfuls,sprig,sprigs,package,packages}
+
 csp:
   # Space-separated extra connect-src origins (IdP, CDN, …). Origins only, no path.
   # Production sets a wildcard, e.g. CSP_CONNECT_SRC=https://*.example.com.

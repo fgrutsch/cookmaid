@@ -1,0 +1,184 @@
+package io.github.fgrutsch.cookmaid.recipe.importer
+
+import io.github.fgrutsch.cookmaid.support.testIngredientParser
+import io.github.fgrutsch.cookmaid.support.testJsonLdExtractor
+import io.github.fgrutsch.cookmaid.support.testRecipeImportConfig
+import io.github.fgrutsch.cookmaid.catalog.Item
+import io.github.fgrutsch.cookmaid.common.ktor.RecipeImportException
+import io.github.fgrutsch.cookmaid.common.llm.LlmConfig
+import io.github.fgrutsch.cookmaid.recipe.RecipeRequest
+import io.github.fgrutsch.cookmaid.user.UserId
+import io.ktor.client.engine.mock.MockEngine
+import io.ktor.client.engine.mock.respond
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.headersOf
+import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.json.JsonPrimitive
+import org.jsoup.nodes.Document
+import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertNull
+import kotlin.uuid.Uuid
+
+class RecipeImportServiceTest {
+
+    private val userId = UserId(Uuid.random())
+    private val url = "https://recipes.example/pasta"
+    private var llmCalls = 0
+
+    private val llmEngine = MockEngine {
+        llmCalls++
+        val content = """
+            {"found":true,"name":"LLM Pasta","ingredientLines":[0],"stepLines":[]}
+        """.trimIndent()
+        respond(
+            """{"choices":[{"message":{"content":${JsonPrimitive(content)}}}]}""",
+            HttpStatusCode.OK,
+            headersOf(HttpHeaders.ContentType, "application/json"),
+        )
+    }
+    private val llm = LlmRecipeExtractor(
+        LlmConfig("https://llm.example/v1", "", "m"),
+        testRecipeImportConfig,
+        testIngredientParser,
+        llmEngine,
+    )
+
+    private val jsonLdPage = """
+        <html><head><script type="application/ld+json">
+        {"@type":"Recipe","name":"Pasta","recipeIngredient":["250 g Nudeln"],"recipeInstructions":"Kochen"}
+        </script></head><body>Pasta</body></html>
+    """.trimIndent()
+    private val plainPage = "<html><head><title>Pasta</title></head><body>Some recipe text</body></html>"
+
+    private fun service(page: String, llm: LlmRecipeExtractor? = this.llm) = RecipeImportService(
+        { page },
+        listOfNotNull(testJsonLdExtractor, llm),
+        testRecipeImportConfig,
+    )
+
+    @Test
+    fun `json-ld page never calls the llm`() = runTest {
+        val draft = service(jsonLdPage).import(userId, url)
+
+        assertEquals("Pasta", draft.name)
+        assertEquals(0, llmCalls)
+    }
+
+    @Test
+    fun `json-ld page imports without an llm`() = runTest {
+        assertEquals("Pasta", service(jsonLdPage, llm = null).import(userId, url).name)
+    }
+
+    @Test
+    fun `page without json-ld uses the llm once`() = runTest {
+        val draft = service(plainPage).import(userId, url)
+
+        assertEquals("LLM Pasta", draft.name)
+        assertEquals(1, llmCalls)
+    }
+
+    @Test
+    fun `page without json-ld and no llm finds no recipe`() = runTest {
+        assertFailsWith<RecipeImportException> { service(plainPage, llm = null).import(userId, url) }
+        assertEquals(0, llmCalls)
+    }
+
+    @Test
+    fun `json-ld recipe without ingredients or steps falls back to the llm`() = runTest {
+        val emptyRecipe = """
+            <script type="application/ld+json">{"@type":"Recipe","name":"Empty"}</script><p>250 g Nudeln</p>
+        """.trimIndent()
+
+        assertEquals("LLM Pasta", service(emptyRecipe).import(userId, url).name)
+    }
+
+    @Test
+    fun `blank name is rejected`() = runTest {
+        val blankName = """
+            <script type="application/ld+json">{"@type":"Recipe","name":"  ","recipeInstructions":"x"}</script>
+        """.trimIndent()
+
+        assertFailsWith<RecipeImportException> { service(blankName, llm = null).import(userId, url) }
+    }
+
+    @Test
+    fun `ingredient list is capped`() = runTest {
+        val ingredients = (1..150).joinToString(",") { "\"Zutat $it\"" }
+        val page = """
+            <script type="application/ld+json">
+            {"@type":"Recipe","name":"Soup","recipeIngredient":[$ingredients],"recipeInstructions":"Cook"}
+            </script>
+        """.trimIndent()
+
+        val draft = service(page, llm = null).import(userId, url)
+
+        assertEquals(100, draft.ingredients.size)
+        assertEquals(Item.FreeText("Zutat 1"), draft.ingredients.first().item)
+    }
+
+    @Test
+    fun `blank name from the llm is rejected`() = runTest {
+        val blankLlm = LlmRecipeExtractor(
+            LlmConfig("https://llm.example/v1", "", "m"),
+            testRecipeImportConfig,
+            testIngredientParser,
+            MockEngine {
+                val content = """{"found":true,"name":"  ","ingredientLines":[0],"stepLines":[]}"""
+                respond(
+                    """{"choices":[{"message":{"content":${JsonPrimitive(content)}}}]}""",
+                    HttpStatusCode.OK,
+                    headersOf(HttpHeaders.ContentType, "application/json"),
+                )
+            },
+        )
+
+        assertFailsWith<RecipeImportException> { service(plainPage, blankLlm).import(userId, url) }
+    }
+
+    @Test
+    fun `zero servings are dropped`() = runTest {
+        val page = """
+            <script type="application/ld+json">{"@type":"Recipe","name":"Soup","recipeYield":"0","recipeInstructions":"Cook"}</script>
+        """.trimIndent()
+
+        assertNull(service(page, llm = null).import(userId, url).servings)
+    }
+
+    private class FakeExtractor(
+        override val priority: Int,
+        private val result: RecipeRequest?,
+        private val onExtract: (Int) -> Unit,
+    ) : RecipeExtractor {
+        override suspend fun extract(document: Document): RecipeRequest? = result.also { onExtract(priority) }
+    }
+
+    @Test
+    fun `extractors run by priority and the first usable result wins`() = runTest {
+        val calls = mutableListOf<Int>()
+        val record: (Int) -> Unit = { calls += it }
+        val extractors = listOf(
+            FakeExtractor(30, RecipeRequest(name = "Third", steps = listOf("c")), record),
+            FakeExtractor(20, RecipeRequest(name = "Second", steps = listOf("b")), record),
+            FakeExtractor(10, null, record),
+        )
+
+        val draft = RecipeImportService({ plainPage }, extractors, testRecipeImportConfig).import(userId, url)
+
+        assertEquals("Second", draft.name)
+        assertEquals(listOf(10, 20), calls)
+    }
+
+    @Test
+    fun `fetch failure propagates`() = runTest {
+        val service = RecipeImportService(
+            { throw RecipeImportException("Fetching page failed") },
+            listOf(llm),
+            testRecipeImportConfig,
+        )
+
+        assertFailsWith<RecipeImportException> { service.import(userId, url) }
+    }
+}

@@ -83,6 +83,9 @@
     <string name="recipe_edit_new_tag_title">New Tag</string>
     <string name="recipe_edit_tag_name_label">Tag name</string>
     <string name="recipe_edit_servings_label">Servings</string>
+    <string name="recipe_import_title">Import from URL</string>
+    <string name="recipe_import_url_label">Recipe URL</string>
+    <string name="recipe_import_action">Import</string>
 
     <!-- Shopping -->
     <string name="shopping_title">Shopping</string>

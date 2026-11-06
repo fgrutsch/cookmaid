@@ -1,4 +1,4 @@
-package io.github.fgrutsch.cookmaid.web
+package io.github.fgrutsch.cookmaid.common.web
 
 import io.ktor.http.*
 import io.ktor.server.application.*

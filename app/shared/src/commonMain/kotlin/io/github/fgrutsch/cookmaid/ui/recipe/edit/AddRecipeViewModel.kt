@@ -22,8 +22,9 @@ class AddRecipeViewModel(
     private val recipeRepository: RecipeRepository,
     private val catalogItemRepository: CatalogItemRepository,
     private val editRecipeId: Uuid? = null,
+    importFromUrl: Boolean = false,
 ) : MviViewModel<AddRecipeState, AddRecipeEvent, AddRecipeEffect>(
-    AddRecipeState(isEditing = editRecipeId != null),
+    AddRecipeState(isEditing = editRecipeId != null, importDialogVisible = importFromUrl),
 ) {
 
     private val ingredientQueryFlow = MutableStateFlow("")
@@ -64,6 +65,32 @@ class AddRecipeViewModel(
             is AddRecipeEvent.ToggleTag -> toggleTag(event.tag)
             is AddRecipeEvent.CreateAndAddTag -> createAndAddTag(event.tag)
             is AddRecipeEvent.Save -> save()
+            is AddRecipeEvent.SetImportDialogVisible -> updateState { copy(importDialogVisible = event.visible) }
+            is AddRecipeEvent.ImportFromUrl -> importFromUrl(event.url)
+        }
+    }
+
+    private fun importFromUrl(url: String) {
+        if (url.isBlank() || state.value.isImporting) return
+        updateState { copy(isImporting = true) }
+        launch {
+            val draft = recipeRepository.importFromUrl(url.trim())
+            val ingredients = draft.ingredients.map { ingredient ->
+                val match = catalogItemRepository.findExactMatch(ingredient.item.name)
+                if (match != null) ingredient.copy(item = match) else ingredient
+            }
+            updateState {
+                copy(
+                    name = draft.name,
+                    nameError = false,
+                    description = draft.description.orEmpty(),
+                    ingredients = ingredients,
+                    steps = draft.steps,
+                    servings = draft.servings,
+                    isImporting = false,
+                    importDialogVisible = false,
+                )
+            }
         }
     }
 
@@ -213,7 +240,7 @@ class AddRecipeViewModel(
     }
 
     override fun onError(e: Exception) {
-        updateState { copy(isLoading = false) }
+        updateState { copy(isLoading = false, isImporting = false) }
         sendEffect(AddRecipeEffect.Error)
     }
 

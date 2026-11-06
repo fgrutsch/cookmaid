@@ -1,12 +1,14 @@
 package io.github.fgrutsch.cookmaid
 
-import io.github.fgrutsch.cookmaid.auth.AUTH_JWT
-import io.github.fgrutsch.cookmaid.auth.configureAuth
+import io.github.fgrutsch.cookmaid.common.auth.AUTH_JWT
+import io.github.fgrutsch.cookmaid.common.auth.configureAuth
 import io.github.fgrutsch.cookmaid.catalog.catalogModule
 import io.github.fgrutsch.cookmaid.catalog.catalogRoutes
 import io.github.fgrutsch.cookmaid.common.ktor.ErrorResponse
+import io.github.fgrutsch.cookmaid.common.ktor.RecipeImportException
 import io.github.fgrutsch.cookmaid.common.ktor.UserNotRegisteredException
-import io.github.fgrutsch.cookmaid.db.databaseModule
+import io.github.fgrutsch.cookmaid.common.llm.llmModule
+import io.github.fgrutsch.cookmaid.common.db.databaseModule
 import io.github.fgrutsch.cookmaid.mealplan.mealPlanModule
 import io.github.fgrutsch.cookmaid.mealplan.mealPlanRoutes
 import io.github.fgrutsch.cookmaid.recipe.recipeModule
@@ -15,7 +17,7 @@ import io.github.fgrutsch.cookmaid.shopping.shoppingModule
 import io.github.fgrutsch.cookmaid.shopping.shoppingRoutes
 import io.github.fgrutsch.cookmaid.user.userModule
 import io.github.fgrutsch.cookmaid.user.userRoutes
-import io.github.fgrutsch.cookmaid.web.configureStaticFiles
+import io.github.fgrutsch.cookmaid.common.web.configureStaticFiles
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
@@ -58,6 +60,7 @@ private fun Application.configureDI() {
             userModule,
             catalogModule,
             shoppingModule,
+            llmModule,
             recipeModule,
             mealPlanModule,
         )
@@ -88,6 +91,10 @@ private fun Application.configureStatusPages() {
     install(StatusPages) {
         exception<UserNotRegisteredException> { call, _ ->
             call.respond(HttpStatusCode.Unauthorized, ErrorResponse("user_not_registered"))
+        }
+        exception<RecipeImportException> { call, cause ->
+            logger.debug(cause) { "Recipe import failed" }
+            call.respond(HttpStatusCode.UnprocessableEntity)
         }
         exception<MissingRequestParameterException> { call, cause ->
             logger.debug(cause) { "Missing request parameter" }

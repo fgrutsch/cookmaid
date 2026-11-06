@@ -1,11 +1,13 @@
 package io.github.fgrutsch.cookmaid.ui.recipe
 
+import io.github.fgrutsch.cookmaid.recipe.ImportRecipeRequest
 import io.github.fgrutsch.cookmaid.recipe.Recipe
 import io.github.fgrutsch.cookmaid.recipe.RecipePage
 import io.github.fgrutsch.cookmaid.recipe.RecipeRequest
 import io.github.fgrutsch.cookmaid.recipe.TagsResponse
 import io.github.fgrutsch.cookmaid.ui.auth.ApiClient
 import io.ktor.client.call.body
+import io.ktor.client.plugins.timeout
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
@@ -15,6 +17,8 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import kotlin.uuid.Uuid
+
+private const val IMPORT_TIMEOUT_MILLIS = 90_000L
 
 class RecipeClient(
     private val apiClient: ApiClient,
@@ -47,6 +51,17 @@ class RecipeClient(
             setBody(request)
         }
     }
+
+    suspend fun importFromUrl(url: String): RecipeRequest =
+        apiClient.httpClient.post("$base/import") {
+            // The server may spend its page fetch plus a full LLM call before answering.
+            timeout {
+                requestTimeoutMillis = IMPORT_TIMEOUT_MILLIS
+                socketTimeoutMillis = IMPORT_TIMEOUT_MILLIS
+            }
+            contentType(ContentType.Application.Json)
+            setBody(ImportRecipeRequest(url))
+        }.body()
 
     suspend fun fetchRandom(tag: String?, excludeIds: List<String>): Recipe =
         apiClient.httpClient.get("$base/random") {

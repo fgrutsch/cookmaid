@@ -3,6 +3,7 @@ package io.github.fgrutsch.cookmaid.ui.auth
 import io.github.fgrutsch.cookmaid.ApiBaseUrl
 import io.github.fgrutsch.cookmaid.common.SupportedLocale
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
@@ -30,6 +31,8 @@ class ApiClient(
             header(HttpHeaders.AcceptLanguage, effectiveLocale().code)
         }
         install(ContentNegotiation) { json() }
+        // No global values: engine defaults stay; individual calls (recipe import) raise their own.
+        install(HttpTimeout)
         install(Auth) {
             val resource = oidcConfig.resource
             if (resource != null) {

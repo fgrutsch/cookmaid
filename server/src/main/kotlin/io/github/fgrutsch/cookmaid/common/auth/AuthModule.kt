@@ -1,4 +1,4 @@
-package io.github.fgrutsch.cookmaid.auth
+package io.github.fgrutsch.cookmaid.common.auth
 
 import com.auth0.jwk.JwkProviderBuilder
 import io.ktor.http.*

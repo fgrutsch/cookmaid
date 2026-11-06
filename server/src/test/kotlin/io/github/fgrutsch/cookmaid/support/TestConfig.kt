@@ -13,6 +13,15 @@ val testConfigEntries: List<Pair<String, String>> = listOf(
     "oidc.audience" to TestJwt.AUDIENCE,
     "web.dir" to "web",
     "csp.connect-src" to TestJwt.issuer,
+    "llm.base-url" to "",
+    "llm.api-key" to "",
+    "llm.model" to "",
+    "recipe.import.fetch.timeout-millis" to testRecipeImportConfig.fetchTimeoutMillis.toString(),
+    "recipe.import.fetch.max-bytes" to testRecipeImportConfig.fetchMaxBytes.toString(),
+    "recipe.import.llm.timeout-millis" to testRecipeImportConfig.llmTimeoutMillis.toString(),
+    "recipe.import.llm.max-page-chars" to testRecipeImportConfig.llmMaxPageChars.toString(),
+    "recipe.import.max-items" to testRecipeImportConfig.maxItems.toString(),
+    "recipe.import.ingredient-units" to testRecipeImportConfig.ingredientUnits.joinToString(","),
 )
 
 val testConfig: ApplicationConfig = MapApplicationConfig(*testConfigEntries.toTypedArray())

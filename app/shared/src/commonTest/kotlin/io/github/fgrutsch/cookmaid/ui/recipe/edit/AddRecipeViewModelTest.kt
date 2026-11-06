@@ -4,6 +4,7 @@ import io.github.fgrutsch.cookmaid.catalog.Item
 import io.github.fgrutsch.cookmaid.catalog.ItemCategory
 import io.github.fgrutsch.cookmaid.recipe.Recipe
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
+import io.github.fgrutsch.cookmaid.recipe.RecipeRequest
 import io.github.fgrutsch.cookmaid.ui.recipe.FakeRecipeRepository
 import io.github.fgrutsch.cookmaid.ui.shopping.FakeCatalogItemRepository
 import io.github.fgrutsch.cookmaid.support.BaseViewModelTest
@@ -321,6 +322,88 @@ class AddRecipeViewModelTest : BaseViewModelTest() {
         assertEquals(AddRecipeEffect.Saved, effect)
         assertEquals("Updated Pasta", fakeRecipeRepo.recipes.first().name)
         assertEquals(1, fakeRecipeRepo.recipes.size)
+        job.cancel()
+    }
+
+    private val importedDraft = RecipeRequest(
+        name = "Pancakes",
+        description = "Fluffy",
+        ingredients = listOf(
+            RecipeIngredient(Item.FreeText("Butter"), "50 g"),
+            RecipeIngredient(Item.FreeText("Dragonfruit powder"), "1 TL"),
+        ),
+        steps = listOf("Mix", "Fry"),
+        servings = 4,
+    )
+
+    @Test
+    fun `opening for url import shows the import dialog`() = viewModelTest {
+        val viewModel = AddRecipeViewModel(fakeRecipeRepo, fakeCatalog, importFromUrl = true)
+
+        assertTrue(viewModel.state.value.importDialogVisible)
+        assertFalse(createViewModel().state.value.importDialogVisible)
+    }
+
+    @Test
+    fun `import fills the form and matches catalog items`() = viewModelTest {
+        val butter = Item.Catalog(
+            id = Uuid.random(),
+            name = "butter",
+            category = ItemCategory(id = Uuid.random(), name = "Dairy"),
+        )
+        fakeCatalog.items = listOf(butter)
+        fakeRecipeRepo.importResult = importedDraft
+        val viewModel = createViewModel()
+        viewModel.onEvent(AddRecipeEvent.SetImportDialogVisible(true))
+        viewModel.onEvent(AddRecipeEvent.ToggleTag("Breakfast"))
+
+        viewModel.onEvent(AddRecipeEvent.ImportFromUrl("https://recipes.example/pancakes"))
+        advanceUntilIdle()
+
+        val state = viewModel.state.value
+        assertEquals("Pancakes", state.name)
+        assertEquals("Fluffy", state.description)
+        assertEquals(4, state.servings)
+        assertEquals(listOf("Mix", "Fry"), state.steps)
+        assertEquals(
+            listOf(RecipeIngredient(butter, "50 g"), RecipeIngredient(Item.FreeText("Dragonfruit powder"), "1 TL")),
+            state.ingredients,
+        )
+        assertEquals(listOf("Breakfast"), state.selectedTags)
+        assertFalse(state.isImporting)
+        assertFalse(state.importDialogVisible)
+        assertTrue(fakeRecipeRepo.recipes.isEmpty())
+    }
+
+    @Test
+    fun `import replaces existing form content`() = viewModelTest {
+        fakeRecipeRepo.importResult = importedDraft
+        val viewModel = createViewModel()
+        viewModel.onEvent(AddRecipeEvent.SetName("Old"))
+        viewModel.onEvent(AddRecipeEvent.AddStep("Old step"))
+
+        viewModel.onEvent(AddRecipeEvent.ImportFromUrl("https://recipes.example/pancakes"))
+        advanceUntilIdle()
+
+        assertEquals("Pancakes", viewModel.state.value.name)
+        assertEquals(listOf("Mix", "Fry"), viewModel.state.value.steps)
+    }
+
+    @Test
+    fun `failed import keeps the form and dialog and emits an error`() = viewModelTest {
+        val viewModel = createViewModel()
+        viewModel.onEvent(AddRecipeEvent.SetName("Draft"))
+        viewModel.onEvent(AddRecipeEvent.SetImportDialogVisible(true))
+        var effect: AddRecipeEffect? = null
+        val job = launch { viewModel.effects.collect { effect = it } }
+
+        viewModel.onEvent(AddRecipeEvent.ImportFromUrl("https://recipes.example/broken"))
+        advanceUntilIdle()
+
+        assertEquals(AddRecipeEffect.Error, effect)
+        assertEquals("Draft", viewModel.state.value.name)
+        assertTrue(viewModel.state.value.importDialogVisible)
+        assertFalse(viewModel.state.value.isImporting)
         job.cancel()
     }
 }

@@ -16,6 +16,8 @@ data class AddRecipeState(
     val servings: Int? = null,
     val ingredientQuery: String = "",
     val ingredientSuggestions: List<Item.Catalog> = emptyList(),
+    val importDialogVisible: Boolean = false,
+    val isImporting: Boolean = false,
 )
 
 sealed interface AddRecipeEvent {
@@ -37,6 +39,12 @@ sealed interface AddRecipeEvent {
     data class ToggleTag(val tag: String) : AddRecipeEvent
     data class CreateAndAddTag(val tag: String) : AddRecipeEvent
     data object Save : AddRecipeEvent
+    data class SetImportDialogVisible(val visible: Boolean) : AddRecipeEvent
+
+    /**
+     * Replaces the form's content with the recipe found at [url]; tags are kept.
+     */
+    data class ImportFromUrl(val url: String) : AddRecipeEvent
 }
 
 sealed interface AddRecipeEffect {
