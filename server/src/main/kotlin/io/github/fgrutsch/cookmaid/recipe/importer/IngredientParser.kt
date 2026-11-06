@@ -3,6 +3,7 @@ package io.github.fgrutsch.cookmaid.recipe.importer
 import io.github.fgrutsch.cookmaid.catalog.Item
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
 
+private const val MAX_LINE = 500
 private const val NUMBER = """(?:\d+(?:[.,]\d+)?(?:\s*/\s*\d+)?|[½⅓⅔¼¾⅛⅜⅝⅞])"""
 private const val AMOUNT = """$NUMBER(?:\s*$NUMBER)?(?:\s*[-–]\s*$NUMBER)?"""
 private val UNITS = listOf(
@@ -22,9 +23,11 @@ private val INGREDIENT = Regex(
  * whole text as the name and no quantity.
  */
 fun parseIngredient(text: String): RecipeIngredient {
-    val match = INGREDIENT.find(text.trim())
+    // Capped before matching: the amount pattern backtracks heavily on long digit runs from untrusted pages.
+    val line = text.trim().take(MAX_LINE)
+    val match = INGREDIENT.find(line)
     return if (match == null) {
-        RecipeIngredient(Item.FreeText(text.trim()))
+        RecipeIngredient(Item.FreeText(line))
     } else {
         RecipeIngredient(Item.FreeText(match.groupValues[2].trim()), match.groupValues[1].trim())
     }

@@ -63,14 +63,14 @@ class RecipeImportService(
                 RecipeIngredient(Item.FreeText(it), line(ingredient.quantity))
             }
         }.take(MAX_ITEMS)
-        val steps = recipe.steps.mapNotNull(::line).take(MAX_ITEMS)
-        val name = recipe.name.trim().take(MAX_NAME)
-        return if (name.isBlank() || (ingredients.isEmpty() && steps.isEmpty())) {
+        val steps = recipe.steps.mapNotNull { line(it) }.take(MAX_ITEMS)
+        val name = line(recipe.name, MAX_NAME)
+        return if (name == null || (ingredients.isEmpty() && steps.isEmpty())) {
             null
         } else {
             RecipeRequest(
                 name = name,
-                description = recipe.description?.trim()?.take(MAX_DESCRIPTION)?.takeIf { it.isNotBlank() },
+                description = line(recipe.description, MAX_DESCRIPTION),
                 ingredients = ingredients,
                 steps = steps,
                 servings = recipe.servings?.takeIf { it in SERVINGS },
@@ -78,5 +78,6 @@ class RecipeImportService(
         }
     }
 
-    private fun line(value: String?): String? = value?.trim()?.take(MAX_LINE)?.takeIf { it.isNotBlank() }
+    private fun line(value: String?, max: Int = MAX_LINE): String? =
+        value?.trim()?.take(max)?.takeIf { it.isNotBlank() }
 }

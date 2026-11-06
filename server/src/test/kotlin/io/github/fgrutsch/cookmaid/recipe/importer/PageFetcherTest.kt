@@ -42,7 +42,6 @@ class PageFetcherTest {
 
     private val port = runBlocking { server.engine.resolvedConnectors().first().port }
 
-    // Treats the loopback test server as public so the limit under test is what fails, not the guard.
     private val loopbackAllowed = PageFetcher(isAllowed = { it.isLoopbackAddress })
 
     private suspend fun io.ktor.server.routing.RoutingContext.redirect(location: String) {

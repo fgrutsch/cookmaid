@@ -73,16 +73,16 @@ class PageFetcher(private val isAllowed: (InetAddress) -> Boolean = ::isPublicAd
      * @throws RecipeImportException if the URL is invalid or blocked, the page is
      *   unreachable, too large, or redirects too often.
      */
-    suspend fun fetch(url: String): String {
-        var current = validate(url)
-        repeat(MAX_REDIRECTS + 1) {
-            when (val result = request(current)) {
-                is FetchResult.Page -> return result.body
-                is FetchResult.Redirect -> current = validate(result.location)
+    suspend fun fetch(url: String): String = follow(validate(url), MAX_REDIRECTS)
+
+    private tailrec suspend fun follow(uri: URI, redirectsLeft: Int): String =
+        when (val result = request(uri)) {
+            is FetchResult.Page -> result.body
+            is FetchResult.Redirect -> {
+                if (redirectsLeft == 0) throw RecipeImportException("Too many redirects")
+                follow(validate(result.location), redirectsLeft - 1)
             }
         }
-        throw RecipeImportException("Too many redirects")
-    }
 
     private fun validate(url: String): URI {
         val uri = try {

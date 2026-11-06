@@ -55,9 +55,10 @@ object JsonLdRecipeExtractor {
         )
     }
 
-    private fun text(element: JsonElement?): String? = (element as? JsonPrimitive)?.contentOrNull
-        ?.let { Jsoup.parseBodyFragment(it).text() }
-        ?.takeIf { it.isNotBlank() }
+    private fun text(element: JsonElement?): String? = clean((element as? JsonPrimitive)?.contentOrNull)
+
+    private fun clean(raw: String?): String? =
+        raw?.let { Jsoup.parseBodyFragment(it).text() }?.takeIf { it.isNotBlank() }
 
     private fun strings(element: JsonElement?): List<String> = when (element) {
         is JsonArray -> element.mapNotNull { text(it) }
@@ -68,7 +69,7 @@ object JsonLdRecipeExtractor {
         is JsonArray -> element.flatMap { instructions(it) }
         is JsonObject -> element["itemListElement"]?.let { instructions(it) }
             ?: listOfNotNull(text(element["text"]) ?: text(element["name"]))
-        is JsonPrimitive -> element.contentOrNull.orEmpty().lines().mapNotNull { text(JsonPrimitive(it)) }
+        is JsonPrimitive -> element.contentOrNull.orEmpty().lines().mapNotNull(::clean)
         else -> emptyList()
     }
 

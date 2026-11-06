@@ -561,7 +561,6 @@ internal fun ImportUrlDialog(
     onDismiss: () -> Unit,
     onImport: (String) -> Unit,
 ) {
-    // Kept across failed attempts: the dialog stays open on error so the user can fix the link.
     var url by remember { mutableStateOf("") }
 
     AlertDialog(
