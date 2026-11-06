@@ -31,7 +31,7 @@ class RecipeImportServiceTest {
     private val llmEngine = MockEngine {
         llmCalls++
         val content = """
-            {"found":true,"name":"LLM Pasta","ingredients":["250 g Nudeln"],"steps":["Kochen"]}
+            {"found":true,"name":"LLM Pasta","ingredientLines":[0],"stepLines":[]}
         """.trimIndent()
         respond(
             """{"choices":[{"message":{"content":${JsonPrimitive(content)}}}]}""",
@@ -88,7 +88,9 @@ class RecipeImportServiceTest {
 
     @Test
     fun `json-ld recipe without ingredients or steps falls back to the llm`() = runTest {
-        val emptyRecipe = """<script type="application/ld+json">{"@type":"Recipe","name":"Empty"}</script>"""
+        val emptyRecipe = """
+            <script type="application/ld+json">{"@type":"Recipe","name":"Empty"}</script><p>250 g Nudeln</p>
+        """.trimIndent()
 
         assertEquals("LLM Pasta", service(emptyRecipe).import(userId, url).name)
     }
@@ -124,7 +126,7 @@ class RecipeImportServiceTest {
             testRecipeImportConfig,
             testIngredientParser,
             MockEngine {
-                val content = """{"found":true,"name":"  ","ingredients":[],"steps":["Cook"]}"""
+                val content = """{"found":true,"name":"  ","ingredientLines":[0],"stepLines":[]}"""
                 respond(
                     """{"choices":[{"message":{"content":${JsonPrimitive(content)}}}]}""",
                     HttpStatusCode.OK,

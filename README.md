@@ -55,7 +55,8 @@ Set all three variables to enable it; leave them unset to disable:
 Examples:
 
 - **OpenAI:** `LLM_BASE_URL=https://api.openai.com/v1`
-- **Ollama:** `LLM_BASE_URL=http://<host>:11434/v1`
+- **Ollama:** `LLM_BASE_URL=http://<host>:11434/v1`, `LLM_MODEL=qwen2.5:7b`. Use a model of
+  about 7B parameters or more; 3B models miss many recipes.
 - **Cloudflare Workers AI:**
   `LLM_BASE_URL=https://api.cloudflare.com/client/v4/accounts/<account-id>/ai/v1`,
   `LLM_MODEL=@cf/google/gemma-4-26b-a4b-it`, API token with Workers AI permissions.

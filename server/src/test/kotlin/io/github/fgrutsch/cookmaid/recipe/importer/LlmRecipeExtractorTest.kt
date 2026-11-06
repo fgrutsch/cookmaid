@@ -35,7 +35,7 @@ class LlmRecipeExtractorTest {
     private val config = LlmConfig("https://llm.example/v1/", "secret", "test-model")
 
     private val noRecipe = """
-        {"found":false,"name":null,"description":null,"servings":null,"ingredients":[],"steps":[]}
+        {"found":false,"name":null,"description":null,"servings":null,"ingredientLines":[],"stepLines":[]}
     """.trimIndent()
 
     private fun doc(text: String) = Jsoup.parse("<html><body>$text</body></html>")
@@ -64,7 +64,7 @@ class LlmRecipeExtractorTest {
         assertEquals("test-model", body.getValue("model").jsonPrimitive.content)
         assertEquals("json_schema", body.getValue("response_format").jsonObject.getValue("type").jsonPrimitive.content)
         val userMessage = body.getValue("messages").jsonArray[1].jsonObject.getValue("content").jsonPrimitive.content
-        assertEquals("<page>\nSome page\n</page>", userMessage)
+        assertEquals("<page>\n[0] Some page\n</page>", userMessage)
     }
 
     @Test
@@ -99,7 +99,7 @@ class LlmRecipeExtractorTest {
 
         val page = Json.parseToJsonElement(sent).jsonObject.getValue("messages").jsonArray[1]
             .jsonObject.getValue("content").jsonPrimitive.content
-        assertEquals("<page>\nSchmarrn\netwas Zitronenschale\n1,5 g Salz\n</page>", page)
+        assertEquals("<page>\n[0] Schmarrn\n[1] etwas Zitronenschale\n[2] 1,5 g Salz\n</page>", page)
     }
 
     @Test
@@ -107,7 +107,7 @@ class LlmRecipeExtractorTest {
         var captured: HttpRequestData? = null
         val engine = MockEngine { request ->
             captured = request
-            ok(completion("""{"found":false,"ingredients":[],"steps":[]}"""))
+            ok(completion("""{"found":false,"ingredientLines":[],"stepLines":[]}"""))
         }
         val keyless = config.copy(apiKey = "")
         val extractor = LlmRecipeExtractor(keyless, testRecipeImportConfig, testIngredientParser, engine)
@@ -123,12 +123,12 @@ class LlmRecipeExtractorTest {
                 completion(
                     """
                     {"found":true,"name":"Pasta","description":"Quick","servings":2,
-                     "ingredients":["250 g Spaghetti","Salz"],
-                     "steps":["Boil","Serve"]}
+                     "ingredientLines":[0,1,1,99],
+                     "stepLines":[2,3]}
                     """,
                 ),
             )
-        }.extract(doc("page"))
+        }.extract(doc("<ul><li>250 g Spaghetti</li><li>Salz</li></ul><p>Boil</p><p>Serve</p>"))
 
         assertNotNull(recipe)
         assertEquals("Pasta", recipe.name)
@@ -143,7 +143,7 @@ class LlmRecipeExtractorTest {
     @Test
     fun `content returned as an object is accepted`() = runTest {
         val recipe = extractor {
-            val recipe = """{"found":true,"name":"Soup","ingredients":[],"steps":["Cook"]}"""
+            val recipe = """{"found":true,"name":"Soup","ingredientLines":[0],"stepLines":[]}"""
             ok("""{"choices":[{"message":{"content":$recipe}}]}""")
         }.extract(doc("page"))
 
@@ -151,8 +151,24 @@ class LlmRecipeExtractorTest {
     }
 
     @Test
+    fun `recipe without a page ingredient line returns null`() = runTest {
+        val recipe = """{"found":true,"name":"Gulasch","ingredientLines":[42],"stepLines":[0]}"""
+        assertNull(extractor { ok(completion(recipe)) }.extract(doc("Rezept hier herunterladen")))
+    }
+
+    @Test
+    fun `headings and step lines are not ingredients`() = runTest {
+        val recipe = extractor {
+            ok(completion("""{"found":true,"name":"Soup","ingredientLines":[0,1,2],"stepLines":[2]}"""))
+        }.extract(doc("<p>Gewürze:</p><p>Salz</p><p>Salz in den Topf geben</p>"))
+
+        assertEquals(listOf(RecipeIngredient(Item.FreeText("Salz"))), recipe?.ingredients)
+        assertEquals(listOf("Salz in den Topf geben"), recipe?.steps)
+    }
+
+    @Test
     fun `no recipe answer returns null`() = runTest {
-        assertNull(extractor { ok(completion("""{"found":false,"ingredients":[],"steps":[]}""")) }.extract(doc("page")))
+        assertNull(extractor { ok(completion(noRecipe)) }.extract(doc("page")))
     }
 
     @Test
@@ -174,7 +190,7 @@ class LlmRecipeExtractorTest {
         var sent = ""
         extractor { request ->
             sent = (request.body as TextContent).text
-            ok(completion("""{"found":false,"ingredients":[],"steps":[]}"""))
+            ok(completion("""{"found":false,"ingredientLines":[],"stepLines":[]}"""))
         }.extract(doc("x".repeat(100_000)))
 
         assertTrue(sent.length < 70_000)
