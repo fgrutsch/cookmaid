@@ -38,12 +38,11 @@ import org.jsoup.nodes.Document
  */
 class LlmRecipeExtractor(
     private val config: LlmConfig,
+    private val importConfig: RecipeImportConfig,
     engine: HttpClientEngine = CIO.create(),
 ) : RecipeExtractor {
 
     companion object {
-        private const val TIMEOUT_MILLIS = 60_000L
-        private const val MAX_PAGE_CHARS = 60_000
         private val json = Json { ignoreUnknownKeys = true }
         private val SYSTEM_PROMPT = """
             You extract a single cooking recipe from the text of a web page.
@@ -75,8 +74,8 @@ class LlmRecipeExtractor(
     private val client = HttpClient(engine) {
         expectSuccess = false
         install(HttpTimeout) {
-            requestTimeoutMillis = TIMEOUT_MILLIS
-            socketTimeoutMillis = TIMEOUT_MILLIS
+            requestTimeoutMillis = importConfig.llmTimeoutMillis
+            socketTimeoutMillis = importConfig.llmTimeoutMillis
         }
     }
 
@@ -94,7 +93,7 @@ class LlmRecipeExtractor(
     @Suppress("TooGenericExceptionCaught")
     private suspend fun extractWithLlm(document: Document): RecipeRequest? = try {
         val pageText = listOf(document.title(), document.body().text()).filter { it.isNotBlank() }.joinToString("\n")
-        val content = complete(pageText.take(MAX_PAGE_CHARS))
+        val content = complete(pageText.take(importConfig.llmMaxPageChars))
         json.decodeFromJsonElement(LlmRecipe.serializer(), content).toRequest()
     } catch (e: CancellationException) {
         throw e

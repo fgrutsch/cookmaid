@@ -1,5 +1,6 @@
 package io.github.fgrutsch.cookmaid.recipe.importer
 
+import io.github.fgrutsch.cookmaid.support.testRecipeImportConfig
 import io.github.fgrutsch.cookmaid.common.ktor.RecipeImportException
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
@@ -57,7 +58,7 @@ class PageFetcherTest {
 
     private val urlNotAllowed = "URL not allowed"
 
-    private val loopbackAllowed = HttpPageFetcher(isAllowed = { it.isLoopbackAddress })
+    private val loopbackAllowed = HttpPageFetcher(testRecipeImportConfig, isAllowed = { it.isLoopbackAddress })
 
     private suspend fun RoutingContext.redirect(location: String) {
         call.response.header(HttpHeaders.Location, location)
@@ -88,7 +89,9 @@ class PageFetcherTest {
 
     @Test
     fun `hostname resolving to loopback is blocked`() = runTest {
-        assertFailsWith<RecipeImportException> { HttpPageFetcher().fetch("http://localhost:$port/ok") }
+        assertFailsWith<RecipeImportException> {
+            HttpPageFetcher(testRecipeImportConfig).fetch("http://localhost:$port/ok")
+        }
     }
 
     @ParameterizedTest
@@ -99,7 +102,7 @@ class PageFetcherTest {
     )
     fun `ip literal hosts are blocked`(url: String) = runTest {
         val error = assertFailsWith<RecipeImportException> {
-            HttpPageFetcher().fetch(url.replace("PORT", port.toString()))
+            HttpPageFetcher(testRecipeImportConfig).fetch(url.replace("PORT", port.toString()))
         }
         assertEquals(urlNotAllowed, error.message)
     }
@@ -107,7 +110,7 @@ class PageFetcherTest {
     @ParameterizedTest
     @ValueSource(strings = ["ftp://example.com/recipe", "file:///etc/passwd", "not a url", "/relative"])
     fun `non-http urls are rejected`(url: String) = runTest {
-        assertFailsWith<RecipeImportException> { HttpPageFetcher().fetch(url) }
+        assertFailsWith<RecipeImportException> { HttpPageFetcher(testRecipeImportConfig).fetch(url) }
     }
 
     @Test

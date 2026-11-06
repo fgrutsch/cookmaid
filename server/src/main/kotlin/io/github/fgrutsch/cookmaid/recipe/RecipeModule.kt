@@ -6,10 +6,13 @@ import io.github.fgrutsch.cookmaid.common.ktor.locale
 import io.github.fgrutsch.cookmaid.common.ktor.userId
 import io.github.fgrutsch.cookmaid.common.ktor.uuid
 import io.github.fgrutsch.cookmaid.recipe.importer.HttpPageFetcher
+import io.github.fgrutsch.cookmaid.recipe.importer.IngredientParser
 import io.github.fgrutsch.cookmaid.recipe.importer.JsonLdRecipeExtractor
 import io.github.fgrutsch.cookmaid.recipe.importer.LlmRecipeExtractor
+import io.github.fgrutsch.cookmaid.recipe.importer.MicrodataRecipeExtractor
 import io.github.fgrutsch.cookmaid.recipe.importer.PageFetcher
 import io.github.fgrutsch.cookmaid.recipe.importer.RecipeExtractor
+import io.github.fgrutsch.cookmaid.recipe.importer.RecipeImportConfig
 import io.github.fgrutsch.cookmaid.recipe.importer.RecipeImportService
 import io.ktor.http.*
 import io.ktor.server.request.*
@@ -24,10 +27,13 @@ import kotlin.uuid.Uuid
 val recipeModule = module {
     singleOf(::PostgresRecipeRepository) bind RecipeRepository::class
     singleOf(::RecipeService)
-    single<PageFetcher> { HttpPageFetcher() }
-    single { JsonLdRecipeExtractor } bind RecipeExtractor::class
-    single { LlmRecipeExtractor(get()) } bind RecipeExtractor::class
-    single { RecipeImportService(get(), getAll()) }
+    single { RecipeImportConfig.from(get()) }
+    singleOf(::IngredientParser)
+    single<PageFetcher> { HttpPageFetcher(get()) }
+    singleOf(::JsonLdRecipeExtractor) bind RecipeExtractor::class
+    singleOf(::MicrodataRecipeExtractor) bind RecipeExtractor::class
+    single { LlmRecipeExtractor(get(), get()) } bind RecipeExtractor::class
+    single { RecipeImportService(get(), getAll(), get()) }
 }
 
 private fun Route.recipeImportRoute() {

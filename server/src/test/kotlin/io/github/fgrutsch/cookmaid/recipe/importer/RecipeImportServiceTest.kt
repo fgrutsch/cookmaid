@@ -1,5 +1,7 @@
 package io.github.fgrutsch.cookmaid.recipe.importer
 
+import io.github.fgrutsch.cookmaid.support.testJsonLdExtractor
+import io.github.fgrutsch.cookmaid.support.testRecipeImportConfig
 import io.github.fgrutsch.cookmaid.catalog.Item
 import io.github.fgrutsch.cookmaid.common.ktor.RecipeImportException
 import io.github.fgrutsch.cookmaid.common.llm.LlmConfig
@@ -36,7 +38,11 @@ class RecipeImportServiceTest {
             headersOf(HttpHeaders.ContentType, "application/json"),
         )
     }
-    private val llm = LlmRecipeExtractor(LlmConfig("https://llm.example/v1", "", "m"), llmEngine)
+    private val llm = LlmRecipeExtractor(
+        LlmConfig("https://llm.example/v1", "", "m"),
+        testRecipeImportConfig,
+        llmEngine,
+    )
 
     private val jsonLdPage = """
         <html><head><script type="application/ld+json">
@@ -47,7 +53,8 @@ class RecipeImportServiceTest {
 
     private fun service(page: String, llm: LlmRecipeExtractor? = this.llm) = RecipeImportService(
         { page },
-        listOfNotNull(JsonLdRecipeExtractor, llm),
+        listOfNotNull(testJsonLdExtractor, llm),
+        testRecipeImportConfig,
     )
 
     @Test
@@ -117,6 +124,7 @@ class RecipeImportServiceTest {
     fun `blank name from the llm is rejected`() = runTest {
         val blankLlm = LlmRecipeExtractor(
             LlmConfig("https://llm.example/v1", "", "m"),
+            testRecipeImportConfig,
             MockEngine {
                 val content = """{"found":true,"name":"  ","ingredients":[],"steps":["Cook"]}"""
                 respond(
@@ -162,7 +170,7 @@ class RecipeImportServiceTest {
             FakeExtractor(10, null, calls),
         )
 
-        val draft = RecipeImportService({ plainPage }, extractors).import(userId, url)
+        val draft = RecipeImportService({ plainPage }, extractors, testRecipeImportConfig).import(userId, url)
 
         assertEquals("Second", draft.name)
         assertEquals(listOf(10, 20), calls)
@@ -170,7 +178,11 @@ class RecipeImportServiceTest {
 
     @Test
     fun `fetch failure propagates`() = runTest {
-        val service = RecipeImportService({ throw RecipeImportException("Fetching page failed") }, listOf(llm))
+        val service = RecipeImportService(
+            { throw RecipeImportException("Fetching page failed") },
+            listOf(llm),
+            testRecipeImportConfig,
+        )
 
         assertFailsWith<RecipeImportException> { service.import(userId, url) }
     }

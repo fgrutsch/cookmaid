@@ -1,5 +1,6 @@
 package io.github.fgrutsch.cookmaid.recipe.importer
 
+import io.github.fgrutsch.cookmaid.support.testRecipeImportConfig
 import io.github.fgrutsch.cookmaid.catalog.Item
 import io.github.fgrutsch.cookmaid.common.ktor.RecipeImportException
 import io.github.fgrutsch.cookmaid.common.llm.LlmConfig
@@ -42,7 +43,7 @@ class LlmRecipeExtractorTest {
         """{"choices":[{"message":{"role":"assistant","content":${JsonPrimitive(content)}}}]}"""
 
     private fun extractor(handler: suspend MockRequestHandleScope.(HttpRequestData) -> HttpResponseData) =
-        LlmRecipeExtractor(config, MockEngine(handler))
+        LlmRecipeExtractor(config, testRecipeImportConfig, MockEngine(handler))
 
     private fun MockRequestHandleScope.ok(body: String) =
         respond(body, HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, "application/json"))
@@ -68,7 +69,11 @@ class LlmRecipeExtractorTest {
     @Test
     fun `disabled config returns null without calling the provider`() = runTest {
         var called = false
-        val extractor = LlmRecipeExtractor(LlmConfig("", "", ""), MockEngine { called = true; ok("{}") })
+        val engine = MockEngine {
+            called = true
+            ok("{}")
+        }
+        val extractor = LlmRecipeExtractor(LlmConfig("", "", ""), testRecipeImportConfig, engine)
 
         assertNull(extractor.extract(doc("page")))
         assertFalse(called)
@@ -77,7 +82,7 @@ class LlmRecipeExtractorTest {
     @Test
     fun `blank api key sends no authorization header`() = runTest {
         var captured: HttpRequestData? = null
-        LlmRecipeExtractor(config.copy(apiKey = ""), MockEngine { request ->
+        LlmRecipeExtractor(config.copy(apiKey = ""), testRecipeImportConfig, MockEngine { request ->
             captured = request
             ok(completion("""{"found":false,"ingredients":[],"steps":[]}"""))
         }).extract(doc("page"))

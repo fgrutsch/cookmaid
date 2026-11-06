@@ -15,13 +15,15 @@ import org.jsoup.nodes.Document
  * most recipe sites embed for search engines. Handles `@graph` wrappers,
  * `mainEntity`, array `@type`, and the common `recipeInstructions` /
  * `recipeYield` shapes. Ingredients come back as free text split by
- * [parseIngredient]; values are not length-checked here.
+ * [IngredientParser]; the caller length-checks the result.
  */
-object JsonLdRecipeExtractor : RecipeExtractor {
+class JsonLdRecipeExtractor(
+    private val config: RecipeImportConfig,
+    private val ingredientParser: IngredientParser,
+) : RecipeExtractor {
 
     override val priority = 0
 
-    private const val MAX_INGREDIENTS = 100
     private val yieldNumber = Regex("""\d+""")
 
     /**
@@ -52,7 +54,7 @@ object JsonLdRecipeExtractor : RecipeExtractor {
         return RecipeRequest(
             name = name,
             description = text(recipe["description"]),
-            ingredients = strings(recipe["recipeIngredient"]).take(MAX_INGREDIENTS).map(::parseIngredient),
+            ingredients = strings(recipe["recipeIngredient"]).take(config.maxItems).map(ingredientParser::parse),
             steps = instructions(recipe["recipeInstructions"]),
             servings = servings(recipe["recipeYield"]),
         )

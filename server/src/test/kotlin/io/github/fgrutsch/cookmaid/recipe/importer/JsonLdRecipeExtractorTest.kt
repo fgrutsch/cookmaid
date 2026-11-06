@@ -1,5 +1,7 @@
 package io.github.fgrutsch.cookmaid.recipe.importer
 
+import io.github.fgrutsch.cookmaid.support.testIngredientParser
+import io.github.fgrutsch.cookmaid.support.testJsonLdExtractor
 import io.github.fgrutsch.cookmaid.catalog.Item
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
 import kotlinx.coroutines.test.runTest
@@ -24,7 +26,7 @@ class JsonLdRecipeExtractorTest {
 
     @Test
     fun `top-level recipe fills every field`() = runTest {
-        val recipe = JsonLdRecipeExtractor.extract(
+        val recipe = testJsonLdExtractor.extract(
             page(
                 """
                 {"@context":"https://schema.org","@type":"Recipe","name":"Pancakes","description":"Fluffy",
@@ -47,7 +49,7 @@ class JsonLdRecipeExtractorTest {
 
     @Test
     fun `recipe inside graph is found`() = runTest {
-        val recipe = JsonLdRecipeExtractor.extract(
+        val recipe = testJsonLdExtractor.extract(
             page(
                 """
                 {"@graph":[{"@type":"WebPage","name":"Page"},{"@type":"Organization","name":"Org"},
@@ -61,7 +63,7 @@ class JsonLdRecipeExtractorTest {
 
     @Test
     fun `recipe under mainEntity with array type is found`() = runTest {
-        val recipe = JsonLdRecipeExtractor.extract(
+        val recipe = testJsonLdExtractor.extract(
             page("""{"@type":"WebPage","mainEntity":{"@type":["Recipe","NewsArticle"],"name":"Stew"}}"""),
         )
 
@@ -70,7 +72,7 @@ class JsonLdRecipeExtractorTest {
 
     @Test
     fun `instructions as sections and strings become a flat step list`() = runTest {
-        val recipe = JsonLdRecipeExtractor.extract(
+        val recipe = testJsonLdExtractor.extract(
             page(
                 """
                 {"@type":"Recipe","name":"Cake","recipeInstructions":[
@@ -86,7 +88,7 @@ class JsonLdRecipeExtractorTest {
 
     @Test
     fun `instructions as one text block are split into lines`() = runTest {
-        val recipe = JsonLdRecipeExtractor.extract(
+        val recipe = testJsonLdExtractor.extract(
             page("""{"@type":"Recipe","name":"Tea","recipeInstructions":"Boil water\nSteep\n\nServe"}"""),
         )
 
@@ -96,21 +98,21 @@ class JsonLdRecipeExtractorTest {
     @ParameterizedTest
     @ValueSource(strings = ["4", "\"4\"", "\"4 servings\"", "[\"4\",\"4 portions\"]"])
     fun `recipeYield shapes give servings`(yield: String) = runTest {
-        val recipe = JsonLdRecipeExtractor.extract(page("""{"@type":"Recipe","name":"X","recipeYield":$yield}"""))
+        val recipe = testJsonLdExtractor.extract(page("""{"@type":"Recipe","name":"X","recipeYield":$yield}"""))
 
         assertEquals(4, recipe?.servings)
     }
 
     @Test
     fun `malformed block is skipped`() = runTest {
-        val recipe = JsonLdRecipeExtractor.extract(page("{not json", """{"@type":"Recipe","name":"Salad"}"""))
+        val recipe = testJsonLdExtractor.extract(page("{not json", """{"@type":"Recipe","name":"Salad"}"""))
 
         assertEquals("Salad", recipe?.name)
     }
 
     @Test
     fun `entities and tags are decoded to plain text`() = runTest {
-        val recipe = JsonLdRecipeExtractor.extract(
+        val recipe = testJsonLdExtractor.extract(
             page("""{"@type":"Recipe","name":"Mac &amp; Cheese","description":"<p>Very <b>good</b></p>"}"""),
         )
 
@@ -120,7 +122,7 @@ class JsonLdRecipeExtractorTest {
 
     @Test
     fun `unusual shapes fall back gracefully`() = runTest {
-        val recipe = JsonLdRecipeExtractor.extract(
+        val recipe = testJsonLdExtractor.extract(
             page(
                 """{"@type":{"name":"Thing"},"name":"Not a recipe"}""",
                 """
@@ -139,7 +141,7 @@ class JsonLdRecipeExtractorTest {
 
     @Test
     fun `page without recipe returns null`() = runTest {
-        assertNull(JsonLdRecipeExtractor.extract(page("""{"@type":"WebPage","name":"Blog"}""")))
+        assertNull(testJsonLdExtractor.extract(page("""{"@type":"WebPage","name":"Blog"}""")))
     }
 
     @ParameterizedTest
@@ -157,19 +159,22 @@ class JsonLdRecipeExtractorTest {
         ],
     )
     fun `ingredient lines split into quantity and name`(line: String, name: String, quantity: String) = runTest {
-        assertEquals(RecipeIngredient(Item.FreeText(name), quantity), parseIngredient(line))
+        assertEquals(RecipeIngredient(Item.FreeText(name), quantity), testIngredientParser.parse(line))
     }
 
     @Test
     fun `ingredient line without amount keeps full text`() = runTest {
-        assertEquals(RecipeIngredient(Item.FreeText("Salz und Pfeffer")), parseIngredient("Salz und Pfeffer"))
+        assertEquals(
+            RecipeIngredient(Item.FreeText("Salz und Pfeffer")),
+            testIngredientParser.parse("Salz und Pfeffer"),
+        )
     }
 
     @Test
     fun `hostile digit-run ingredient lines parse quickly`() = runTest {
         val lines = List(4_000) { "\"${"1".repeat(500)}\"" }.joinToString(",")
         val elapsed = measureTime {
-            JsonLdRecipeExtractor.extract(page("""{"@type":"Recipe","name":"X","recipeIngredient":[$lines]}"""))
+            testJsonLdExtractor.extract(page("""{"@type":"Recipe","name":"X","recipeIngredient":[$lines]}"""))
         }
 
         assertTrue(elapsed < 2.seconds, "took $elapsed")

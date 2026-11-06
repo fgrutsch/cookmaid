@@ -1,9 +1,10 @@
 package io.github.fgrutsch.cookmaid.recipe
 
-import io.github.fgrutsch.cookmaid.recipe.importer.JsonLdRecipeExtractor
 import io.github.fgrutsch.cookmaid.recipe.importer.RecipeImportService
 import io.github.fgrutsch.cookmaid.support.BaseIntegrationTest
 import io.github.fgrutsch.cookmaid.support.TestJwt
+import io.github.fgrutsch.cookmaid.support.testJsonLdExtractor
+import io.github.fgrutsch.cookmaid.support.testRecipeImportConfig
 import io.ktor.client.call.body
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.get
@@ -49,7 +50,8 @@ class RecipeImportRoutesTest : BaseIntegrationTest() {
     @Test
     fun `import returns a draft without saving it`() = integrationTest {
         startApplication()
-        loadKoinModules(module { single { RecipeImportService({ recipePage }, listOf(JsonLdRecipeExtractor)) } })
+        val service = RecipeImportService({ recipePage }, listOf(testJsonLdExtractor), testRecipeImportConfig)
+        loadKoinModules(module { single { service } })
         val token = registeredToken()
 
         val response = postImport(token, """{"url":"https://recipes.example/pancakes"}""")

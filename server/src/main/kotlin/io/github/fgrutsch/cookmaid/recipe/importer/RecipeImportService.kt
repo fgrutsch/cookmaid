@@ -16,19 +16,13 @@ import org.jsoup.Jsoup
  *
  * @param pageFetcher downloads the user-supplied URL.
  * @param extractors all available recipe extractors, in any order.
+ * @param config the length and count limits applied to every result.
  */
 class RecipeImportService(
     private val pageFetcher: PageFetcher,
     extractors: List<RecipeExtractor>,
+    private val config: RecipeImportConfig,
 ) {
-
-    companion object {
-        private const val MAX_NAME = 200
-        private const val MAX_DESCRIPTION = 2_000
-        private const val MAX_LINE = 500
-        private const val MAX_ITEMS = 100
-        private val SERVINGS = 1..100
-    }
 
     private val logger = KotlinLogging.logger {}
     private val extractors = extractors.sortedBy { it.priority }
@@ -59,22 +53,22 @@ class RecipeImportService(
             line((ingredient.item as? Item.FreeText)?.name)?.let {
                 RecipeIngredient(Item.FreeText(it), line(ingredient.quantity))
             }
-        }.take(MAX_ITEMS)
-        val steps = recipe.steps.mapNotNull { line(it) }.take(MAX_ITEMS)
-        val name = line(recipe.name, MAX_NAME)
+        }.take(config.maxItems)
+        val steps = recipe.steps.mapNotNull { line(it) }.take(config.maxItems)
+        val name = line(recipe.name, config.maxNameLength)
         return if (name == null || (ingredients.isEmpty() && steps.isEmpty())) {
             null
         } else {
             RecipeRequest(
                 name = name,
-                description = line(recipe.description, MAX_DESCRIPTION),
+                description = line(recipe.description, config.maxDescriptionLength),
                 ingredients = ingredients,
                 steps = steps,
-                servings = recipe.servings?.takeIf { it in SERVINGS },
+                servings = recipe.servings?.takeIf { it in 1..config.maxServings },
             )
         }
     }
 
-    private fun line(value: String?, max: Int = MAX_LINE): String? =
+    private fun line(value: String?, max: Int = config.maxLineLength): String? =
         value?.trim()?.take(max)?.takeIf { it.isNotBlank() }
 }
