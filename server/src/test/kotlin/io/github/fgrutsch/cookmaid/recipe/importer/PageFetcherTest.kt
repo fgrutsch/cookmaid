@@ -39,6 +39,7 @@ class PageFetcherTest {
             get("/to-decimal-literal") { redirect("http://2852039166/latest/meta-data") }
             get("/big") { call.respondText("x".repeat(2 * 1024 * 1024 + 1)) }
             get("/missing") { call.respond(HttpStatusCode.NotFound) }
+            get("/no-location") { call.respond(HttpStatusCode.Found) }
         }
     }.start(wait = false)
 
@@ -62,7 +63,8 @@ class PageFetcherTest {
     @ValueSource(
         strings = [
             "127.0.0.1", "10.0.0.1", "172.16.0.1", "192.168.1.1", "169.254.169.254", "100.64.0.1",
-            "0.0.0.0", "224.0.0.1", "::1", "fc00::1", "fe80::1", "::ffff:127.0.0.1", "64:ff9b::a00:1",
+            "0.0.0.0", "224.0.0.1", "192.0.0.1", "198.18.0.1", "198.19.255.255", "::7f00:1",
+            "::1", "fc00::1", "fe80::1", "::ffff:127.0.0.1", "64:ff9b::a00:1",
         ],
     )
     fun `non-public addresses are rejected`(ip: String) {
@@ -70,7 +72,7 @@ class PageFetcherTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = ["93.184.216.34", "2606:4700::1", "64:ff9b::5db8:d822"])
+    @ValueSource(strings = ["93.184.216.34", "198.20.0.1", "100.128.0.1", "2606:4700::1", "64:ff9b::5db8:d822"])
     fun `public addresses are accepted`(ip: String) {
         assertTrue(isPublicAddress(InetAddress.getByName(ip)))
     }
@@ -127,6 +129,11 @@ class PageFetcherTest {
     @Test
     fun `body over 2 MB is rejected`() = runTest {
         assertFailsWith<RecipeImportException> { loopbackAllowed.fetch("http://127.0.0.1:$port/big") }
+    }
+
+    @Test
+    fun `redirect without location is rejected`() = runTest {
+        assertFailsWith<RecipeImportException> { loopbackAllowed.fetch("http://127.0.0.1:$port/no-location") }
     }
 
     @Test

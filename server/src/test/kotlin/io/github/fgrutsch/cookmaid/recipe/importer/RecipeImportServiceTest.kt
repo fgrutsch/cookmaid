@@ -108,6 +108,38 @@ class RecipeImportServiceTest {
     }
 
     @Test
+    fun `blank name from the llm is rejected`() = runTest {
+        val blankLlm = LlmRecipeExtractor(
+            LlmConfig("https://llm.example/v1", "", "m"),
+            MockEngine {
+                val content = """{"found":true,"name":"  ","ingredients":[],"steps":["Cook"]}"""
+                respond(
+                    """{"choices":[{"message":{"content":${JsonPrimitive(content)}}}]}""",
+                    HttpStatusCode.OK,
+                    headersOf(HttpHeaders.ContentType, "application/json"),
+                )
+            },
+        )
+
+        assertFailsWith<RecipeImportException> { service(plainPage, blankLlm).import(userId, url) }
+    }
+
+    @Test
+    fun `description is capped and out-of-range servings dropped`() = runTest {
+        val page = """
+            <script type="application/ld+json">
+            {"@type":"Recipe","name":"Soup","description":"${"d".repeat(3_000)}","recipeYield":"0",
+             "recipeInstructions":"Cook"}
+            </script>
+        """.trimIndent()
+
+        val draft = service(page, llm = null).import(userId, url)
+
+        assertEquals(2_000, draft.description?.length)
+        assertNull(draft.servings)
+    }
+
+    @Test
     fun `fetch failure propagates`() = runTest {
         val service = RecipeImportService({ throw RecipeImportException("Fetching page failed") }, llm)
 

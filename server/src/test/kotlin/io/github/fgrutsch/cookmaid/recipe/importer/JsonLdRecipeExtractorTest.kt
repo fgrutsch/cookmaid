@@ -118,6 +118,25 @@ class JsonLdRecipeExtractorTest {
     }
 
     @Test
+    fun `unusual shapes fall back gracefully`() {
+        val recipe = JsonLdRecipeExtractor.extract(
+            page(
+                """{"@type":{"name":"Thing"},"name":"Not a recipe"}""",
+                """
+                {"@type":"Recipe","name":"Bread","recipeYield":{"value":2},"recipeIngredient":"500 g Mehl",
+                 "recipeInstructions":[{"@type":"HowToStep","name":"Knead"}]}
+                """,
+            ),
+        )
+
+        assertNotNull(recipe)
+        assertEquals("Bread", recipe.name)
+        assertNull(recipe.servings)
+        assertEquals(listOf(RecipeIngredient(Item.FreeText("Mehl"), "500 g")), recipe.ingredients)
+        assertEquals(listOf("Knead"), recipe.steps)
+    }
+
+    @Test
     fun `page without recipe returns null`() {
         assertNull(JsonLdRecipeExtractor.extract(page("""{"@type":"WebPage","name":"Blog"}""")))
     }
