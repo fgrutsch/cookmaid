@@ -145,18 +145,19 @@ class RecipeImportServiceTest {
     private class FakeExtractor(
         override val priority: Int,
         private val result: RecipeRequest?,
-        private val calls: MutableList<Int>,
+        private val onExtract: (Int) -> Unit,
     ) : RecipeExtractor {
-        override suspend fun extract(document: Document): RecipeRequest? = result.also { calls += priority }
+        override suspend fun extract(document: Document): RecipeRequest? = result.also { onExtract(priority) }
     }
 
     @Test
     fun `extractors run by priority and the first usable result wins`() = runTest {
         val calls = mutableListOf<Int>()
+        val record: (Int) -> Unit = { calls += it }
         val extractors = listOf(
-            FakeExtractor(30, RecipeRequest(name = "Third", steps = listOf("c")), calls),
-            FakeExtractor(20, RecipeRequest(name = "Second", steps = listOf("b")), calls),
-            FakeExtractor(10, null, calls),
+            FakeExtractor(30, RecipeRequest(name = "Third", steps = listOf("c")), record),
+            FakeExtractor(20, RecipeRequest(name = "Second", steps = listOf("b")), record),
+            FakeExtractor(10, null, record),
         )
 
         val draft = RecipeImportService({ plainPage }, extractors, testRecipeImportConfig).import(userId, url)
