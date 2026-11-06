@@ -1,11 +1,6 @@
 package io.github.fgrutsch.cookmaid.common.llm
 
 import io.ktor.server.config.ApplicationConfig
-import org.koin.dsl.module
-
-val llmModule = module {
-    single { LlmConfig.from(get()) }
-}
 
 /**
  * Connection settings for any OpenAI-compatible chat-completions provider. The LLM is
