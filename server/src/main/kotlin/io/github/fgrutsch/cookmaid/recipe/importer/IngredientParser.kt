@@ -13,12 +13,17 @@ class IngredientParser(config: RecipeImportConfig) {
     companion object {
         // Possessive digit runs: a digit run can't be re-split between two NUMBER groups (catastrophic backtracking).
         private const val NUMBER = """(?:\d++(?:[.,]\d++)?(?:\s*/\s*\d++)?|[½⅓⅔¼¾⅛⅜⅝⅞])"""
-        private const val AMOUNT = """$NUMBER(?:\s*$NUMBER)?(?:\s*[-–]\s*$NUMBER)?"""
+        // Mixed numbers ("1 1/2", "1 and 1/2", "1 und 1/2") and ranges ("2-3").
+        // "ca. 200 g", "je 1/2 TL", "about 2 cups".
+        private const val APPROX = """(?:ca\.?|circa|etwa|je|approx\.?|about)"""
+        private const val AMOUNT = """$NUMBER(?:\s*(?:(?:and|und)\s+)?$NUMBER)?(?:\s*[-–]\s*$NUMBER)?"""
     }
 
     private val units = config.ingredientUnits.joinToString("|") { Regex.escape(it) }
+    // Unit with optional plural marker ("Zweig(e)") and bracketed amount ("cups (250g)").
+    private val unit = """(?:\s*(?:$units)(?:\([a-zäöü]{1,2}\))?\.?(?=\s)(?:\s*\([^()]{1,20}\))?)?"""
     private val ingredient = Regex(
-        """^\s*($AMOUNT(?:\s*(?:$units)\.?(?=\s))?)\s+(.+)$""",
+        """^\s*((?:$APPROX\s+)?$AMOUNT$unit)\s+(.+)$""",
         RegexOption.IGNORE_CASE,
     )
 

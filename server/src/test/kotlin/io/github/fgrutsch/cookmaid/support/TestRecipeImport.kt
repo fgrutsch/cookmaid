@@ -12,11 +12,17 @@ val testRecipeImportConfig = RecipeImportConfig(
     llmMaxPageChars = 60_000,
     maxItems = 100,
     ingredientUnits = listOf(
-        "g", "kg", "mg", "ml", "cl", "dl", "l", "el", "tl", "msp", "prise", "prisen", "pck", "päckchen", "packung",
-        "dose", "dosen", "becher", "bund", "stück", "stk", "zehe", "zehen", "zweig", "zweige", "blatt", "scheibe",
-        "scheiben", "tasse", "tassen", "esslöffel", "teelöffel", "schuss", "tbsp", "tsp", "tablespoon",
-        "tablespoons", "teaspoon", "teaspoons", "cup", "cups", "oz", "lb", "lbs", "pinch", "clove", "cloves", "can",
-        "cans", "slice", "slices",
+        "g", "gr", "gramm", "gram", "grams", "kg", "kilogramm", "kilogram", "kilograms", "dag", "mg", "ml",
+        "milliliter", "milliliters", "millilitre", "millilitres", "cl", "dl", "l", "liter", "liters", "litre",
+        "litres", "el", "esslöffel", "tl", "teelöffel", "msp", "messerspitze", "messerspitzen", "prise", "prisen",
+        "pck", "päckchen", "packung", "packungen", "dose", "dosen", "becher", "bund", "stück", "stk", "st",
+        "stange", "stangen", "stg", "stiel", "stiele", "zehe", "zehen", "zweig", "zweige", "blatt", "blätter",
+        "scheibe", "scheiben", "tasse", "tassen", "glas", "gläser", "flasche", "flaschen", "tube", "tuben",
+        "würfel", "beutel", "tropfen", "handvoll", "knolle", "knollen", "kugel", "kugeln", "schuss", "spritzer",
+        "tbsp", "tsp", "tablespoon", "tablespoons", "teaspoon", "teaspoons", "cup", "cups", "oz", "ounce",
+        "ounces", "lb", "lbs", "pound", "pounds", "pint", "pints", "quart", "quarts", "pinch", "pinches", "dash",
+        "dashes", "clove", "cloves", "can", "cans", "slice", "slices", "stick", "sticks", "sheet", "sheets",
+        "bunch", "bunches", "handful", "handfuls", "sprig", "sprigs", "package", "packages",
     ),
 )
 

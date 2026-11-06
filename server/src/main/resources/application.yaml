@@ -38,7 +38,7 @@ recipe:
       max-page-chars: ${RECIPE_IMPORT_LLM_MAX_PAGE_CHARS:60000}
     max-items: ${RECIPE_IMPORT_MAX_ITEMS:100}
     # Comma-separated words recognised as units after an amount ("200 g Mehl"), case-insensitive.
-    ingredient-units: ${RECIPE_IMPORT_INGREDIENT_UNITS:g,kg,mg,ml,cl,dl,l,el,tl,msp,prise,prisen,pck,päckchen,packung,dose,dosen,becher,bund,stück,stk,zehe,zehen,zweig,zweige,blatt,scheibe,scheiben,tasse,tassen,esslöffel,teelöffel,schuss,tbsp,tsp,tablespoon,tablespoons,teaspoon,teaspoons,cup,cups,oz,lb,lbs,pinch,clove,cloves,can,cans,slice,slices}
+    ingredient-units: ${RECIPE_IMPORT_INGREDIENT_UNITS:g,gr,gramm,gram,grams,kg,kilogramm,kilogram,kilograms,dag,mg,ml,milliliter,milliliters,millilitre,millilitres,cl,dl,l,liter,liters,litre,litres,el,esslöffel,tl,teelöffel,msp,messerspitze,messerspitzen,prise,prisen,pck,päckchen,packung,packungen,dose,dosen,becher,bund,stück,stk,st,stange,stangen,stg,stiel,stiele,zehe,zehen,zweig,zweige,blatt,blätter,scheibe,scheiben,tasse,tassen,glas,gläser,flasche,flaschen,tube,tuben,würfel,beutel,tropfen,handvoll,knolle,knollen,kugel,kugeln,schuss,spritzer,tbsp,tsp,tablespoon,tablespoons,teaspoon,teaspoons,cup,cups,oz,ounce,ounces,lb,lbs,pound,pounds,pint,pints,quart,quarts,pinch,pinches,dash,dashes,clove,cloves,can,cans,slice,slices,stick,sticks,sheet,sheets,bunch,bunches,handful,handfuls,sprig,sprigs,package,packages}
 
 csp:
   # Space-separated extra connect-src origins (IdP, CDN, …). Origins only, no path.
