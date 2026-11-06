@@ -16,6 +16,10 @@ services:
       OIDC_SCOPE: "openid profile email offline_access"
       OIDC_ACCOUNT_URI: http://localhost:3001/account/security
       OIDC_RESOURCE: http://localhost:8081/api
+      # Optional LLM fallback for recipe import (any OpenAI-compatible provider):
+      # LLM_BASE_URL: https://api.openai.com/v1
+      # LLM_API_KEY: sk-...
+      # LLM_MODEL: <model-id>
     depends_on:
       postgres:
         condition: service_healthy

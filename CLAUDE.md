@@ -145,6 +145,12 @@ Four Gradle modules:
   parsing in `RouteExtensions` (`uuid()`, `localDate()`) throws
   `IllegalArgumentException` — mapped to 400. `Parameters.getOrFail` throws
   `MissingRequestParameterException` — also 400.
+- **Recipe import** (`recipe/importer/`): `POST /api/recipes/import` returns a draft
+  `RecipeRequest`, never saves. schema.org JSON-LD first; optional LLM fallback via the
+  generic OpenAI chat-completions contract (no provider-specific code). User-supplied URLs
+  must only be fetched through `PageFetcher` (public-address guard incl. IP literals and
+  redirect hops) — never `Jsoup.connect` or another client. The LLM client is separate
+  and unguarded because its operator-configured base URL may be a LAN host.
 - **Static file serving**: `staticFiles("/", File(webDir))` serves the
   WasmJS web app. Must be registered **before** the `/api` route.
   Ktor config key is `web.dir` (populated from `WEB_DIR` env var, defaults to
@@ -291,6 +297,9 @@ Build locally:
 Required env vars at runtime: `DATABASE_URL`, `DATABASE_USER`, `DATABASE_PASSWORD`,
 `OIDC_ISSUER`, `OIDC_JWKS_URL`, `OIDC_AUDIENCE`, `OIDC_DISCOVERY_URI`, `OIDC_CLIENT_ID`,
 `OIDC_SCOPE`, `OIDC_ACCOUNT_URI`, `OIDC_RESOURCE`.
+
+Optional: `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL` — any OpenAI-compatible
+chat-completions provider used as recipe-import fallback. Unset = no LLM.
 
 CI: `ci.yml` builds the Docker image on every push/PR (no `needs:` gate —
 Gradle `buildDockerImage` task's own `dependsOn` handles prerequisites).

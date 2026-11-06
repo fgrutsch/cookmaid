@@ -13,6 +13,9 @@ val testConfigEntries: List<Pair<String, String>> = listOf(
     "oidc.audience" to TestJwt.AUDIENCE,
     "web.dir" to "web",
     "csp.connect-src" to TestJwt.issuer,
+    "llm.base-url" to "",
+    "llm.api-key" to "",
+    "llm.model" to "",
 )
 
 val testConfig: ApplicationConfig = MapApplicationConfig(*testConfigEntries.toTypedArray())

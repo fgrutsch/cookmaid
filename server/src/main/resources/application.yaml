@@ -20,6 +20,13 @@ oidc:
 web:
   dir: ${WEB_DIR:web}
 
+# Optional OpenAI-compatible LLM used when an imported page has no schema.org recipe data.
+# Leave base-url or model empty to disable the fallback.
+llm:
+  base-url: ${LLM_BASE_URL:}
+  api-key: ${LLM_API_KEY:}
+  model: ${LLM_MODEL:}
+
 csp:
   # Space-separated extra connect-src origins (IdP, CDN, …). Origins only, no path.
   # Production sets a wildcard, e.g. CSP_CONNECT_SRC=https://*.example.com.

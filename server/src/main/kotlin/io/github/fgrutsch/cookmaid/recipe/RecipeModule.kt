@@ -5,6 +5,10 @@ import io.github.fgrutsch.cookmaid.common.ktor.int
 import io.github.fgrutsch.cookmaid.common.ktor.locale
 import io.github.fgrutsch.cookmaid.common.ktor.userId
 import io.github.fgrutsch.cookmaid.common.ktor.uuid
+import io.github.fgrutsch.cookmaid.recipe.importer.LlmConfig
+import io.github.fgrutsch.cookmaid.recipe.importer.LlmRecipeExtractor
+import io.github.fgrutsch.cookmaid.recipe.importer.PageFetcher
+import io.github.fgrutsch.cookmaid.recipe.importer.RecipeImportService
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -18,15 +22,31 @@ import kotlin.uuid.Uuid
 val recipeModule = module {
     singleOf(::PostgresRecipeRepository) bind RecipeRepository::class
     singleOf(::RecipeService)
+    single {
+        val llm = LlmConfig.from(get())?.let { config -> LlmRecipeExtractor(config) }
+        RecipeImportService(PageFetcher()::fetch, llm)
+    }
+}
+
+private fun Route.recipeImportRoute() {
+    val importService by inject<RecipeImportService>()
+
+    post("/import") {
+        val body = call.receive<ImportRecipeRequest>()
+        require(body.url.isNotBlank()) { "url is required" }
+        call.respond(importService.import(call.userId(), body.url))
+    }
 }
 
 private const val MIN_LIMIT = 1
 private const val MAX_LIMIT = 100
 
+@Suppress("LongMethod")
 fun Route.recipeRoutes() {
     val service by inject<RecipeService>()
 
     route("/recipes") {
+        recipeImportRoute()
 
         get {
             val cursor = call.request.queryParameters.instant("cursor")
