@@ -23,6 +23,7 @@ import org.jsoup.Jsoup
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -62,6 +63,15 @@ class LlmRecipeExtractorTest {
         assertEquals("json_schema", body.getValue("response_format").jsonObject.getValue("type").jsonPrimitive.content)
         val userMessage = body.getValue("messages").jsonArray[1].jsonObject.getValue("content").jsonPrimitive.content
         assertEquals("<page>\nSome page\n</page>", userMessage)
+    }
+
+    @Test
+    fun `disabled config returns null without calling the provider`() = runTest {
+        var called = false
+        val extractor = LlmRecipeExtractor(LlmConfig("", "", ""), MockEngine { called = true; ok("{}") })
+
+        assertNull(extractor.extract(doc("page")))
+        assertFalse(called)
     }
 
     @Test

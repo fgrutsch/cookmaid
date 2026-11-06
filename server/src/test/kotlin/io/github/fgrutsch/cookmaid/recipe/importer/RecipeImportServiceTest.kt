@@ -12,6 +12,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.JsonPrimitive
+import org.jsoup.nodes.Document
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -144,17 +145,27 @@ class RecipeImportServiceTest {
         assertNull(draft.servings)
     }
 
+    private class FakeExtractor(
+        override val priority: Int,
+        private val result: RecipeRequest?,
+        private val calls: MutableList<Int>,
+    ) : RecipeExtractor {
+        override suspend fun extract(document: Document): RecipeRequest? = result.also { calls += priority }
+    }
+
     @Test
-    fun `first extractor with a usable result wins`() = runTest {
-        val calls = mutableListOf<String>()
-        val none = RecipeExtractor { calls += "none"; null }
-        val first = RecipeExtractor { calls += "first"; RecipeRequest(name = "First", steps = listOf("a")) }
-        val second = RecipeExtractor { calls += "second"; RecipeRequest(name = "Second", steps = listOf("b")) }
+    fun `extractors run by priority and the first usable result wins`() = runTest {
+        val calls = mutableListOf<Int>()
+        val extractors = listOf(
+            FakeExtractor(30, RecipeRequest(name = "Third", steps = listOf("c")), calls),
+            FakeExtractor(20, RecipeRequest(name = "Second", steps = listOf("b")), calls),
+            FakeExtractor(10, null, calls),
+        )
 
-        val draft = RecipeImportService({ plainPage }, listOf(none, first, second)).import(userId, url)
+        val draft = RecipeImportService({ plainPage }, extractors).import(userId, url)
 
-        assertEquals("First", draft.name)
-        assertEquals(listOf("none", "first"), calls)
+        assertEquals("Second", draft.name)
+        assertEquals(listOf(10, 20), calls)
     }
 
     @Test

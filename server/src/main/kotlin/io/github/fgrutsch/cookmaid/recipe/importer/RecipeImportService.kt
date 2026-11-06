@@ -11,15 +11,15 @@ import org.jsoup.Jsoup
 
 /**
  * Turns a recipe URL into a draft [RecipeRequest] for the user to review. Nothing
- * is saved. [extractors] are tried in order and the first usable result wins.
+ * is saved. Extractors are tried by ascending priority and the first usable result wins.
  * Every result is length-capped before it leaves.
  *
  * @param pageFetcher downloads the user-supplied URL.
- * @param extractors recipe extractors in priority order.
+ * @param extractors all available recipe extractors, in any order.
  */
 class RecipeImportService(
     private val pageFetcher: PageFetcher,
-    private val extractors: List<RecipeExtractor>,
+    extractors: List<RecipeExtractor>,
 ) {
 
     companion object {
@@ -31,6 +31,7 @@ class RecipeImportService(
     }
 
     private val logger = KotlinLogging.logger {}
+    private val extractors = extractors.sortedBy { it.priority }
 
     /**
      * Imports the recipe at [url] as a draft.

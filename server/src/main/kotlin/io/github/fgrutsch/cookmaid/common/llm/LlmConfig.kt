@@ -1,25 +1,31 @@
 package io.github.fgrutsch.cookmaid.common.llm
 
 import io.ktor.server.config.ApplicationConfig
+import org.koin.dsl.module
+
+val llmModule = module {
+    single { LlmConfig.from(get()) }
+}
 
 /**
- * Connection settings for any OpenAI-compatible chat-completions provider.
+ * Connection settings for any OpenAI-compatible chat-completions provider. The LLM is
+ * optional: when base URL or model is blank, [enabled] is false and features skip it.
  *
  * @property baseUrl API base, e.g. `https://api.openai.com/v1`; `/chat/completions` is appended.
  * @property apiKey bearer token; blank for keyless local providers.
  * @property model provider model id.
  */
 data class LlmConfig(val baseUrl: String, val apiKey: String, val model: String) {
+
     companion object {
         /**
-         * @return the configured LLM, or null when `llm.base-url` or `llm.model` is blank —
-         *   the LLM fallback is optional.
+         * Reads `llm.base-url`, `llm.api-key` and `llm.model`; missing keys are blank.
          */
-        fun from(config: ApplicationConfig): LlmConfig? {
+        fun from(config: ApplicationConfig): LlmConfig {
             fun value(key: String) = config.propertyOrNull(key)?.getString()?.trim().orEmpty()
-            val baseUrl = value("llm.base-url")
-            val model = value("llm.model")
-            return if (baseUrl.isBlank() || model.isBlank()) null else LlmConfig(baseUrl, value("llm.api-key"), model)
+            return LlmConfig(value("llm.base-url"), value("llm.api-key"), value("llm.model"))
         }
     }
+
+    val enabled: Boolean get() = baseUrl.isNotBlank() && model.isNotBlank()
 }

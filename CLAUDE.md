@@ -146,10 +146,10 @@ Four Gradle modules:
   `IllegalArgumentException` — mapped to 400. `Parameters.getOrFail` throws
   `MissingRequestParameterException` — also 400.
 - **Recipe import** (`recipe/importer/`): `POST /api/recipes/import` returns a draft
-  `RecipeRequest`, never saves. `RecipeExtractor` implementations run in the priority order
-  `recipeModule` lists them (schema.org JSON-LD, then the optional LLM); the first usable
-  result wins. The LLM uses the generic OpenAI chat-completions contract (no provider-specific
-  code); its settings live in `common/llm/LlmConfig`. User-supplied URLs
+  `RecipeRequest`, never saves. Every Koin-bound `RecipeExtractor` runs by ascending `priority`
+  (schema.org JSON-LD 0, LLM 100); the first usable result wins, so a new extractor only needs a
+  binding. The LLM uses the generic OpenAI chat-completions contract (no provider-specific code);
+  `LlmConfig` is a `common/llm` Koin single, and consumers check `enabled` because the LLM is optional. User-supplied URLs
   must only be fetched through `PageFetcher` (public-address guard incl. IP literals and
   redirect hops) — never `Jsoup.connect` or another client. The LLM client is separate
   and unguarded because its operator-configured base URL may be a LAN host.

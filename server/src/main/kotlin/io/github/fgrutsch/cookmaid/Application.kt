@@ -7,6 +7,7 @@ import io.github.fgrutsch.cookmaid.catalog.catalogRoutes
 import io.github.fgrutsch.cookmaid.common.ktor.ErrorResponse
 import io.github.fgrutsch.cookmaid.common.ktor.RecipeImportException
 import io.github.fgrutsch.cookmaid.common.ktor.UserNotRegisteredException
+import io.github.fgrutsch.cookmaid.common.llm.llmModule
 import io.github.fgrutsch.cookmaid.db.databaseModule
 import io.github.fgrutsch.cookmaid.mealplan.mealPlanModule
 import io.github.fgrutsch.cookmaid.mealplan.mealPlanRoutes
@@ -59,6 +60,7 @@ private fun Application.configureDI() {
             userModule,
             catalogModule,
             shoppingModule,
+            llmModule,
             recipeModule,
             mealPlanModule,
         )

@@ -80,13 +80,19 @@ class LlmRecipeExtractor(
         }
     }
 
+    override val priority = 100
+
     /**
-     * @return the extracted recipe, or null when the model reports that the page has none.
+     * @return the extracted recipe, or null when the LLM is not configured or the model
+     *   reports that the page has none.
      * @throws RecipeImportException if the provider call fails or answers with something
      *   other than the expected JSON.
      */
+    override suspend fun extract(document: Document): RecipeRequest? =
+        if (config.enabled) extractWithLlm(document) else null
+
     @Suppress("TooGenericExceptionCaught")
-    override suspend fun extract(document: Document): RecipeRequest? = try {
+    private suspend fun extractWithLlm(document: Document): RecipeRequest? = try {
         val pageText = listOf(document.title(), document.body().text()).filter { it.isNotBlank() }.joinToString("\n")
         val content = complete(pageText.take(MAX_PAGE_CHARS))
         json.decodeFromJsonElement(LlmRecipe.serializer(), content).toRequest()

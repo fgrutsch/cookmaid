@@ -1,6 +1,7 @@
 package io.github.fgrutsch.cookmaid.support
 
 import io.github.fgrutsch.cookmaid.catalog.catalogModule
+import io.github.fgrutsch.cookmaid.common.llm.llmModule
 import io.github.fgrutsch.cookmaid.db.databaseModule
 import io.github.fgrutsch.cookmaid.mealplan.MealPlanItemsTable
 import io.github.fgrutsch.cookmaid.mealplan.mealPlanModule
@@ -35,6 +36,7 @@ open class BaseTest : KoinTest {
             userModule,
             catalogModule,
             shoppingModule,
+            llmModule,
             recipeModule,
             mealPlanModule,
         )

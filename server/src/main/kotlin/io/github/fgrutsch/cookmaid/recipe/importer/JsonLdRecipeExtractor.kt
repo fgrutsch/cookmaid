@@ -19,6 +19,8 @@ import org.jsoup.nodes.Document
  */
 object JsonLdRecipeExtractor : RecipeExtractor {
 
+    override val priority = 0
+
     private const val MAX_INGREDIENTS = 100
     private val yieldNumber = Regex("""\d+""")
 

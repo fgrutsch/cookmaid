@@ -5,11 +5,11 @@ import io.github.fgrutsch.cookmaid.common.ktor.int
 import io.github.fgrutsch.cookmaid.common.ktor.locale
 import io.github.fgrutsch.cookmaid.common.ktor.userId
 import io.github.fgrutsch.cookmaid.common.ktor.uuid
-import io.github.fgrutsch.cookmaid.common.llm.LlmConfig
 import io.github.fgrutsch.cookmaid.recipe.importer.HttpPageFetcher
 import io.github.fgrutsch.cookmaid.recipe.importer.JsonLdRecipeExtractor
 import io.github.fgrutsch.cookmaid.recipe.importer.LlmRecipeExtractor
 import io.github.fgrutsch.cookmaid.recipe.importer.PageFetcher
+import io.github.fgrutsch.cookmaid.recipe.importer.RecipeExtractor
 import io.github.fgrutsch.cookmaid.recipe.importer.RecipeImportService
 import io.ktor.http.*
 import io.ktor.server.request.*
@@ -25,12 +25,9 @@ val recipeModule = module {
     singleOf(::PostgresRecipeRepository) bind RecipeRepository::class
     singleOf(::RecipeService)
     single<PageFetcher> { HttpPageFetcher() }
-    single {
-        // Priority order: schema.org data first, the optional LLM only as fallback.
-        val llm = LlmConfig.from(get())?.let { config -> LlmRecipeExtractor(config) }
-        val extractors = listOfNotNull(JsonLdRecipeExtractor, llm)
-        RecipeImportService(get(), extractors)
-    }
+    single { JsonLdRecipeExtractor } bind RecipeExtractor::class
+    single { LlmRecipeExtractor(get()) } bind RecipeExtractor::class
+    single { RecipeImportService(get(), getAll()) }
 }
 
 private fun Route.recipeImportRoute() {
