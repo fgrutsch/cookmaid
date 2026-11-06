@@ -239,15 +239,16 @@ private fun AppNavDisplay(
                 RecipeListScreen(
                     viewModel = koinInject<RecipeListViewModel>(),
                     onRecipeClick = { id -> backStack.add(Route.RecipeDetail(id)) },
-                    onAddRecipe = { backStack.add(Route.AddRecipe) },
+                    onAddRecipe = { backStack.add(Route.AddRecipe()) },
+                    onImportRecipe = { backStack.add(Route.AddRecipe(importFromUrl = true)) },
                 )
             }
 
-            entry<Route.AddRecipe> {
+            entry<Route.AddRecipe> { key ->
                 val koin = getKoin()
                 AddRecipeScreen(
                     viewModel = remember {
-                        AddRecipeViewModel(koin.get(), koin.get())
+                        AddRecipeViewModel(koin.get(), koin.get(), importFromUrl = key.importFromUrl)
                     },
                     onBack = { backStack.removeLastOrNull() },
                 )

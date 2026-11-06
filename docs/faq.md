@@ -42,12 +42,12 @@ you can also add a recipe's ingredients via the item menu.
 
 ### How do I add a recipe?
 
-Tap the **+** button on the recipe list screen. Fill in the name,
+Tap **+** on the recipe list and choose **Add Recipe**. Fill in the name,
 description, ingredients, steps, tags, and servings.
 
 ### Can I import a recipe from a website?
 
-Yes. On the new-recipe screen, tap the link icon in the top bar and paste
+Yes. On the recipe list, tap **+** and choose **Import from URL**, then paste
 the recipe's URL. Cookmaid fills in the form — review it, then save. Nothing
 is saved until you do. Ingredients that match a catalog item are linked to
 it; the rest stay as free text.

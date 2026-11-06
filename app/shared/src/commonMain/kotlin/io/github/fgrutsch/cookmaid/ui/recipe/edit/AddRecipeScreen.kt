@@ -20,8 +20,6 @@ import cookmaid.app.shared.generated.resources.common_error
 import cookmaid.app.shared.generated.resources.ic_arrow_back
 import io.github.fgrutsch.cookmaid.ui.common.SuccessSnackbarHost
 import cookmaid.app.shared.generated.resources.ic_check
-import cookmaid.app.shared.generated.resources.ic_link
-import cookmaid.app.shared.generated.resources.recipe_import_title
 import cookmaid.app.shared.generated.resources.common_save
 import cookmaid.app.shared.generated.resources.recipe_add_title
 import cookmaid.app.shared.generated.resources.recipe_edit_title
@@ -84,14 +82,6 @@ fun AddRecipeScreen(
                     }
                 },
                 actions = {
-                    if (!state.isEditing) {
-                        IconButton(onClick = { onEvent(AddRecipeEvent.SetImportDialogVisible(true)) }) {
-                            Icon(
-                                painterResource(Res.drawable.ic_link),
-                                contentDescription = Res.string.recipe_import_title.resolve(),
-                            )
-                        }
-                    }
                     IconButton(onClick = { onEvent(AddRecipeEvent.Save) }) {
                         Icon(
                             painterResource(Res.drawable.ic_check),

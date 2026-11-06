@@ -337,6 +337,14 @@ class AddRecipeViewModelTest : BaseViewModelTest() {
     )
 
     @Test
+    fun `opening for url import shows the import dialog`() = viewModelTest {
+        val viewModel = AddRecipeViewModel(fakeRecipeRepo, fakeCatalog, importFromUrl = true)
+
+        assertTrue(viewModel.state.value.importDialogVisible)
+        assertFalse(createViewModel().state.value.importDialogVisible)
+    }
+
+    @Test
     fun `import fills the form and matches catalog items`() = viewModelTest {
         val butter = Item.Catalog(
             id = Uuid.random(),

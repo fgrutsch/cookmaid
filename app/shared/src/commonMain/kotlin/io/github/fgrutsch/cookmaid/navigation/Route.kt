@@ -23,8 +23,11 @@ sealed interface Route : NavKey {
     @Serializable
     data class RecipeDetail(val id: Uuid) : Route
 
+    /**
+     * New recipe form; [importFromUrl] opens it with the URL import dialog showing.
+     */
     @Serializable
-    data object AddRecipe : Route
+    data class AddRecipe(val importFromUrl: Boolean = false) : Route
 
     @Serializable
     data class EditRecipe(val id: Uuid) : Route

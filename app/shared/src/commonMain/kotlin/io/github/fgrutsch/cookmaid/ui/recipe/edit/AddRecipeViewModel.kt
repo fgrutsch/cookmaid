@@ -22,8 +22,9 @@ class AddRecipeViewModel(
     private val recipeRepository: RecipeRepository,
     private val catalogItemRepository: CatalogItemRepository,
     private val editRecipeId: Uuid? = null,
+    importFromUrl: Boolean = false,
 ) : MviViewModel<AddRecipeState, AddRecipeEvent, AddRecipeEffect>(
-    AddRecipeState(isEditing = editRecipeId != null),
+    AddRecipeState(isEditing = editRecipeId != null, importDialogVisible = importFromUrl),
 ) {
 
     private val ingredientQueryFlow = MutableStateFlow("")
