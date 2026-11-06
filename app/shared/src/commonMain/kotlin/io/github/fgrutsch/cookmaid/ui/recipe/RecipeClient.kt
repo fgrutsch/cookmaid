@@ -1,5 +1,6 @@
 package io.github.fgrutsch.cookmaid.ui.recipe
 
+import io.github.fgrutsch.cookmaid.recipe.ImportRecipeRequest
 import io.github.fgrutsch.cookmaid.recipe.Recipe
 import io.github.fgrutsch.cookmaid.recipe.RecipePage
 import io.github.fgrutsch.cookmaid.recipe.RecipeRequest
@@ -47,6 +48,12 @@ class RecipeClient(
             setBody(request)
         }
     }
+
+    suspend fun importFromUrl(url: String): RecipeRequest =
+        apiClient.httpClient.post("$base/import") {
+            contentType(ContentType.Application.Json)
+            setBody(ImportRecipeRequest(url))
+        }.body()
 
     suspend fun fetchRandom(tag: String?, excludeIds: List<String>): Recipe =
         apiClient.httpClient.get("$base/random") {

@@ -20,6 +20,7 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -60,6 +61,9 @@ import cookmaid.app.shared.generated.resources.recipe_edit_name_required
 import cookmaid.app.shared.generated.resources.recipe_edit_new_tag_title
 import cookmaid.app.shared.generated.resources.recipe_edit_servings_label
 import cookmaid.app.shared.generated.resources.recipe_edit_tag_name_label
+import cookmaid.app.shared.generated.resources.recipe_import_action
+import cookmaid.app.shared.generated.resources.recipe_import_title
+import cookmaid.app.shared.generated.resources.recipe_import_url_label
 import io.github.fgrutsch.cookmaid.catalog.Item
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
 import io.github.fgrutsch.cookmaid.ui.common.NO_SUGGESTION
@@ -547,6 +551,47 @@ internal fun NewTagDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss) { Text(Res.string.common_cancel.resolve()) }
+        },
+    )
+}
+
+@Composable
+internal fun ImportUrlDialog(
+    isImporting: Boolean,
+    onDismiss: () -> Unit,
+    onImport: (String) -> Unit,
+) {
+    // Kept across failed attempts: the dialog stays open on error so the user can fix the link.
+    var url by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = { if (!isImporting) onDismiss() },
+        title = { Text(Res.string.recipe_import_title.resolve()) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedTextField(
+                    value = url,
+                    onValueChange = { url = it },
+                    label = { Text(Res.string.recipe_import_url_label.resolve()) },
+                    singleLine = true,
+                    enabled = !isImporting,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Go),
+                    keyboardActions = KeyboardActions(onGo = { if (url.isNotBlank()) onImport(url) }),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                if (isImporting) LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onImport(url) },
+                enabled = url.isNotBlank() && !isImporting,
+            ) {
+                Text(Res.string.recipe_import_action.resolve())
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss, enabled = !isImporting) { Text(Res.string.common_cancel.resolve()) }
         },
     )
 }

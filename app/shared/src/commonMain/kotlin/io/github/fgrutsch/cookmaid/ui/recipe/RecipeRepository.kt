@@ -84,6 +84,14 @@ interface RecipeRepository {
     )
 
     /**
+     * Extracts a recipe from the web page at [url] without saving it.
+     *
+     * @param url the recipe page to import.
+     * @return a draft whose ingredients are free text.
+     */
+    suspend fun importFromUrl(url: String): RecipeRequest
+
+    /**
      * Returns a random recipe, optionally filtered by [tag] and excluding [excludeIds].
      *
      * @param tag optional tag to filter by.
@@ -142,6 +150,8 @@ class ApiRecipeRepository(
     ) {
         client.update(id, RecipeRequest(name, description, ingredients, steps, tags, servings))
     }
+
+    override suspend fun importFromUrl(url: String): RecipeRequest = client.importFromUrl(url)
 
     override suspend fun fetchRandom(tag: String?, excludeIds: List<String>): Recipe? {
         return try {

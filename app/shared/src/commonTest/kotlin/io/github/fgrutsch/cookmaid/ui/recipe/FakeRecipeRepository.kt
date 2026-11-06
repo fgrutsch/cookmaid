@@ -3,6 +3,7 @@ package io.github.fgrutsch.cookmaid.ui.recipe
 import io.github.fgrutsch.cookmaid.recipe.Recipe
 import io.github.fgrutsch.cookmaid.recipe.RecipeIngredient
 import io.github.fgrutsch.cookmaid.recipe.RecipePage
+import io.github.fgrutsch.cookmaid.recipe.RecipeRequest
 import kotlin.uuid.Uuid
 
 class FakeRecipeRepository : RecipeRepository {
@@ -71,6 +72,11 @@ class FakeRecipeRepository : RecipeRepository {
             } else it
         }.toMutableList()
     }
+
+    var importResult: RecipeRequest? = null
+
+    override suspend fun importFromUrl(url: String): RecipeRequest =
+        importResult ?: throw IllegalStateException("Import failed")
 
     override suspend fun fetchRandom(tag: String?, excludeIds: List<String>): Recipe? {
         var filtered = recipes.toList()
