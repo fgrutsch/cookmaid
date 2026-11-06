@@ -40,6 +40,28 @@ docker compose up -d
 
 To stop everything: `docker compose down` (add `-v` to also remove data).
 
+### Optional: LLM fallback for recipe import
+
+Recipe import reads the schema.org data most recipe sites embed and needs no LLM.
+For pages without it, Cookmaid can ask any OpenAI-compatible chat-completions API.
+Set all three variables to enable it; leave them unset to disable:
+
+| Variable | Meaning |
+|---|---|
+| `LLM_BASE_URL` | API base; `/chat/completions` is appended |
+| `LLM_API_KEY` | Bearer token (may be empty for a local Ollama) |
+| `LLM_MODEL` | Model id of that provider |
+
+Examples:
+
+- **OpenAI:** `LLM_BASE_URL=https://api.openai.com/v1`
+- **Ollama:** `LLM_BASE_URL=http://<host>:11434/v1`
+- **Cloudflare Workers AI:**
+  `LLM_BASE_URL=https://api.cloudflare.com/client/v4/accounts/<account-id>/ai/v1`,
+  `LLM_MODEL=@cf/google/gemma-4-26b-a4b-it`, API token with Workers AI permissions.
+  The Workers Free plan includes 10,000 neurons/day and fails (rather than bills)
+  beyond that.
+
 
 ## Tech Stack
 
