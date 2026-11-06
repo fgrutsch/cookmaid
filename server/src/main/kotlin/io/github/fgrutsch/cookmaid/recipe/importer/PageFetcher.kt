@@ -7,6 +7,7 @@ import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.HttpSend
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.UserAgent
+import io.ktor.client.plugins.compression.ContentEncoding
 import io.ktor.client.plugins.plugin
 import io.ktor.client.request.prepareGet
 import io.ktor.client.statement.bodyAsChannel
@@ -61,6 +62,11 @@ class HttpPageFetcher(
         install(UserAgent) { agent = "Mozilla/5.0 (compatible; Cookmaid recipe import)" }
         install(HttpTimeout) { requestTimeoutMillis = TIMEOUT_MILLIS }
         install(HttpSend) { maxSendCount = MAX_SENDS }
+        // Some sites (e.g. lecker.de) send gzip even when it was not requested.
+        install(ContentEncoding) {
+            gzip()
+            deflate()
+        }
     }.apply {
         // Redirects re-enter HttpSend, so this also checks every redirect target.
         plugin(HttpSend).intercept { request ->

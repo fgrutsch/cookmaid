@@ -9,6 +9,7 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.response.header
 import io.ktor.server.response.respond
+import io.ktor.server.response.respondBytes
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.RoutingContext
 import io.ktor.server.routing.get
@@ -20,7 +21,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
+import java.io.ByteArrayOutputStream
 import java.net.InetAddress
+import java.util.zip.GZIPOutputStream
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
@@ -40,6 +43,13 @@ class PageFetcherTest {
             get("/big") { call.respondText("x".repeat(2 * 1024 * 1024 + 1)) }
             get("/missing") { call.respond(HttpStatusCode.NotFound) }
             get("/no-location") { call.respond(HttpStatusCode.Found) }
+            get("/gzip") {
+                val gzipped = ByteArrayOutputStream().also { out ->
+                    GZIPOutputStream(out).use { it.write("<html>zipped</html>".toByteArray()) }
+                }.toByteArray()
+                call.response.header(HttpHeaders.ContentEncoding, "gzip")
+                call.respondBytes(gzipped, ContentType.Text.Html)
+            }
         }
     }.start(wait = false)
 
@@ -103,6 +113,11 @@ class PageFetcherTest {
     @Test
     fun `allowed page is returned`() = runTest {
         assertEquals("<html>hello</html>", loopbackAllowed.fetch("http://127.0.0.1:$port/ok"))
+    }
+
+    @Test
+    fun `unrequested gzip body is decoded`() = runTest {
+        assertEquals("<html>zipped</html>", loopbackAllowed.fetch("http://127.0.0.1:$port/gzip"))
     }
 
     @Test

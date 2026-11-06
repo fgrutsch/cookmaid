@@ -49,6 +49,7 @@ dependencies {
     implementation(libs.kotlin.logging)
     implementation(libs.bundles.ktor.server)
     implementation(libs.ktor.clientCio)
+    implementation(libs.ktor.clientEncoding)
     implementation(libs.jsoup)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.koin.ktor)
