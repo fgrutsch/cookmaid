@@ -55,6 +55,19 @@ it; the rest stay as free text.
 Most recipe sites work out of the box. Sites without structured recipe
 data only work if your server operator configured an LLM.
 
+### Why did importing a recipe fail?
+
+Cookmaid shows "Something went wrong" when it can't read a recipe from the
+page. Common reasons:
+
+- The page needs a login or blocks automated access.
+- The URL points to a private or local address (e.g. your home network).
+- The page has no structured recipe data and no LLM is configured, or the
+  LLM couldn't find a recipe on it.
+- The page is too slow or too large.
+
+In that case, add the recipe manually via **Add Recipe**.
+
 ### How do I edit or delete a recipe?
 
 Open the recipe and tap the menu (three dots) in the top bar. Choose
